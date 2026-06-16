@@ -24,19 +24,42 @@ Sistema de autenticación y gestión de usuarios construido con Next.js, Better 
 ```
 app/
 ├── (auth)/
-│   ├── signin/          # Inicio de sesión
-│   ├── signup/          # Registro
-│   └── dashboard/       # Dashboard protegido
-├── api/auth/[...all]/   # API routes de Better Auth
-└── layout.tsx           # Layout raíz
+│   ├── signin/
+│   │   ├── actions/signin-action.ts       # Server action de inicio de sesión
+│   │   ├── components/signin-form.tsx     # Formulario de inicio de sesión
+│   │   ├── models/signinSchema.model.ts   # Validación Zod
+│   │   ├── forgot-password/               # Recuperar contraseña (placeholder)
+│   │   ├── reset-password/                # Restablecer contraseña (placeholder)
+│   │   └── page.tsx
+│   └── signup/
+│       ├── actions/signup-action.ts       # Server action de registro
+│       ├── components/signup-form.tsx     # Formulario de registro
+│       ├── models/signupFormSchema.model.ts
+│       └── page.tsx
+├── (protected)/
+│   └── dashboard/
+│       ├── layout.tsx                     # Verificación de sesión
+│       └── page.tsx                       # Dashboard del usuario
+├── api/auth/[...all]/route.ts             # API routes de Better Auth
+├── layout.tsx                             # Layout raíz
+├── page.tsx                               # Home (redirige a signin)
+└── globals.css
 lib/
-├── auth.ts              # Configuración server de Better Auth
-├── auth-client.ts       # Configuración client de Better Auth
-├── prisma.ts            # PrismaClient singleton
-└── types.d.ts           # Tipos TypeScript
+├── auth.ts                                # Config server de Better Auth
+├── auth-client.ts                         # Config client de Better Auth
+├── prisma.ts                              # PrismaClient singleton con PrismaPg
+├── types.d.ts                             # Tipos TypeScript
+└── utils.ts                               # Utilidad cn()
+components/
+├── field.tsx                              # Componente reutilizable de campo
+├── theme-mode-toggle.tsx                  # Toggle tema claro/oscuro
+├── theme-provider.tsx                     # Provider de next-themes
+└── ui/                                    # Componentes shadcn/ui
+helpers/
+└── getSession.ts                          # Helper de sesión cacheada
 prisma/
-├── schema.prisma        # Modelos: User, Session, Account, Verification
-└── migrations/          # Migraciones de Prisma
+├── schema.prisma                          # Modelos: User, Session, Account, Verification
+└── migrations/                            # Migraciones de Prisma
 ```
 
 ## Instalación
