@@ -42,3 +42,18 @@ export type SignoutState = {
     details?: Record<string, string[]>;
   } | null;
 };
+export type ResendVerificationState = {
+  data?: {
+    email: string;
+  };
+  success?: boolean;
+  dbErrors?: {
+    status?: number;
+    name?: string;
+    message?: string;
+    details?: Record<string, string[]>;
+  } | null;
+  validationErrors?: {
+    email?: string[];
+  } | null;
+};

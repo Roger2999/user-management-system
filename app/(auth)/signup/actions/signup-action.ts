@@ -53,5 +53,5 @@ export const signupAction = async (
       validationErrors: null,
     };
   }
-  redirect("/dashboard");
+  redirect(`/verify-email-address?email=${encodeURIComponent(email)}`);
 };
