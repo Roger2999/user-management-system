@@ -1,36 +1,111 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# User Management System
 
-## Getting Started
+Sistema de autenticación y gestión de usuarios construido con Next.js, Better Auth y Prisma.
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Framework:** Next.js 16 (App Router)
+- **Auth:** Better Auth v1.6
+- **ORM:** Prisma v7
+- **Database:** PostgreSQL (Prisma Postgres)
+- **UI:** shadcn/ui + Tailwind CSS v4
+- **Runtime:** React 19, TypeScript 5
+
+## Características
+
+- Registro de usuarios (sign up)
+- Inicio de sesión con email y contraseña (sign in)
+- Protección de rutas por sesión
+- Dashboard con información del usuario
+- Tema claro / oscuro / sistema
+
+## Estructura del proyecto
+
+```
+app/
+├── (auth)/
+│   ├── signin/          # Inicio de sesión
+│   ├── signup/          # Registro
+│   └── dashboard/       # Dashboard protegido
+├── api/auth/[...all]/   # API routes de Better Auth
+└── layout.tsx           # Layout raíz
+lib/
+├── auth.ts              # Configuración server de Better Auth
+├── auth-client.ts       # Configuración client de Better Auth
+├── prisma.ts            # PrismaClient singleton
+└── types.d.ts           # Tipos TypeScript
+prisma/
+├── schema.prisma        # Modelos: User, Session, Account, Verification
+└── migrations/          # Migraciones de Prisma
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Instalación
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 1. Instalar dependencias
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+pnpm install
+```
 
-## Learn More
+### 2. Configurar variables de entorno
 
-To learn more about Next.js, take a look at the following resources:
+Crea un archivo `.env` en la raíz del proyecto:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+BETTER_AUTH_SECRET=tu-secreto-aqui
+BETTER_AUTH_URL=http://localhost:3000
+DATABASE_URL="postgres://USUARIO:PASSWORD@db.prisma.io:5432/postgres?sslmode=require"
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 3. Aplicar migraciones
 
-## Deploy on Vercel
+```bash
+pnpm dlx prisma migrate dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 4. Generar Prisma Client
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+pnpm dlx prisma generate
+```
+
+### 5. Iniciar el servidor de desarrollo
+
+```bash
+pnpm dev
+```
+
+Abre [http://localhost:3000](http://localhost:3000).
+
+## Comandos útiles
+
+| Comando | Descripción |
+|---------|-------------|
+| `pnpm dev` | Iniciar servidor de desarrollo |
+| `pnpm build` | Build de producción |
+| `pnpm lint` | Ejecutar ESLint |
+| `pnpm dlx prisma studio` | Abrir Prisma Studio (editor visual de la DB) |
+| `pnpm dlx prisma migrate dev` | Aplicar/crear migraciones |
+| `pnpm dlx prisma generate` | Regenerar Prisma Client |
+
+## Desarrollo local sin internet
+
+Para desarrollar sin conexión a Prisma Postgres, usa `prisma dev` que crea un PostgreSQL local:
+
+```bash
+# Terminal 1: Base de datos local
+pnpm dlx prisma dev
+
+# Terminal 2: Servidor de desarrollo
+pnpm dev
+```
+
+Cuando uses `prisma dev`, actualiza el `DATABASE_URL` en `.env` con el connection string local que se muestra al ejecutar el comando.
+
+## Deploy
+
+La app está configurada para deploy en Vercel. Asegúrate de configurar las variables de entorno en el dashboard de Vercel:
+
+- `BETTER_AUTH_SECRET`
+- `BETTER_AUTH_URL` (URL de producción)
+- `DATABASE_URL`
