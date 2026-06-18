@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeModeToggle } from "@/components/theme-mode-toggle";
 import { Toaster } from "@/components/ui/sonner";
+import SignoutButton from "@/components/signout-button";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,6 +37,7 @@ export default function RootLayout({
           <header>
             <h2>header</h2>
             <ThemeModeToggle />
+            <SignoutButton />
           </header>
           <main className="flex-1">{children}</main>
           <footer>footer</footer>

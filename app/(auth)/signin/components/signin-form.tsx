@@ -29,6 +29,7 @@ export default function SigninForm() {
       <Field
         label="Contraseña"
         name="password"
+        type="password"
         errors={state.validationErrors?.password}
       />
       <div className="flex justify-end">

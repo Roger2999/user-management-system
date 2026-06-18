@@ -57,3 +57,41 @@ export type ResendVerificationState = {
     email?: string[];
   } | null;
 };
+export type RequestPasswordResetState = {
+  data?: {
+    email: string;
+  };
+  message?: string;
+  success?: boolean;
+  dbErrors?: {
+    status?: number;
+    name?: string;
+    message?: string;
+    details?: Record<string, string[]>;
+  } | null;
+  validationErrors?: {
+    email?: string[];
+  } | null;
+};
+export type ResetPasswordState = {
+  success?: boolean;
+  dbErrors?: {
+    status?: number;
+    name?: string;
+    message?: string;
+    details?: Record<string, string[]>;
+  } | null;
+  validationErrors?: {
+    currentPassword?: string[];
+    newPassword?: string[];
+    confirmNewPassword?: string[];
+  } | null;
+};
+export type SignoutFormState = {
+  success?: boolean;
+  dbErrors?: {
+    status?: number;
+    name?: string;
+    message?: string;
+  } | null;
+};

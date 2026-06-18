@@ -12,7 +12,22 @@ export const auth = betterAuth({
     autoSignIn: true,
     maxPasswordLength: 128,
     minPasswordLength: 8,
+    sendResetPassword: async (data) => {
+      void resend.emails.send({
+        from: "onboarding@resend.dev",
+        to: data.user.email,
+        subject: "Reset your password",
+        html: `
+          <h2>Recupera tu contraseña</h2>
+          <p>Haz clic en el enlace para resetear tu contraseña:</p>
+          <a href="${data.url}">Resetear contraseña</a>
+          <p>El enlace expira en 1 hora.</p>
+        `,
+        text: `Click the link to reset your password: ${data.url}`,
+      });
+    },
   },
+
   emailVerification: {
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
@@ -25,10 +40,10 @@ export const auth = betterAuth({
       });
     },
   },
+
   trustedOrigins: [
     "http://localhost:3000",
     "https://user-manangment.vercel.app",
   ],
-
   plugins: [nextCookies()],
 });
