@@ -13,7 +13,6 @@ export const resetPasswordAction = async (
   formData: FormData,
 ): Promise<ResetPasswordState> => {
   const fields = {
-    currentPassword: formData.get("currentPassword") as string,
     newPassword: formData.get("newPassword") as string,
     confirmNewPassword: formData.get("confirmNewPassword") as string,
     token: formData.get("token") as string,

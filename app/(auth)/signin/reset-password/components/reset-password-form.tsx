@@ -27,12 +27,6 @@ export default function ResetPasswordForm() {
     >
       <input type="hidden" name="token" value={token ? token : undefined} />
       <Field
-        label="Contraseña actual"
-        name="currentPassword"
-        type="password"
-        errors={state.validationErrors?.currentPassword}
-      />
-      <Field
         label="Nueva contraseña"
         name="newPassword"
         type="password"
@@ -45,7 +39,7 @@ export default function ResetPasswordForm() {
         errors={state.validationErrors?.confirmNewPassword}
       />
       <Button className="w-full" disabled={pending}>
-        {pending ? "Loading..." : "Sign up"}
+        {pending ? "Loading..." : "Confirmar"}
       </Button>
       {state.dbErrors && (
         <p className="text-sm text-red-500 text-center">

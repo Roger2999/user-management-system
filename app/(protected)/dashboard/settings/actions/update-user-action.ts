@@ -4,43 +4,44 @@ import z from "zod";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { APIError } from "better-auth";
-import { RequestPasswordResetState } from "@/lib/types";
-import { ForgotPasswordSchema } from "../models/forgot-password.model";
+import { UpdateUserState } from "@/lib/types";
+import { UpdateUserSchema } from "../models/updateUserSchema.model";
+import { revalidatePath } from "next/cache";
 
-export const requestPasswordResetAction = async (
-  prevState: RequestPasswordResetState,
+export const UpdateUserAction = async (
+  prevState: UpdateUserState,
   formData: FormData,
-): Promise<RequestPasswordResetState> => {
+): Promise<UpdateUserState> => {
   const fields = {
-    email: formData.get("email") as string,
+    username: formData.get("username") as string,
   };
-  const validatedFields = ForgotPasswordSchema.safeParse(fields);
+  const validatedFields = UpdateUserSchema.safeParse(fields);
   if (!validatedFields.success) {
     return {
-      data: { email: fields.email },
+      data: { username: fields.username },
       success: false,
       dbErrors: null,
       validationErrors: z.flattenError(validatedFields.error).fieldErrors,
     };
   }
-  const { email } = validatedFields.data;
+  const { username } = validatedFields.data;
   try {
-    await auth.api.requestPasswordReset({
-      body: { email, redirectTo: "/signin/reset-password" },
+    await auth.api.updateUser({
+      body: { name: username },
       headers: await headers(),
     });
+    revalidatePath("/dashboard");
     return {
-      data: { email },
       success: true,
-      message:
-        "Se ha enviado a su email el enlace para restablecer la contraseña",
+      data: { username: fields.username },
       dbErrors: null,
       validationErrors: null,
+      message: "Usuario actualizado con exito",
     };
   } catch (error) {
     if (error instanceof APIError) {
       return {
-        data: { email },
+        data: { username },
         success: false,
         dbErrors: {
           name: error.name,
@@ -51,7 +52,7 @@ export const requestPasswordResetAction = async (
       };
     }
     return {
-      data: { email },
+      data: { username },
       success: false,
       dbErrors: { message: "Unexpected error" },
       validationErrors: null,

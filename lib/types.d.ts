@@ -95,3 +95,19 @@ export type SignoutFormState = {
     message?: string;
   } | null;
 };
+export type UpdateUserState = {
+  data?: {
+    username: string;
+  };
+  message?: string;
+  success?: boolean;
+  dbErrors?: {
+    status?: number;
+    name?: string;
+    message?: string;
+    details?: Record<string, string[]>;
+  } | null;
+  validationErrors?: {
+    username?: string[];
+  } | null;
+};

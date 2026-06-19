@@ -2,10 +2,6 @@ import z from "zod";
 
 export const ResetPasswordSchema = z
   .object({
-    currentPassword: z
-      .string()
-      .min(1, "Mínimo de 8 caracteres")
-      .max(128, "No puede tener más de 128 caracteres"),
     newPassword: z
       .string()
       .min(8, "Minimo de 8 caracteres")
