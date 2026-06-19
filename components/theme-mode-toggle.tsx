@@ -1,38 +1,60 @@
 "use client";
 
-import { Moon, Sun } from "lucide-react";
+import {
+  Moon,
+  Sun,
+  ArrowBigDownDash,
+  ArrowBigUpDash,
+  SunMoon,
+} from "lucide-react";
 import { useTheme } from "next-themes";
 
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useState } from "react";
+import { themes } from "@/lib/constants";
 
 export function ThemeModeToggle() {
-  const { setTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const handleMenu = () => {
+    setIsOpen(!isOpen);
+  };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon">
-          <Sun className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
-          <Moon className="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
-          <span className="sr-only">Toggle theme</span>
-        </Button>
+    <DropdownMenu onOpenChange={handleMenu}>
+      <DropdownMenuTrigger className="border-btn/50 flex w-fit cursor-pointer items-center justify-center gap-3 rounded-2xl border px-4 py-1">
+        {theme === "light" ? (
+          <Sun className="h-[1.2rem] w-[1.2rem]" />
+        ) : (
+          <Moon className="h-[1.2rem] w-[1.2rem]" />
+        )}
+
+        {isOpen ? <ArrowBigUpDash /> : <ArrowBigDownDash />}
+
+        <span className="sr-only">Toggle theme</span>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")}>
-          Light
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
-          Dark
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>
-          System
-        </DropdownMenuItem>
+      <DropdownMenuContent className="w-fit" sideOffset={8} align="center">
+        {themes.map((theme) => (
+          <DropdownMenuItem
+            key={theme.name}
+            onClick={() => setTheme(theme.name)}
+            className="flex justify-around"
+          >
+            {theme.label}
+            {theme.name === "light" ? (
+              <Sun className="h-[1.2rem] w-[1.2rem]" />
+            ) : theme.name === "dark" ? (
+              <Moon className="h-[1.2rem] w-[1.2rem]" />
+            ) : (
+              <SunMoon className="h-[1.2rem] w-[1.2rem]" />
+            )}
+          </DropdownMenuItem>
+        ))}
       </DropdownMenuContent>
     </DropdownMenu>
   );

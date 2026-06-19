@@ -2,10 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import { ThemeModeToggle } from "@/components/theme-mode-toggle";
 import { Toaster } from "@/components/ui/sonner";
-import SignoutButton from "@/components/signout-button";
-import { getSession } from "@/helpers/getSession";
+import NavMenu from "@/components/nav-menu/nav-menu";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,7 +25,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await getSession();
   return (
     <html
       lang="en"
@@ -37,9 +34,7 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col">
         <ThemeProvider>
           <header>
-            <h2>header</h2>
-            <ThemeModeToggle />
-            {session && <SignoutButton />}
+            <NavMenu />
           </header>
           <main className="flex-1">{children}</main>
           <footer>footer</footer>
