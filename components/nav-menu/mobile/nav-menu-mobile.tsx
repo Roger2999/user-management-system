@@ -65,23 +65,50 @@ export default function NavMenuMobile({ session }: Props) {
         className={`bg-sidebar absolute top-0 left-0 z-50 flex h-full w-72 max-w-[70%] flex-col gap-5 border px-5 pt-20 transition-all duration-150 sm:hidden`}
       >
         {/* links */}
-
         <ul className="space-y-3">
           {session
-            ? privateRoutes.map((route, index) => (
-                <li key={index}>
-                  <LinkButton type="link" href={route.href} onClick={closeMenu}>
-                    {route.name}
-                  </LinkButton>
-                </li>
-              ))
-            : publicRoutes.map((route, index) => (
-                <li key={index}>
-                  <LinkButton type="link" href={route.href} onClick={closeMenu}>
-                    {route.name}
-                  </LinkButton>
-                </li>
-              ))}
+            ? privateRoutes.map(
+                (
+                  route: {
+                    name: string;
+                    href: string;
+                    current: boolean;
+                    id: string;
+                  },
+                  index: number,
+                ) => (
+                  <li key={index}>
+                    <LinkButton
+                      type="link"
+                      href={route.href}
+                      onClick={closeMenu}
+                    >
+                      {route.name}
+                    </LinkButton>
+                  </li>
+                ),
+              )
+            : publicRoutes.map(
+                (
+                  route: {
+                    name: string;
+                    href: string;
+                    current: boolean;
+                    id: string;
+                  },
+                  index: number,
+                ) => (
+                  <li key={index}>
+                    <LinkButton
+                      type="link"
+                      href={route.href}
+                      onClick={closeMenu}
+                    >
+                      {route.name}
+                    </LinkButton>
+                  </li>
+                ),
+              )}
         </ul>
 
         <Separator />

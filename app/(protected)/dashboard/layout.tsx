@@ -10,5 +10,5 @@ export default async function DashboardLayout({
   if (!session) {
     redirect("/signin");
   }
-  return <div className="">{children}</div>;
+  return <>{children}</>;
 }

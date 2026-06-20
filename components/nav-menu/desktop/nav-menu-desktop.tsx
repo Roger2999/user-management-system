@@ -11,7 +11,7 @@ import Link from "next/link";
 export default async function NavMenuDesktop() {
   const session = await getSession();
   return (
-    <nav className="border-b-border/90 bg-menu flex h-16 w-full items-center justify-between border-b">
+    <nav className="border-b-border/90 bg-menu flex h-16 w-full items-center justify-between border-b px-5">
       {session && (
         <Link href={"/dashboard"} className="text-xl">
           <strong className="text-accent-foreground font-semibold">
@@ -20,6 +20,7 @@ export default async function NavMenuDesktop() {
           Dashboard
         </Link>
       )}
+      {/* routes */}
       <ul className="hidden gap-6 sm:flex">
         {session
           ? privateRoutes.map(
@@ -51,8 +52,9 @@ export default async function NavMenuDesktop() {
               ),
             )}
       </ul>
-
+      {/* right buttons */}
       <div className="hidden h-full items-center justify-center gap-5 pr-10 sm:flex">
+        {/* sign buttons */}
         {session ? (
           <SignoutButton />
         ) : (
@@ -65,8 +67,10 @@ export default async function NavMenuDesktop() {
             </SignButton>
           </>
         )}
+        {/* theme button */}
         <ThemeModeToggle />
       </div>
+      {/* hamburger button */}
       <HamburgerButton />
     </nav>
   );

@@ -9,19 +9,13 @@ export default async function VerifyEmailAddressPage({
 
   if (!email) {
     return (
-      <div className="flex justify-center items-center">
-        <div className="border p-10 rounded-xl w-sm max-w-[80%] text-center">
-          <p className="text-sm text-muted-foreground">
-            No se proporcionó un email válido.
-          </p>
-        </div>
+      <div className="border p-10 rounded-xl w-sm max-w-[80%] text-center">
+        <p className="text-sm text-muted-foreground">
+          No se proporcionó un email válido.
+        </p>
       </div>
     );
   }
 
-  return (
-    <div className="flex justify-center items-center">
-      <VerifyEmailForm email={email} />
-    </div>
-  );
+  return <VerifyEmailForm email={email} />;
 }

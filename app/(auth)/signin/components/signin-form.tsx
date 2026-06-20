@@ -43,7 +43,11 @@ export default function SigninForm() {
       <Button className="w-full mt-4" disabled={pending}>
         {pending ? "Loading..." : "Sign in"}
       </Button>
-      {state.dbErrors && <p className="text-sm">{state.dbErrors.message}</p>}
+      {state.dbErrors && (
+        <p className="text-sm text-center text-red-500">
+          {state.dbErrors.message}
+        </p>
+      )}
     </form>
   );
 }

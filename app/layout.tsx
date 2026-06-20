@@ -36,7 +36,7 @@ export default async function RootLayout({
           <header>
             <NavMenu />
           </header>
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 px-5">{children}</main>
           <footer>footer</footer>
           <Toaster />
         </ThemeProvider>
