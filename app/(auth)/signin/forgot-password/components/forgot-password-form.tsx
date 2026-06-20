@@ -4,6 +4,7 @@ import { RequestPasswordResetState } from "@/lib/types";
 import { useActionState } from "react";
 import { requestPasswordResetAction } from "../actions/request-password-reset-action";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function ForgotPasswordForm() {
   const initialState: RequestPasswordResetState = {
@@ -17,19 +18,30 @@ export default function ForgotPasswordForm() {
     initialState,
   );
   return (
-    <form className="w-md max-w-[80%] p-10 border rounded-xl" action={action}>
+    <form action={action} className="space-y-2 border p-10 rounded-xl w-sm max-w-[80%]">
       <Field
-        errors={state.validationErrors?.email}
-        type="text"
+        label="Email"
         name="email"
+        type="email"
+        errors={state.validationErrors?.email}
         defaultValue={state.data?.email}
-        className=""
       />
-      <Button>{pending ? "Loading..." : "Enviar"}</Button>
-      {state.success && <p className="text-green-500">{state.message}</p>}
-      {state.dbErrors && (
-        <p className="text-red-500">{state.dbErrors.message}</p>
+      <Button className="w-full" disabled={pending}>
+        {pending ? "Enviando..." : "Enviar enlace"}
+      </Button>
+      {state.success && (
+        <p className="text-sm text-green-500 text-center">{state.message}</p>
       )}
+      {state.dbErrors && (
+        <p className="text-sm text-red-500 text-center">
+          {state.dbErrors.message}
+        </p>
+      )}
+      <div className="text-center text-sm">
+        <Link href="/signin" className="hover:border-b border-b-white">
+          Volver al inicio de sesión
+        </Link>
+      </div>
     </form>
   );
 }

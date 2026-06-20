@@ -2,9 +2,12 @@ import ForgotPasswordForm from "./components/forgot-password-form";
 
 export default function ForgotPasswordPage() {
   return (
-    <div className="flex flex-col items-center justify-center gap-10">
-      <h1>Ingresa tu email para restablecer la contraseña</h1>
+    <>
+      <h1 className="text-2xl font-bold">¿Olvidaste tu contraseña?</h1>
+      <p className="text-muted-foreground text-center max-w-md">
+        Ingresa tu email y te enviaremos un enlace para restablecer tu contraseña.
+      </p>
       <ForgotPasswordForm />
-    </div>
+    </>
   );
 }

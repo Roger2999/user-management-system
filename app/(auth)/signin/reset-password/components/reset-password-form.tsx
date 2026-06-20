@@ -6,6 +6,7 @@ import { ResetPasswordState } from "@/lib/types";
 import { useActionState } from "react";
 import { resetPasswordAction } from "../actions/reset-password-action";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 export default function ResetPasswordForm() {
   const initialState: ResetPasswordState = {
@@ -39,13 +40,23 @@ export default function ResetPasswordForm() {
         errors={state.validationErrors?.confirmNewPassword}
       />
       <Button className="w-full" disabled={pending}>
-        {pending ? "Loading..." : "Confirmar"}
+        {pending ? "Actualizando..." : "Actualizar contraseña"}
       </Button>
+      {state.success && (
+        <p className="text-sm text-green-500 text-center">
+          Contraseña actualizada correctamente
+        </p>
+      )}
       {state.dbErrors && (
         <p className="text-sm text-red-500 text-center">
           {state.dbErrors.message}
         </p>
       )}
+      <div className="text-center text-sm">
+        <Link href="/signin" className="hover:border-b border-b-white">
+          Volver al inicio de sesión
+        </Link>
+      </div>
     </form>
   );
 }
