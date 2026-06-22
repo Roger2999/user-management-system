@@ -2,10 +2,10 @@
 
 import { useActionState, useState } from "react";
 import Field from "@/components/field";
+import SelectField from "@/components/select-field";
+import CheckboxField from "@/components/checkbox-field";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import { createUserAccountAction } from "../actions/create-user-account-action";
 import type { CreateUserAccountState } from "@/lib/types";
 import {
@@ -13,77 +13,6 @@ import {
   PERSONAL_OPTIONS,
   REQUEST_OPTIONS,
 } from "@/lib/constants";
-
-function SelectField({
-  label,
-  name,
-  options,
-  defaultValue,
-  errors,
-  onChange,
-}: {
-  label: string;
-  name: string;
-  options: readonly { readonly value: string; readonly label: string }[];
-  defaultValue?: string;
-  errors?: string[];
-  onChange?: (value: string) => void;
-}) {
-  return (
-    <div className="space-y-2 min-h-21">
-      <Label htmlFor={name}>{label}</Label>
-      <select
-        id={name}
-        name={name}
-        defaultValue={defaultValue}
-        onChange={(e) => onChange?.(e.target.value)}
-        className={cn(
-          "h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed md:text-sm dark:bg-input/30",
-          errors && "border-red-500",
-        )}
-      >
-        <option value="">Seleccionar...</option>
-        {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
-      <ul>
-        {errors?.map((e, i) => (
-          <li className="text-sm text-red-500" key={i}>
-            {e}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function CheckboxField({
-  label,
-  name,
-  defaultChecked,
-  onChange,
-}: {
-  label: string;
-  name: string;
-  defaultChecked?: boolean;
-  onChange?: (checked: boolean) => void;
-}) {
-  return (
-    <label className="flex items-center gap-2 cursor-pointer text-sm">
-      <input
-        type="checkbox"
-        name={name}
-        defaultChecked={defaultChecked}
-        onChange={(e) => onChange?.(e.target.checked)}
-        className="size-4 accent-primary"
-      />
-      {label}
-    </label>
-  );
-}
 
 export default function CreateUserAccountForm() {
   const initialState: CreateUserAccountState = {
@@ -104,9 +33,6 @@ export default function CreateUserAccountForm() {
   const [horarioExtralaboral, setHorarioExtralaboral] = useState(false);
   const [bajaEntidad, setBajaEntidad] = useState(false);
 
-  const f = (field: string): string | undefined =>
-    (state.data as Record<string, string | undefined> | undefined)?.[field];
-
   return (
     <div className="space-y-6">
       <h1 className="text-xl font-semibold">Crear solicitud de cuenta</h1>
@@ -120,13 +46,13 @@ export default function CreateUserAccountForm() {
               label="Tipo de solicitud"
               name="tipoSolicitud"
               options={REQUEST_OPTIONS}
-              defaultValue={f("tipoSolicitud")}
+              defaultValue={state.data?.tipoSolicitud}
               errors={state.validationErrors?.tipoSolicitud}
             />
             <Field
               label="Folio"
               name="folio"
-              defaultValue={f("folio")}
+              defaultValue={state.data?.folio}
               errors={state.validationErrors?.folio}
             />
           </CardContent>
@@ -140,32 +66,32 @@ export default function CreateUserAccountForm() {
             <Field
               label="Nombre y apellidos"
               name="nombreApellidos"
-              defaultValue={f("nombreApellidos")}
+              defaultValue={state.data?.nombreApellidos}
               errors={state.validationErrors?.nombreApellidos}
             />
             <Field
               label="Cargo que ocupa"
               name="cargoOcupa"
-              defaultValue={f("cargoOcupa")}
+              defaultValue={state.data?.cargoOcupa}
               errors={state.validationErrors?.cargoOcupa}
             />
             <Field
               label="Departamento / Área"
               name="departamentoArea"
-              defaultValue={f("departamentoArea")}
+              defaultValue={state.data?.departamentoArea}
               errors={state.validationErrors?.departamentoArea}
             />
             <SelectField
               label="Tipo de personal"
               name="tipoPersonal"
               options={PERSONAL_OPTIONS}
-              defaultValue={f("tipoPersonal")}
+              defaultValue={state.data?.tipoPersonal}
               errors={state.validationErrors?.tipoPersonal}
             />
             <Field
               label="Cuenta"
               name="cuenta"
-              defaultValue={f("cuenta")}
+              defaultValue={state.data?.cuenta}
               errors={state.validationErrors?.cuenta}
             />
           </CardContent>
@@ -194,7 +120,7 @@ export default function CreateUserAccountForm() {
                 label="Fecha de expiración (Correo Internet)"
                 name="correoInternetFechaTemp"
                 type="date"
-                defaultValue={f("correoInternetFechaTemp")}
+                defaultValue={state.data?.correoInternetFechaTemp}
                 errors={state.validationErrors?.correoInternetFechaTemp}
               />
             )}
@@ -223,7 +149,7 @@ export default function CreateUserAccountForm() {
                 label="Fecha de expiración (Internet)"
                 name="internetFechaTemp"
                 type="date"
-                defaultValue={f("internetFechaTemp")}
+                defaultValue={state.data?.internetFechaTemp}
                 errors={state.validationErrors?.internetFechaTemp}
               />
             )}
@@ -251,7 +177,7 @@ export default function CreateUserAccountForm() {
                 label="Fecha de expiración (Chat Internet)"
                 name="chatInternetFechaTemp"
                 type="date"
-                defaultValue={f("chatInternetFechaTemp")}
+                defaultValue={state.data?.chatInternetFechaTemp}
                 errors={state.validationErrors?.chatInternetFechaTemp}
               />
             )}
@@ -271,7 +197,7 @@ export default function CreateUserAccountForm() {
             <Field
               label="Otras redes"
               name="otrasRedes"
-              defaultValue={f("otrasRedes")}
+              defaultValue={state.data?.otrasRedes}
               errors={state.validationErrors?.otrasRedes}
             />
           </CardContent>
@@ -325,7 +251,7 @@ export default function CreateUserAccountForm() {
               label="Tipo de cuenta"
               name="tipoCuenta"
               options={ACCOUNT_OPTIONS}
-              defaultValue={f("tipoCuenta")}
+              defaultValue={state.data?.tipoCuenta}
               errors={state.validationErrors?.tipoCuenta}
               onChange={setTipoCuenta}
             />
@@ -334,7 +260,7 @@ export default function CreateUserAccountForm() {
                 label="Fecha de expiración"
                 name="fechaExpiracion"
                 type="date"
-                defaultValue={f("fechaExpiracion")}
+                defaultValue={state.data?.fechaExpiracion}
                 errors={state.validationErrors?.fechaExpiracion}
               />
             )}
@@ -357,14 +283,14 @@ export default function CreateUserAccountForm() {
                   label="Extra desde"
                   name="extraDesde"
                   type="time"
-                  defaultValue={f("extraDesde")}
+                  defaultValue={state.data?.extraDesde}
                   errors={state.validationErrors?.extraDesde}
                 />
                 <Field
                   label="Extra hasta"
                   name="extraHasta"
                   type="time"
-                  defaultValue={f("extraHasta")}
+                  defaultValue={state.data?.extraHasta}
                   errors={state.validationErrors?.extraHasta}
                 />
               </div>
@@ -374,14 +300,14 @@ export default function CreateUserAccountForm() {
                 label="Sábado desde"
                 name="sabadoDesde"
                 type="time"
-                defaultValue={f("sabadoDesde")}
+                defaultValue={state.data?.sabadoDesde}
                 errors={state.validationErrors?.sabadoDesde}
               />
               <Field
                 label="Sábado hasta"
                 name="sabadoHasta"
                 type="time"
-                defaultValue={f("sabadoHasta")}
+                defaultValue={state.data?.sabadoHasta}
                 errors={state.validationErrors?.sabadoHasta}
               />
             </div>
@@ -390,14 +316,14 @@ export default function CreateUserAccountForm() {
                 label="Domingo desde"
                 name="domingoDesde"
                 type="time"
-                defaultValue={f("domingoDesde")}
+                defaultValue={state.data?.domingoDesde}
                 errors={state.validationErrors?.domingoDesde}
               />
               <Field
                 label="Domingo hasta"
                 name="domingoHasta"
                 type="time"
-                defaultValue={f("domingoHasta")}
+                defaultValue={state.data?.domingoHasta}
                 errors={state.validationErrors?.domingoHasta}
               />
             </div>
@@ -420,7 +346,7 @@ export default function CreateUserAccountForm() {
             <Field
               label="Teléfono celular"
               name="telefonoCelular"
-              defaultValue={f("telefonoCelular")}
+              defaultValue={state.data?.telefonoCelular}
               errors={state.validationErrors?.telefonoCelular}
             />
           </CardContent>
@@ -435,13 +361,13 @@ export default function CreateUserAccountForm() {
               <Field
                 label="Nombre del PC"
                 name="pcNombre"
-                defaultValue={f("pcNombre")}
+                defaultValue={state.data?.pcNombre}
                 errors={state.validationErrors?.pcNombre}
               />
               <Field
                 label="Inventario"
                 name="pcInventario"
-                defaultValue={f("pcInventario")}
+                defaultValue={state.data?.pcInventario}
                 errors={state.validationErrors?.pcNombre}
               />
             </div>
@@ -449,13 +375,13 @@ export default function CreateUserAccountForm() {
               <Field
                 label="PC Adicional - Nombre"
                 name="pcAdicionalNombre"
-                defaultValue={f("pcAdicionalNombre")}
+                defaultValue={state.data?.pcAdicionalNombre}
                 errors={state.validationErrors?.pcAdicionalNombre}
               />
               <Field
                 label="PC Adicional - Inventario"
                 name="pcAdicionalInventario"
-                defaultValue={f("pcAdicionalInventario")}
+                defaultValue={state.data?.pcAdicionalInventario}
                 errors={state.validationErrors?.pcAdicionalInventario}
               />
             </div>
@@ -470,7 +396,7 @@ export default function CreateUserAccountForm() {
             <Field
               label="Software autorizado"
               name="softwareAutorizado"
-              defaultValue={f("softwareAutorizado")}
+              defaultValue={state.data?.softwareAutorizado}
               errors={state.validationErrors?.softwareAutorizado}
             />
           </CardContent>
@@ -484,13 +410,13 @@ export default function CreateUserAccountForm() {
             <Field
               label="Cuenta de usuario"
               name="cuentaUsuario"
-              defaultValue={f("cuentaUsuario")}
+              defaultValue={state.data?.cuentaUsuario}
               errors={state.validationErrors?.cuentaUsuario}
             />
             <Field
               label="Actividad que realiza"
               name="actividadRealiza"
-              defaultValue={f("actividadRealiza")}
+              defaultValue={state.data?.actividadRealiza}
               errors={state.validationErrors?.actividadRealiza}
             />
             <div className="col-span-full">
@@ -511,20 +437,20 @@ export default function CreateUserAccountForm() {
               <Field
                 label="Solicitado - Nombre"
                 name="solicitadoNombre"
-                defaultValue={f("solicitadoNombre")}
+                defaultValue={state.data?.solicitadoNombre}
                 errors={state.validationErrors?.solicitadoNombre}
               />
               <Field
                 label="Solicitado - Cargo"
                 name="solicitadoCargo"
-                defaultValue={f("solicitadoCargo")}
+                defaultValue={state.data?.solicitadoCargo}
                 errors={state.validationErrors?.solicitadoCargo}
               />
               <Field
                 label="Solicitado - Fecha"
                 name="solicitadoFecha"
                 type="date"
-                defaultValue={f("solicitadoFecha")}
+                defaultValue={state.data?.solicitadoFecha}
                 errors={state.validationErrors?.solicitadoFecha}
               />
             </div>
@@ -532,20 +458,20 @@ export default function CreateUserAccountForm() {
               <Field
                 label="Revisado - Nombre"
                 name="revisadoNombre"
-                defaultValue={f("revisadoNombre")}
+                defaultValue={state.data?.revisadoNombre}
                 errors={state.validationErrors?.revisadoNombre}
               />
               <Field
                 label="Revisado - Cargo"
                 name="revisadoCargo"
-                defaultValue={f("revisadoCargo")}
+                defaultValue={state.data?.revisadoCargo}
                 errors={state.validationErrors?.revisadoCargo}
               />
               <Field
                 label="Revisado - Fecha"
                 name="revisadoFecha"
                 type="date"
-                defaultValue={f("revisadoFecha")}
+                defaultValue={state.data?.revisadoFecha}
                 errors={state.validationErrors?.revisadoFecha}
               />
             </div>
@@ -553,20 +479,20 @@ export default function CreateUserAccountForm() {
               <Field
                 label="Aprobado - Nombre"
                 name="aprobadoNombre"
-                defaultValue={f("aprobadoNombre")}
+                defaultValue={state.data?.aprobadoNombre}
                 errors={state.validationErrors?.aprobadoNombre}
               />
               <Field
                 label="Aprobado - Cargo"
                 name="aprobadoCargo"
-                defaultValue={f("aprobadoCargo")}
+                defaultValue={state.data?.aprobadoCargo}
                 errors={state.validationErrors?.aprobadoCargo}
               />
               <Field
                 label="Aprobado - Fecha"
                 name="aprobadoFecha"
                 type="date"
-                defaultValue={f("aprobadoFecha")}
+                defaultValue={state.data?.aprobadoFecha}
                 errors={state.validationErrors?.aprobadoFecha}
               />
             </div>
@@ -574,20 +500,20 @@ export default function CreateUserAccountForm() {
               <Field
                 label="Ejecutado - Nombre"
                 name="ejecutadoNombre"
-                defaultValue={f("ejecutadoNombre")}
+                defaultValue={state.data?.ejecutadoNombre}
                 errors={state.validationErrors?.ejecutadoNombre}
               />
               <Field
                 label="Ejecutado - Cargo"
                 name="ejecutadoCargo"
-                defaultValue={f("ejecutadoCargo")}
+                defaultValue={state.data?.ejecutadoCargo}
                 errors={state.validationErrors?.ejecutadoCargo}
               />
               <Field
                 label="Ejecutado - Fecha"
                 name="ejecutadoFecha"
                 type="date"
-                defaultValue={f("ejecutadoFecha")}
+                defaultValue={state.data?.ejecutadoFecha}
                 errors={state.validationErrors?.ejecutadoFecha}
               />
             </div>
@@ -609,14 +535,14 @@ export default function CreateUserAccountForm() {
                 <Field
                   label="Motivos de baja"
                   name="motivosBaja"
-                  defaultValue={f("motivosBaja")}
+                  defaultValue={state.data?.motivosBaja}
                   errors={state.validationErrors?.motivosBaja}
                 />
                 <Field
                   label="Fecha de baja"
                   name="fechaBaja"
                   type="date"
-                  defaultValue={f("fechaBaja")}
+                  defaultValue={state.data?.fechaBaja}
                   errors={state.validationErrors?.fechaBaja}
                 />
               </div>
