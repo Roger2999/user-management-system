@@ -16,7 +16,7 @@ export const AccountRequestSchema = z
       "TECNICO",
       "OTRO",
     ]),
-    cuenta: z.string().optional(),
+    cuenta: z.string().min(1, "Requerido"),
 
     // Correo
     correoLocal: z.boolean().default(false),
@@ -86,7 +86,7 @@ export const AccountRequestSchema = z
     softwareAutorizado: z.string().optional(),
 
     // Cuenta usuario
-    cuentaUsuario: z.string().optional(),
+    cuentaUsuario: z.string().min(1, "Requerido"),
     actividadRealiza: z.string().optional(),
     administradorSistema: z.boolean().default(false),
 
@@ -117,7 +117,6 @@ export const AccountRequestSchema = z
         path: ["correoInternetFechaTemp"],
       });
     }
-
     if (data.internet && !data.internetFechaTemp) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -128,7 +127,7 @@ export const AccountRequestSchema = z
 
     if (data.chatInternet && !data.chatInternetFechaTemp) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: "Requerido cuando chat internet está activo",
         path: ["chatInternetFechaTemp"],
       });
@@ -136,7 +135,7 @@ export const AccountRequestSchema = z
 
     if (data.tipoCuenta === "TEMPORAL" && !data.fechaExpiracion) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: "Requerido para cuentas temporales",
         path: ["fechaExpiracion"],
       });
@@ -145,14 +144,14 @@ export const AccountRequestSchema = z
     if (data.horarioExtralaboral) {
       if (!data.extraDesde) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
           message: "Requerido cuando horario extralaboral está activo",
           path: ["extraDesde"],
         });
       }
       if (!data.extraHasta) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
           message: "Requerido cuando horario extralaboral está activo",
           path: ["extraHasta"],
         });
