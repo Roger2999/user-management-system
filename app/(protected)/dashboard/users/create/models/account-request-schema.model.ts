@@ -3,19 +3,19 @@ import { z } from "zod";
 export const AccountRequestSchema = z
   .object({
     // Encabezado
-    tipoSolicitud: z.enum(["ALTA", "ACTUALIZACION", "MODIFICACION"]),
+    tipoSolicitud: z.enum(["ALTA", "ACTUALIZACION", "MODIFICACION"], {
+      message: "Requerido",
+    }),
     folio: z.string().min(1, "Requerido"),
 
     // Datos personales
     nombreApellidos: z.string().min(1, "Requerido"),
     cargoOcupa: z.string().min(1, "Requerido"),
     departamentoArea: z.string().min(1, "Requerido"),
-    tipoPersonal: z.enum([
-      "DIRECTIVO",
-      "ESPECIALISTA_PRINCIPAL",
-      "TECNICO",
-      "OTRO",
-    ]),
+    tipoPersonal: z.enum(
+      ["DIRECTIVO", "ESPECIALISTA_PRINCIPAL", "TECNICO", "OTRO"],
+      { message: "Requerido" },
+    ),
     cuenta: z.string().min(1, "Requerido"),
 
     // Correo
@@ -58,7 +58,7 @@ export const AccountRequestSchema = z
     ftpEntidadBorrar: z.boolean().default(false),
 
     // Tipo cuenta
-    tipoCuenta: z.enum(["PERMANENTE", "TEMPORAL"]),
+    tipoCuenta: z.enum(["PERMANENTE", "TEMPORAL"], { message: "Requerido" }),
     fechaExpiracion: z.string().optional(),
 
     // Horarios
@@ -127,7 +127,7 @@ export const AccountRequestSchema = z
 
     if (data.chatInternet && !data.chatInternetFechaTemp) {
       ctx.addIssue({
-        code: "custom",
+        code: z.ZodIssueCode.custom,
         message: "Requerido cuando chat internet está activo",
         path: ["chatInternetFechaTemp"],
       });
@@ -144,14 +144,14 @@ export const AccountRequestSchema = z
     if (data.horarioExtralaboral) {
       if (!data.extraDesde) {
         ctx.addIssue({
-          code: "custom",
+          code: z.ZodIssueCode.custom,
           message: "Requerido cuando horario extralaboral está activo",
           path: ["extraDesde"],
         });
       }
       if (!data.extraHasta) {
         ctx.addIssue({
-          code: "custom",
+          code: z.ZodIssueCode.custom,
           message: "Requerido cuando horario extralaboral está activo",
           path: ["extraHasta"],
         });

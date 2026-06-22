@@ -12,13 +12,13 @@ export async function createUserAccountAction(
   formData: FormData,
 ): Promise<CreateUserAccountState> {
   const fields = {
-    tipoSolicitud: formData.get("tipoSolicitud") as string,
-    folio: (formData.get("folio") as string) || undefined,
+    tipoSolicitud: (formData.get("tipoSolicitud") as string) || undefined,
+    folio: formData.get("folio") as string,
     nombreApellidos: formData.get("nombreApellidos") as string,
     cargoOcupa: formData.get("cargoOcupa") as string,
     departamentoArea: formData.get("departamentoArea") as string,
-    tipoPersonal: formData.get("tipoPersonal") as string,
-    cuenta: (formData.get("cuenta") as string) || undefined,
+    tipoPersonal: (formData.get("tipoPersonal") as string) || undefined,
+    cuenta: formData.get("cuenta") as string,
 
     correoLocal: formData.get("correoLocal") === "on",
     correoNacional: formData.get("correoNacional") === "on",
@@ -55,7 +55,7 @@ export async function createUserAccountAction(
     ftpEntidadModificar: formData.get("ftpEntidadModificar") === "on",
     ftpEntidadBorrar: formData.get("ftpEntidadBorrar") === "on",
 
-    tipoCuenta: formData.get("tipoCuenta") as string,
+    tipoCuenta: (formData.get("tipoCuenta") as string) || undefined,
     fechaExpiracion: (formData.get("fechaExpiracion") as string) || undefined,
 
     horarioExtralaboral: formData.get("horarioExtralaboral") === "on",
@@ -80,7 +80,7 @@ export async function createUserAccountAction(
 
     softwareAutorizado:
       (formData.get("softwareAutorizado") as string) || undefined,
-    cuentaUsuario: (formData.get("cuentaUsuario") as string) || undefined,
+    cuentaUsuario: formData.get("cuentaUsuario") as string,
     actividadRealiza: (formData.get("actividadRealiza") as string) || undefined,
     administradorSistema: formData.get("administradorSistema") === "on",
 
