@@ -550,12 +550,6 @@ export default function CreateUserAccountForm() {
           </CardContent>
         </Card>
 
-        {state.success && (
-          <p className="text-sm text-green-500 text-center">
-            Solicitud creada exitosamente
-          </p>
-        )}
-
         {state.dbErrors && (
           <p className="text-sm text-red-500 text-center">
             {state.dbErrors.message}
