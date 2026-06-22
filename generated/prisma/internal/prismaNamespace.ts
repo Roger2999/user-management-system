@@ -387,7 +387,8 @@ export const ModelName = {
   User: 'User',
   Session: 'Session',
   Account: 'Account',
-  Verification: 'Verification'
+  Verification: 'Verification',
+  AccountRequest: 'AccountRequest'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -403,7 +404,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification"
+    modelProps: "user" | "session" | "account" | "verification" | "accountRequest"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -703,6 +704,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AccountRequest: {
+      payload: Prisma.$AccountRequestPayload<ExtArgs>
+      fields: Prisma.AccountRequestFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AccountRequestFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountRequestPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AccountRequestFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountRequestPayload>
+        }
+        findFirst: {
+          args: Prisma.AccountRequestFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountRequestPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AccountRequestFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountRequestPayload>
+        }
+        findMany: {
+          args: Prisma.AccountRequestFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountRequestPayload>[]
+        }
+        create: {
+          args: Prisma.AccountRequestCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountRequestPayload>
+        }
+        createMany: {
+          args: Prisma.AccountRequestCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AccountRequestCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountRequestPayload>[]
+        }
+        delete: {
+          args: Prisma.AccountRequestDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountRequestPayload>
+        }
+        update: {
+          args: Prisma.AccountRequestUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountRequestPayload>
+        }
+        deleteMany: {
+          args: Prisma.AccountRequestDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AccountRequestUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AccountRequestUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountRequestPayload>[]
+        }
+        upsert: {
+          args: Prisma.AccountRequestUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountRequestPayload>
+        }
+        aggregate: {
+          args: Prisma.AccountRequestAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAccountRequest>
+        }
+        groupBy: {
+          args: Prisma.AccountRequestGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AccountRequestGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AccountRequestCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AccountRequestCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -800,6 +875,83 @@ export const VerificationScalarFieldEnum = {
 export type VerificationScalarFieldEnum = (typeof VerificationScalarFieldEnum)[keyof typeof VerificationScalarFieldEnum]
 
 
+export const AccountRequestScalarFieldEnum = {
+  id: 'id',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  folio: 'folio',
+  tipoSolicitud: 'tipoSolicitud',
+  nombreApellidos: 'nombreApellidos',
+  cargoOcupa: 'cargoOcupa',
+  departamentoArea: 'departamentoArea',
+  tipoPersonal: 'tipoPersonal',
+  cuenta: 'cuenta',
+  correoLocal: 'correoLocal',
+  correoNacional: 'correoNacional',
+  correoInternacional: 'correoInternacional',
+  correoInternet: 'correoInternet',
+  correoInternetFechaTemp: 'correoInternetFechaTemp',
+  intranetUNE: 'intranetUNE',
+  intranetNacional: 'intranetNacional',
+  internet: 'internet',
+  internetFechaTemp: 'internetFechaTemp',
+  mensajeriaCorporativa: 'mensajeriaCorporativa',
+  chatInternet: 'chatInternet',
+  chatInternetFechaTemp: 'chatInternetFechaTemp',
+  facebook: 'facebook',
+  twitter: 'twitter',
+  youtube: 'youtube',
+  otrasRedes: 'otrasRedes',
+  adminRed: 'adminRed',
+  adminLocal: 'adminLocal',
+  usuarioAvanzado: 'usuarioAvanzado',
+  ftpUneLectura: 'ftpUneLectura',
+  ftpUneModificar: 'ftpUneModificar',
+  ftpUneBorrar: 'ftpUneBorrar',
+  ftpEntidadLectura: 'ftpEntidadLectura',
+  ftpEntidadModificar: 'ftpEntidadModificar',
+  ftpEntidadBorrar: 'ftpEntidadBorrar',
+  tipoCuenta: 'tipoCuenta',
+  fechaExpiracion: 'fechaExpiracion',
+  horarioExtralaboral: 'horarioExtralaboral',
+  extraDesde: 'extraDesde',
+  extraHasta: 'extraHasta',
+  sabadoDesde: 'sabadoDesde',
+  sabadoHasta: 'sabadoHasta',
+  domingoDesde: 'domingoDesde',
+  domingoHasta: 'domingoHasta',
+  apnCorreoNacional: 'apnCorreoNacional',
+  apnCorreoInternacional: 'apnCorreoInternacional',
+  apnInternet: 'apnInternet',
+  telefonoCelular: 'telefonoCelular',
+  pcNombre: 'pcNombre',
+  pcInventario: 'pcInventario',
+  pcAdicionalNombre: 'pcAdicionalNombre',
+  pcAdicionalInventario: 'pcAdicionalInventario',
+  softwareAutorizado: 'softwareAutorizado',
+  cuentaUsuario: 'cuentaUsuario',
+  actividadRealiza: 'actividadRealiza',
+  administradorSistema: 'administradorSistema',
+  solicitadoNombre: 'solicitadoNombre',
+  solicitadoCargo: 'solicitadoCargo',
+  solicitadoFecha: 'solicitadoFecha',
+  revisadoNombre: 'revisadoNombre',
+  revisadoCargo: 'revisadoCargo',
+  revisadoFecha: 'revisadoFecha',
+  aprobadoNombre: 'aprobadoNombre',
+  aprobadoCargo: 'aprobadoCargo',
+  aprobadoFecha: 'aprobadoFecha',
+  ejecutadoNombre: 'ejecutadoNombre',
+  ejecutadoCargo: 'ejecutadoCargo',
+  ejecutadoFecha: 'ejecutadoFecha',
+  bajaEntidad: 'bajaEntidad',
+  motivosBaja: 'motivosBaja',
+  fechaBaja: 'fechaBaja'
+} as const
+
+export type AccountRequestScalarFieldEnum = (typeof AccountRequestScalarFieldEnum)[keyof typeof AccountRequestScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -862,6 +1014,48 @@ export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel
  * Reference to a field of type 'DateTime[]'
  */
 export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
+    
+
+
+/**
+ * Reference to a field of type 'TipoSolicitud'
+ */
+export type EnumTipoSolicitudFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TipoSolicitud'>
+    
+
+
+/**
+ * Reference to a field of type 'TipoSolicitud[]'
+ */
+export type ListEnumTipoSolicitudFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TipoSolicitud[]'>
+    
+
+
+/**
+ * Reference to a field of type 'TipoPersonal'
+ */
+export type EnumTipoPersonalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TipoPersonal'>
+    
+
+
+/**
+ * Reference to a field of type 'TipoPersonal[]'
+ */
+export type ListEnumTipoPersonalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TipoPersonal[]'>
+    
+
+
+/**
+ * Reference to a field of type 'TipoCuenta'
+ */
+export type EnumTipoCuentaFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TipoCuenta'>
+    
+
+
+/**
+ * Reference to a field of type 'TipoCuenta[]'
+ */
+export type ListEnumTipoCuentaFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TipoCuenta[]'>
     
 
 
@@ -992,6 +1186,7 @@ export type GlobalOmitConfig = {
   session?: Prisma.SessionOmit
   account?: Prisma.AccountOmit
   verification?: Prisma.VerificationOmit
+  accountRequest?: Prisma.AccountRequestOmit
 }
 
 /* Types for Logging */

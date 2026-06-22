@@ -74,3 +74,135 @@ model Verification {
   @@index([identifier])
   @@map("verification")
 }
+
+enum TipoSolicitud {
+  ALTA
+  ACTUALIZACION
+  MODIFICACION
+}
+
+enum TipoPersonal {
+  DIRECTIVO
+  ESPECIALISTA_PRINCIPAL
+  TECNICO
+  OTRO
+}
+
+enum TipoCuenta {
+  PERMANENTE
+  TEMPORAL
+}
+
+model AccountRequest {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Encabezado
+  folio          String?
+  tipoSolicitud  TipoSolicitud
+
+  // Datos personales
+  nombreApellidos  String
+  cargoOcupa       String
+  departamentoArea String
+  tipoPersonal     TipoPersonal
+  cuenta           String?
+
+  // Correo electrónico
+  correoLocal         Boolean   @default(false)
+  correoNacional      Boolean   @default(false)
+  correoInternacional Boolean   @default(false)
+  correoInternet      Boolean   @default(false)
+  correoInternetFechaTemp DateTime?
+
+  // Navegación web
+  intranetUNE       Boolean @default(false)
+  intranetNacional  Boolean @default(false)
+  internet          Boolean @default(false)
+  internetFechaTemp DateTime?
+
+  // Mensajería
+  mensajeriaCorporativa  Boolean   @default(false)
+  chatInternet           Boolean   @default(false)
+  chatInternetFechaTemp  DateTime?
+
+  // Redes sociales
+  facebook   Boolean @default(false)
+  twitter    Boolean @default(false)
+  youtube    Boolean @default(false)
+  otrasRedes String?
+
+  // Privilegios
+  adminRed        Boolean @default(false)
+  adminLocal      Boolean @default(false)
+  usuarioAvanzado Boolean @default(false)
+
+  // FTP UNE
+  ftpUneLectura   Boolean @default(false)
+  ftpUneModificar Boolean @default(false)
+  ftpUneBorrar    Boolean @default(false)
+
+  // FTP Entidad
+  ftpEntidadLectura   Boolean @default(false)
+  ftpEntidadModificar Boolean @default(false)
+  ftpEntidadBorrar    Boolean @default(false)
+
+  // Tipo de cuenta
+  tipoCuenta      TipoCuenta
+  fechaExpiracion DateTime?
+
+  // Horarios
+  horarioExtralaboral  Boolean @default(false)
+  extraDesde           String?
+  extraHasta           String?
+  sabadoDesde          String?
+  sabadoHasta          String?
+  domingoDesde         String?
+  domingoHasta         String?
+
+  // APN
+  apnCorreoNacional      Boolean @default(false)
+  apnCorreoInternacional Boolean @default(false)
+  apnInternet            Boolean @default(false)
+  telefonoCelular        String?
+
+  // PC autorizado
+  pcNombre     String?
+  pcInventario String?
+  pcAdicionalNombre     String?
+  pcAdicionalInventario String?
+
+  // Software
+  softwareAutorizado String?
+
+  // Cuenta de usuario
+  cuentaUsuario        String?
+  actividadRealiza     String?
+  administradorSistema Boolean @default(false)
+
+  // Firmas — Solicitado
+  solicitadoNombre String?
+  solicitadoCargo  String?
+  solicitadoFecha  DateTime?
+
+  // Firmas — Revisado
+  revisadoNombre String?
+  revisadoCargo  String?
+  revisadoFecha  DateTime?
+
+  // Firmas — Aprobado
+  aprobadoNombre String?
+  aprobadoCargo  String?
+  aprobadoFecha  DateTime?
+
+  // Firmas — Ejecutado
+  ejecutadoNombre String?
+  ejecutadoCargo  String?
+  ejecutadoFecha  DateTime?
+
+  // Baja
+  bajaEntidad  Boolean   @default(false)
+  motivosBaja  String?
+  fechaBaja    DateTime?
+}

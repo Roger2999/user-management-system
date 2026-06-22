@@ -54,7 +54,8 @@ export const ModelName = {
   User: 'User',
   Session: 'Session',
   Account: 'Account',
-  Verification: 'Verification'
+  Verification: 'Verification',
+  AccountRequest: 'AccountRequest'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -129,6 +130,83 @@ export const VerificationScalarFieldEnum = {
 } as const
 
 export type VerificationScalarFieldEnum = (typeof VerificationScalarFieldEnum)[keyof typeof VerificationScalarFieldEnum]
+
+
+export const AccountRequestScalarFieldEnum = {
+  id: 'id',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  folio: 'folio',
+  tipoSolicitud: 'tipoSolicitud',
+  nombreApellidos: 'nombreApellidos',
+  cargoOcupa: 'cargoOcupa',
+  departamentoArea: 'departamentoArea',
+  tipoPersonal: 'tipoPersonal',
+  cuenta: 'cuenta',
+  correoLocal: 'correoLocal',
+  correoNacional: 'correoNacional',
+  correoInternacional: 'correoInternacional',
+  correoInternet: 'correoInternet',
+  correoInternetFechaTemp: 'correoInternetFechaTemp',
+  intranetUNE: 'intranetUNE',
+  intranetNacional: 'intranetNacional',
+  internet: 'internet',
+  internetFechaTemp: 'internetFechaTemp',
+  mensajeriaCorporativa: 'mensajeriaCorporativa',
+  chatInternet: 'chatInternet',
+  chatInternetFechaTemp: 'chatInternetFechaTemp',
+  facebook: 'facebook',
+  twitter: 'twitter',
+  youtube: 'youtube',
+  otrasRedes: 'otrasRedes',
+  adminRed: 'adminRed',
+  adminLocal: 'adminLocal',
+  usuarioAvanzado: 'usuarioAvanzado',
+  ftpUneLectura: 'ftpUneLectura',
+  ftpUneModificar: 'ftpUneModificar',
+  ftpUneBorrar: 'ftpUneBorrar',
+  ftpEntidadLectura: 'ftpEntidadLectura',
+  ftpEntidadModificar: 'ftpEntidadModificar',
+  ftpEntidadBorrar: 'ftpEntidadBorrar',
+  tipoCuenta: 'tipoCuenta',
+  fechaExpiracion: 'fechaExpiracion',
+  horarioExtralaboral: 'horarioExtralaboral',
+  extraDesde: 'extraDesde',
+  extraHasta: 'extraHasta',
+  sabadoDesde: 'sabadoDesde',
+  sabadoHasta: 'sabadoHasta',
+  domingoDesde: 'domingoDesde',
+  domingoHasta: 'domingoHasta',
+  apnCorreoNacional: 'apnCorreoNacional',
+  apnCorreoInternacional: 'apnCorreoInternacional',
+  apnInternet: 'apnInternet',
+  telefonoCelular: 'telefonoCelular',
+  pcNombre: 'pcNombre',
+  pcInventario: 'pcInventario',
+  pcAdicionalNombre: 'pcAdicionalNombre',
+  pcAdicionalInventario: 'pcAdicionalInventario',
+  softwareAutorizado: 'softwareAutorizado',
+  cuentaUsuario: 'cuentaUsuario',
+  actividadRealiza: 'actividadRealiza',
+  administradorSistema: 'administradorSistema',
+  solicitadoNombre: 'solicitadoNombre',
+  solicitadoCargo: 'solicitadoCargo',
+  solicitadoFecha: 'solicitadoFecha',
+  revisadoNombre: 'revisadoNombre',
+  revisadoCargo: 'revisadoCargo',
+  revisadoFecha: 'revisadoFecha',
+  aprobadoNombre: 'aprobadoNombre',
+  aprobadoCargo: 'aprobadoCargo',
+  aprobadoFecha: 'aprobadoFecha',
+  ejecutadoNombre: 'ejecutadoNombre',
+  ejecutadoCargo: 'ejecutadoCargo',
+  ejecutadoFecha: 'ejecutadoFecha',
+  bajaEntidad: 'bajaEntidad',
+  motivosBaja: 'motivosBaja',
+  fechaBaja: 'fechaBaja'
+} as const
+
+export type AccountRequestScalarFieldEnum = (typeof AccountRequestScalarFieldEnum)[keyof typeof AccountRequestScalarFieldEnum]
 
 
 export const SortOrder = {
