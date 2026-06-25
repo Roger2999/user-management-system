@@ -1,20 +1,28 @@
-import prisma from "@/lib/prisma";
-import Link from "next/link";
+import { Suspense } from "react";
+import UsersTable from "./components/users-table";
+import { getFilter } from "@/lib/filters";
 
-export default async function UsersPage() {
-  const users = await prisma.accountRequest.findMany();
+interface Props {
+  searchParams: Promise<{ filter: string | string[] | undefined }>;
+}
+
+export default async function UsersPage({ searchParams }: Props) {
+  const { filter } = await searchParams;
+  const filterStr = typeof filter === "string" ? filter : "all";
+  const filterConfig = getFilter(filterStr);
+
   return (
     <>
-      <h1>Usuarios:</h1>
-      <ul className="mt-2 space-y-2">
-        {users.map((user) => (
-          <li className="hover:text-green-500 cursor-pointer" key={user.id}>
-            <Link href={`/dashboard/users/${user.id}`}>
-              {user.nombreApellidos}
-            </Link>
-          </li>
-        ))}
-      </ul>
+      <h1>
+        Usuarios
+        <span className="text-semibold">
+          ({filterConfig?.label ?? filterStr})
+        </span>
+        :
+      </h1>
+      <Suspense fallback={<div>Loading...</div>}>
+        <UsersTable filterConfig={filterConfig} />
+      </Suspense>
     </>
   );
 }

@@ -1,5 +1,6 @@
 import { getSession } from "@/helpers/getSession";
 import { redirect } from "next/navigation";
+import BackButton from "./components/back-button";
 
 export default async function DashboardLayout({
   children,
@@ -10,5 +11,10 @@ export default async function DashboardLayout({
   if (!session) {
     redirect("/signin");
   }
-  return <>{children}</>;
+  return (
+    <div className="flex flex-col w-full gap-10 pt-5">
+      <BackButton />
+      {children}
+    </div>
+  );
 }

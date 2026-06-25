@@ -13,10 +13,10 @@ export default async function NavMenuDesktop() {
   return (
     <nav className="border-b-border/90 bg-menu flex h-16 w-full items-center justify-between border-b px-5">
       {session && (
-        <Link href={"/dashboard"} className="text-xl">
-          <strong className="text-accent-foreground font-semibold">
-            {session.user.name}
-          </strong>{" "}
+        <Link
+          href={"/dashboard"}
+          className="text-xl transition-all duration-100 ease-in hover:text-2xl"
+        >
           Dashboard
         </Link>
       )}

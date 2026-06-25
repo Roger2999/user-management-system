@@ -1,51 +1,48 @@
 import { getSession } from "@/helpers/getSession";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import prisma from "@/lib/prisma";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
+import { FILTERS } from "@/lib/filters";
 
 export default async function Dashboard() {
   const session = await getSession();
   const username = session?.user.name;
 
-  const stats = [
-    { title: "Total de Usuarios", value: "1,247", change: "+12% este mes", trend: "up" },
-    { title: "Usuarios Activos", value: "892", change: "+5% esta semana", trend: "up" },
-    { title: "Nuevos Registros", value: "48", change: "+18% este mes", trend: "up" },
-    { title: "Cuentas Inactivas", value: "87", change: "-3% esta semana", trend: "down" },
-  ];
+  const counts = await Promise.all(
+    FILTERS.map((f) => prisma.accountRequest.count({ where: f.where })),
+  );
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">Bienvenido de vuelta, {username}</p>
-        </div>
+    <div className="flex flex-col items-center space-y-6 py-10">
+      <div className="flex items-center justify-end gap-5">
+        <h1 className="text-2xl font-semibold text-muted-foreground">
+          Bienvenido de vuelta, {username}
+        </h1>
       </div>
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat, index) => (
-          <Card key={index} className="p-6 transition-shadow hover:shadow-lg">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{stat.title}</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="flex items-end justify-between gap-2">
-                <div>
-                  <p className="text-3xl font-bold tracking-tight">{stat.value}</p>
-                  <CardDescription className="mt-1 flex items-center gap-1">
-                    <span
-                      className={`text-xs font-medium ${
-                        stat.trend === "up" ? "text-green-600" : "text-red-600"
-                      }`}
-                    >
-                      {stat.change}
-                    </span>
-                  </CardDescription>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+      <h2 className="text-start text-xl w-full">Estadísticas</h2>
+      <ul className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 w-full">
+        {FILTERS.map((filter, i) => (
+          <li
+            key={filter.value}
+            className="transition-all duration-100 ease-in hover:scale-105"
+          >
+            <Link
+              href={`/dashboard/users?filter=${encodeURIComponent(filter.value)}`}
+            >
+              <Card className="p-6 transition-shadow hover:shadow-lg min-h-40">
+                <CardHeader>
+                  <CardTitle className="text-xl text-center font-medium text-muted-foreground min-h-20">
+                    {filter.label}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex items-center justify-center text-2xl">
+                  <p>{counts[i]}</p>
+                </CardContent>
+              </Card>
+            </Link>
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   );
 }
