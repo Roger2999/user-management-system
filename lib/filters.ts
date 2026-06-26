@@ -6,50 +6,33 @@ export interface FilterConfig {
   where: Prisma.AccountRequestWhereInput;
 }
 
-export const FILTERS: FilterConfig[] = [
-  { value: "all", label: "Total de usuarios", where: {} },
-  {
-    value: "adminRed",
-    label: "Administradores de red",
-    where: { adminRed: true },
-  },
-  { value: "facebook", label: "Con facebook", where: { facebook: true } },
-  {
-    value: "correoNacional",
-    label: "Con correo nacional",
-    where: { correoNacional: true },
-  },
+export const filtersByAllUsers: FilterConfig[] = [
+  { value: "all", label: "Total de cuentas", where: {} },
+];
+
+export const filtersByRequestType: FilterConfig[] = [
   {
     value: "alta",
-    label: "Solicitudes de alta",
+    label: "Alta",
     where: { tipoSolicitud: "ALTA" },
   },
   {
     value: "actualizacion",
-    label: "Solicitudes de actualización",
+    label: "Actualización",
     where: { tipoSolicitud: "ACTUALIZACION" },
   },
   {
-    value: "modificacion",
-    label: "Solicitudes de modificación",
+    value: "Modificacion",
+    label: "Modificación",
     where: { tipoSolicitud: "MODIFICACION" },
   },
   {
-    value: "directivo",
-    label: "Directivos",
-    where: { tipoPersonal: "DIRECTIVO" },
+    value: "bajaEntidad",
+    label: "Baja",
+    where: { bajaEntidad: true },
   },
-  {
-    value: "especialista_principal",
-    label: "Especialistas principales",
-    where: { tipoPersonal: "ESPECIALISTA_PRINCIPAL" },
-  },
-  { value: "tecnico", label: "Técnicos", where: { tipoPersonal: "TECNICO" } },
-  {
-    value: "otro",
-    label: "Otros tipos de personal",
-    where: { tipoPersonal: "OTRO" },
-  },
+];
+export const filtersByAccountType: FilterConfig[] = [
   {
     value: "permanente",
     label: "Cuentas permanentes",
@@ -60,23 +43,21 @@ export const FILTERS: FilterConfig[] = [
     label: "Cuentas temporales",
     where: { tipoCuenta: "TEMPORAL" },
   },
-  {
-    value: "correoInternacional",
-    label: "Con correo internacional",
-    where: { correoInternacional: true },
-  },
-  {
-    value: "bajaEntidad",
-    label: "Usuarios dados de baja",
-    where: { bajaEntidad: true },
-  },
+];
+export const pendingSignatureFilter: FilterConfig[] = [
   {
     value: "pendientesFirma",
     label: "Pendientes de firma",
     where: { ejecutadoFecha: null },
   },
 ];
+export const allFilters: FilterConfig[] = [
+  ...filtersByAllUsers,
+  ...filtersByRequestType,
+  ...filtersByAccountType,
+  ...pendingSignatureFilter,
+];
 
-export function getFilter(value: string) {
-  return FILTERS.find((f) => f.value === value);
+export function getFilterConfig(value: string): FilterConfig {
+  return allFilters.find((f) => f.value === value) ?? filtersByAllUsers[0];
 }

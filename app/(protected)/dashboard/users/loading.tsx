@@ -1,3 +1,3 @@
-export default function LoadingUsesPage() {
+export default function LoadingUserPage() {
   return <div>Loading...</div>;
 }
