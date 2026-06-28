@@ -1,7 +1,8 @@
 import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
+import AccountRequestDetail from "./components/AccountRequestDetail";
 
-export default async function User({
+export default async function UserDetailsPage({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -13,10 +14,5 @@ export default async function User({
 
   if (!user) notFound();
 
-  return (
-    <>
-      <div>{user.nombreApellidos}</div>
-      <div>{user.folio}</div>
-    </>
-  );
+  return <AccountRequestDetail user={user} />;
 }

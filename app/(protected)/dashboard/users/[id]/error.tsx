@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import Link from "next/link";
 
 export default function Error({
   error,
@@ -37,7 +38,7 @@ export default function Error({
         <CardFooter className="justify-center gap-4">
           <Button onClick={reset}>Reintentar</Button>
           <Button variant="outline" asChild>
-            <a href="/dashboard/users">Volver a la lista</a>
+            <Link href="/dashboard/users">Volver</Link>
           </Button>
         </CardFooter>
       </Card>

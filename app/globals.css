@@ -127,3 +127,50 @@
     @apply font-sans;
   }
 }
+
+@media print {
+  @page {
+    size: A4;
+    margin: 1.5cm;
+  }
+
+  header,
+  footer,
+  nav,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 11pt;
+  }
+
+  a {
+    text-decoration: none !important;
+    color: inherit !important;
+  }
+
+  #print-area {
+    box-shadow: none !important;
+    border-color: #000 !important;
+  }
+
+  .print\:border-gray-500 {
+    border-color: #4b5563 !important;
+  }
+
+  table {
+    page-break-inside: auto;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  .page-break {
+    page-break-before: always;
+  }
+}

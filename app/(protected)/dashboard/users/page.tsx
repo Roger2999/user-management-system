@@ -13,12 +13,11 @@ export default async function UsersPage({ searchParams }: Props) {
 
   return (
     <>
-      <h1>
-        Usuarios
-        <span className="text-semibold">
+      <h1 className="text-2xl font-semibold">
+        Usuarios{" "}
+        <span className="font-normal">
           ({filterConfig.label ?? filterValue})
         </span>
-        :
       </h1>
       <Suspense fallback={<div>Loading...</div>}>
         <UsersTable where={filterConfig.where} />
