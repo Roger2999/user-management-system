@@ -84,19 +84,6 @@ export async function createUserAccountAction(
     actividadRealiza: (formData.get("actividadRealiza") as string) || undefined,
     administradorSistema: formData.get("administradorSistema") === "on",
 
-    solicitadoNombre: (formData.get("solicitadoNombre") as string) || undefined,
-    solicitadoCargo: (formData.get("solicitadoCargo") as string) || undefined,
-    solicitadoFecha: (formData.get("solicitadoFecha") as string) || undefined,
-    revisadoNombre: (formData.get("revisadoNombre") as string) || undefined,
-    revisadoCargo: (formData.get("revisadoCargo") as string) || undefined,
-    revisadoFecha: (formData.get("revisadoFecha") as string) || undefined,
-    aprobadoNombre: (formData.get("aprobadoNombre") as string) || undefined,
-    aprobadoCargo: (formData.get("aprobadoCargo") as string) || undefined,
-    aprobadoFecha: (formData.get("aprobadoFecha") as string) || undefined,
-    ejecutadoNombre: (formData.get("ejecutadoNombre") as string) || undefined,
-    ejecutadoCargo: (formData.get("ejecutadoCargo") as string) || undefined,
-    ejecutadoFecha: (formData.get("ejecutadoFecha") as string) || undefined,
-
     bajaEntidad: formData.get("bajaEntidad") === "on",
     motivosBaja: (formData.get("motivosBaja") as string) || undefined,
     fechaBaja: (formData.get("fechaBaja") as string) || undefined,
@@ -129,19 +116,6 @@ export async function createUserAccountAction(
     pcAdicionalInventario: fields.pcAdicionalInventario,
     softwareAutorizado: fields.softwareAutorizado,
     cuentaUsuario: fields.cuentaUsuario,
-    actividadRealiza: fields.actividadRealiza,
-    solicitadoNombre: fields.solicitadoNombre,
-    solicitadoCargo: fields.solicitadoCargo,
-    solicitadoFecha: fields.solicitadoFecha,
-    revisadoNombre: fields.revisadoNombre,
-    revisadoCargo: fields.revisadoCargo,
-    revisadoFecha: fields.revisadoFecha,
-    aprobadoNombre: fields.aprobadoNombre,
-    aprobadoCargo: fields.aprobadoCargo,
-    aprobadoFecha: fields.aprobadoFecha,
-    ejecutadoNombre: fields.ejecutadoNombre,
-    ejecutadoCargo: fields.ejecutadoCargo,
-    ejecutadoFecha: fields.ejecutadoFecha,
     motivosBaja: fields.motivosBaja,
     fechaBaja: fields.fechaBaja,
   };
@@ -170,11 +144,11 @@ export async function createUserAccountAction(
         internetFechaTemp: toDate(data.internetFechaTemp),
         chatInternetFechaTemp: toDate(data.chatInternetFechaTemp),
         fechaExpiracion: toDate(data.fechaExpiracion),
-        solicitadoFecha: toDate(data.solicitadoFecha),
-        revisadoFecha: toDate(data.revisadoFecha),
-        aprobadoFecha: toDate(data.aprobadoFecha),
-        ejecutadoFecha: toDate(data.ejecutadoFecha),
         fechaBaja: toDate(data.fechaBaja),
+        firmadoPorSolicitado: false,
+        firmadoPorRevisado: false,
+        firmadoPorAprobado: false,
+        firmadoPorEjecutado: false,
       },
     });
 
@@ -201,6 +175,6 @@ export async function createUserAccountAction(
       validationErrors: null,
     };
   }
-  revalidatePath("/dashboard/users");
-  redirect("/dashboard/users");
+  revalidatePath("/dashboard/user-accounts-manangment/users");
+  redirect("/dashboard/user-accounts-manangment/users");
 }

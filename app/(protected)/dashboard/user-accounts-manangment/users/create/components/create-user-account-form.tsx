@@ -14,29 +14,45 @@ import {
   REQUEST_OPTIONS,
 } from "@/lib/constants";
 
-export default function CreateUserAccountForm() {
+interface Props {
+  mode?: "create" | "edit";
+  id?: string;
+  initialData?: CreateUserAccountState["data"];
+  action?: typeof createUserAccountAction;
+}
+
+export default function CreateUserAccountForm({
+  mode = "create",
+  id,
+  initialData,
+  action = createUserAccountAction,
+}: Props) {
   const initialState: CreateUserAccountState = {
-    data: undefined,
+    data: initialData,
     success: false,
     dbErrors: null,
     validationErrors: null,
   };
-  const [state, action, pending] = useActionState(
-    createUserAccountAction,
-    initialState,
-  );
+  const [state, formAction, pending] = useActionState(action, initialState);
 
-  const [correoInternet, setCorreoInternet] = useState(false);
-  const [internet, setInternet] = useState(false);
-  const [chatInternet, setChatInternet] = useState(false);
-  const [tipoCuenta, setTipoCuenta] = useState("");
-  const [horarioExtralaboral, setHorarioExtralaboral] = useState(false);
-  const [bajaEntidad, setBajaEntidad] = useState(false);
+  const [correoInternet, setCorreoInternet] = useState(
+    !!initialData?.correoInternet,
+  );
+  const [internet, setInternet] = useState(!!initialData?.internet);
+  const [chatInternet, setChatInternet] = useState(!!initialData?.chatInternet);
+  const [tipoCuenta, setTipoCuenta] = useState(initialData?.tipoCuenta ?? "");
+  const [horarioExtralaboral, setHorarioExtralaboral] = useState(
+    !!initialData?.horarioExtralaboral,
+  );
+  const [bajaEntidad, setBajaEntidad] = useState(!!initialData?.bajaEntidad);
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-semibold">Crear solicitud de cuenta</h1>
-      <form action={action} className="space-y-6">
+      <h1 className="text-xl font-semibold">
+        {mode === "edit" ? "Editar solicitud de cuenta" : "Crear solicitud de cuenta"}
+      </h1>
+      <form action={formAction} className="space-y-6">
+        {mode === "edit" && id && <input type="hidden" name="id" value={id} />}
         <Card>
           <CardHeader>
             <CardTitle>Encabezado</CardTitle>
@@ -103,15 +119,15 @@ export default function CreateUserAccountForm() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <CheckboxField label="Correo Local" name="correoLocal" />
-              <CheckboxField label="Correo Nacional" name="correoNacional" />
+              <CheckboxField label="Correo Local" name="correoLocal" defaultChecked={!!state.data?.correoLocal} />
+              <CheckboxField label="Correo Nacional" name="correoNacional" defaultChecked={!!state.data?.correoNacional} />
               <CheckboxField
                 label="Correo Internacional"
-                name="correoInternacional"
+                name="correoInternacional" defaultChecked={!!state.data?.correoInternacional}
               />
               <CheckboxField
                 label="Correo Internet"
-                name="correoInternet"
+                name="correoInternet" defaultChecked={!!state.data?.correoInternet}
                 onChange={setCorreoInternet}
               />
             </div>
@@ -133,14 +149,14 @@ export default function CreateUserAccountForm() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              <CheckboxField label="Intranet UNE" name="intranetUNE" />
+              <CheckboxField label="Intranet UNE" name="intranetUNE" defaultChecked={!!state.data?.intranetUNE} />
               <CheckboxField
                 label="Intranet Nacional"
-                name="intranetNacional"
+                name="intranetNacional" defaultChecked={!!state.data?.intranetNacional}
               />
               <CheckboxField
                 label="Internet"
-                name="internet"
+                name="internet" defaultChecked={!!state.data?.internet}
                 onChange={setInternet}
               />
             </div>
@@ -164,11 +180,11 @@ export default function CreateUserAccountForm() {
             <div className="grid grid-cols-2 gap-3">
               <CheckboxField
                 label="Mensajería Corporativa"
-                name="mensajeriaCorporativa"
+                name="mensajeriaCorporativa" defaultChecked={!!state.data?.mensajeriaCorporativa}
               />
               <CheckboxField
                 label="Chat Internet"
-                name="chatInternet"
+                name="chatInternet" defaultChecked={!!state.data?.chatInternet}
                 onChange={setChatInternet}
               />
             </div>
@@ -190,9 +206,9 @@ export default function CreateUserAccountForm() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-3 gap-3">
-              <CheckboxField label="Facebook" name="facebook" />
-              <CheckboxField label="Twitter" name="twitter" />
-              <CheckboxField label="Youtube" name="youtube" />
+              <CheckboxField label="Facebook" name="facebook" defaultChecked={!!state.data?.facebook} />
+              <CheckboxField label="Twitter" name="twitter" defaultChecked={!!state.data?.twitter} />
+              <CheckboxField label="Youtube" name="youtube" defaultChecked={!!state.data?.youtube} />
             </div>
             <Field
               label="Otras redes"
@@ -209,9 +225,9 @@ export default function CreateUserAccountForm() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-3 gap-3">
-              <CheckboxField label="Admin Red" name="adminRed" />
-              <CheckboxField label="Admin Local" name="adminLocal" />
-              <CheckboxField label="Usuario Avanzado" name="usuarioAvanzado" />
+              <CheckboxField label="Admin Red" name="adminRed" defaultChecked={!!state.data?.adminRed} />
+              <CheckboxField label="Admin Local" name="adminLocal" defaultChecked={!!state.data?.adminLocal} />
+              <CheckboxField label="Usuario Avanzado" name="usuarioAvanzado" defaultChecked={!!state.data?.usuarioAvanzado} />
             </div>
           </CardContent>
         </Card>
@@ -222,9 +238,9 @@ export default function CreateUserAccountForm() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-3 gap-3">
-              <CheckboxField label="Lectura" name="ftpUneLectura" />
-              <CheckboxField label="Modificar" name="ftpUneModificar" />
-              <CheckboxField label="Borrar" name="ftpUneBorrar" />
+              <CheckboxField label="Lectura" name="ftpUneLectura" defaultChecked={!!state.data?.ftpUneLectura} />
+              <CheckboxField label="Modificar" name="ftpUneModificar" defaultChecked={!!state.data?.ftpUneModificar} />
+              <CheckboxField label="Borrar" name="ftpUneBorrar" defaultChecked={!!state.data?.ftpUneBorrar} />
             </div>
           </CardContent>
         </Card>
@@ -235,9 +251,9 @@ export default function CreateUserAccountForm() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-3 gap-3">
-              <CheckboxField label="Lectura" name="ftpEntidadLectura" />
-              <CheckboxField label="Modificar" name="ftpEntidadModificar" />
-              <CheckboxField label="Borrar" name="ftpEntidadBorrar" />
+              <CheckboxField label="Lectura" name="ftpEntidadLectura" defaultChecked={!!state.data?.ftpEntidadLectura} />
+              <CheckboxField label="Modificar" name="ftpEntidadModificar" defaultChecked={!!state.data?.ftpEntidadModificar} />
+              <CheckboxField label="Borrar" name="ftpEntidadBorrar" defaultChecked={!!state.data?.ftpEntidadBorrar} />
             </div>
           </CardContent>
         </Card>
@@ -274,7 +290,7 @@ export default function CreateUserAccountForm() {
           <CardContent className="space-y-4">
             <CheckboxField
               label="Horario Extralaboral"
-              name="horarioExtralaboral"
+              name="horarioExtralaboral" defaultChecked={!!state.data?.horarioExtralaboral}
               onChange={setHorarioExtralaboral}
             />
             {horarioExtralaboral && (
@@ -336,12 +352,12 @@ export default function CreateUserAccountForm() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-3 gap-3">
-              <CheckboxField label="Correo Nacional" name="apnCorreoNacional" />
+              <CheckboxField label="Correo Nacional" name="apnCorreoNacional" defaultChecked={!!state.data?.apnCorreoNacional} />
               <CheckboxField
                 label="Correo Internacional"
-                name="apnCorreoInternacional"
+                name="apnCorreoInternacional" defaultChecked={!!state.data?.apnCorreoInternacional}
               />
-              <CheckboxField label="Internet" name="apnInternet" />
+              <CheckboxField label="Internet" name="apnInternet" defaultChecked={!!state.data?.apnInternet} />
             </div>
             <Field
               label="Teléfono celular"
@@ -422,104 +438,11 @@ export default function CreateUserAccountForm() {
             <div className="col-span-full">
               <CheckboxField
                 label="Administrador del sistema"
-                name="administradorSistema"
+                name="administradorSistema" defaultChecked={!!state.data?.administradorSistema}
               />
             </div>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Firmas</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-3 gap-4">
-              <Field
-                label="Solicitado - Nombre"
-                name="solicitadoNombre"
-                defaultValue={state.data?.solicitadoNombre}
-                errors={state.validationErrors?.solicitadoNombre}
-              />
-              <Field
-                label="Solicitado - Cargo"
-                name="solicitadoCargo"
-                defaultValue={state.data?.solicitadoCargo}
-                errors={state.validationErrors?.solicitadoCargo}
-              />
-              <Field
-                label="Solicitado - Fecha"
-                name="solicitadoFecha"
-                type="date"
-                defaultValue={state.data?.solicitadoFecha}
-                errors={state.validationErrors?.solicitadoFecha}
-              />
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <Field
-                label="Revisado - Nombre"
-                name="revisadoNombre"
-                defaultValue={state.data?.revisadoNombre}
-                errors={state.validationErrors?.revisadoNombre}
-              />
-              <Field
-                label="Revisado - Cargo"
-                name="revisadoCargo"
-                defaultValue={state.data?.revisadoCargo}
-                errors={state.validationErrors?.revisadoCargo}
-              />
-              <Field
-                label="Revisado - Fecha"
-                name="revisadoFecha"
-                type="date"
-                defaultValue={state.data?.revisadoFecha}
-                errors={state.validationErrors?.revisadoFecha}
-              />
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <Field
-                label="Aprobado - Nombre"
-                name="aprobadoNombre"
-                defaultValue={state.data?.aprobadoNombre}
-                errors={state.validationErrors?.aprobadoNombre}
-              />
-              <Field
-                label="Aprobado - Cargo"
-                name="aprobadoCargo"
-                defaultValue={state.data?.aprobadoCargo}
-                errors={state.validationErrors?.aprobadoCargo}
-              />
-              <Field
-                label="Aprobado - Fecha"
-                name="aprobadoFecha"
-                type="date"
-                defaultValue={state.data?.aprobadoFecha}
-                errors={state.validationErrors?.aprobadoFecha}
-              />
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <Field
-                label="Ejecutado - Nombre"
-                name="ejecutadoNombre"
-                defaultValue={state.data?.ejecutadoNombre}
-                errors={state.validationErrors?.ejecutadoNombre}
-              />
-              <Field
-                label="Ejecutado - Cargo"
-                name="ejecutadoCargo"
-                defaultValue={state.data?.ejecutadoCargo}
-                errors={state.validationErrors?.ejecutadoCargo}
-              />
-              <Field
-                label="Ejecutado - Fecha"
-                name="ejecutadoFecha"
-                type="date"
-                defaultValue={state.data?.ejecutadoFecha}
-                errors={state.validationErrors?.ejecutadoFecha}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
         <Card>
           <CardHeader>
             <CardTitle>Baja</CardTitle>
@@ -527,7 +450,7 @@ export default function CreateUserAccountForm() {
           <CardContent className="space-y-4">
             <CheckboxField
               label="Baja de entidad"
-              name="bajaEntidad"
+              name="bajaEntidad" defaultChecked={!!state.data?.bajaEntidad}
               onChange={setBajaEntidad}
             />
             {bajaEntidad && (
@@ -551,13 +474,17 @@ export default function CreateUserAccountForm() {
         </Card>
 
         {state.dbErrors && (
-          <p className="text-sm text-red-500 text-center">
+          <p className="text-sm text-destructive text-center">
             {state.dbErrors.message}
           </p>
         )}
 
         <Button className="w-full" disabled={pending} size="lg">
-          {pending ? "Guardando..." : "Crear solicitud"}
+          {pending
+            ? "Guardando..."
+            : mode === "edit"
+              ? "Guardar cambios"
+              : "Crear solicitud"}
         </Button>
       </form>
     </div>

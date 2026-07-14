@@ -1,4 +1,4 @@
-import type { AccountRequestValidationErrors } from "../app/(protected)/dashboard/users/create/models/account-request-schema.model";
+import type { AccountRequestValidationErrors } from "../app/(protected)/dashboard/user-accounts-manangment/users/create/models/account-request-schema.model";
 
 type DbError = {
   status?: number;
@@ -83,18 +83,43 @@ export type CreateUserAccountState = {
     departamentoArea?: string;
     tipoPersonal?: string;
     cuenta?: string;
+    correoLocal?: boolean;
+    correoNacional?: boolean;
+    correoInternacional?: boolean;
+    correoInternet?: boolean;
     correoInternetFechaTemp?: string;
+    intranetUNE?: boolean;
+    intranetNacional?: boolean;
+    internet?: boolean;
     internetFechaTemp?: string;
+    mensajeriaCorporativa?: boolean;
+    chatInternet?: boolean;
     chatInternetFechaTemp?: string;
+    facebook?: boolean;
+    twitter?: boolean;
+    youtube?: boolean;
     otrasRedes?: string;
+    adminRed?: boolean;
+    adminLocal?: boolean;
+    usuarioAvanzado?: boolean;
+    ftpUneLectura?: boolean;
+    ftpUneModificar?: boolean;
+    ftpUneBorrar?: boolean;
+    ftpEntidadLectura?: boolean;
+    ftpEntidadModificar?: boolean;
+    ftpEntidadBorrar?: boolean;
     tipoCuenta?: string;
     fechaExpiracion?: string;
+    horarioExtralaboral?: boolean;
     extraDesde?: string;
     extraHasta?: string;
     sabadoDesde?: string;
     sabadoHasta?: string;
     domingoDesde?: string;
     domingoHasta?: string;
+    apnCorreoNacional?: boolean;
+    apnCorreoInternacional?: boolean;
+    apnInternet?: boolean;
     telefonoCelular?: string;
     pcNombre?: string;
     pcInventario?: string;
@@ -103,22 +128,27 @@ export type CreateUserAccountState = {
     softwareAutorizado?: string;
     cuentaUsuario?: string;
     actividadRealiza?: string;
-    solicitadoNombre?: string;
-    solicitadoCargo?: string;
-    solicitadoFecha?: string;
-    revisadoNombre?: string;
-    revisadoCargo?: string;
-    revisadoFecha?: string;
-    aprobadoNombre?: string;
-    aprobadoCargo?: string;
-    aprobadoFecha?: string;
-    ejecutadoNombre?: string;
-    ejecutadoCargo?: string;
-    ejecutadoFecha?: string;
+    administradorSistema?: boolean;
+    bajaEntidad?: boolean;
     motivosBaja?: string;
     fechaBaja?: string;
   };
   success?: boolean;
   dbErrors?: DbError;
   validationErrors?: AccountRequestValidationErrors | null;
+};
+export type SignFormState = {
+  data?: {
+    requested?: boolean;
+    revised?: boolean;
+    approved?: boolean;
+    executed?: boolean;
+  } | null;
+  success?: boolean;
+  dbErrors?: DbError;
+};
+
+export type DeleteUserAccountState = {
+  success?: boolean;
+  dbErrors?: DbError;
 };

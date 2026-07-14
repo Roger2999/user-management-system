@@ -2,15 +2,7 @@ import { Prisma } from "@/generated/prisma/client";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
 
-import { MoreHorizontalIcon, EyeIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { EyeIcon } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -19,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import DropdownMenuTable from "./dropdown-menu-table";
 
 export default async function UsersTable({
   where,
@@ -35,7 +28,8 @@ export default async function UsersTable({
           <TableHead>Nombre y Apellidos</TableHead>
           <TableHead>Usuario</TableHead>
           <TableHead>Teléfono</TableHead>
-          <TableHead className="text-center">Detalles</TableHead>
+          <TableHead className="text-center">Firmado</TableHead>
+          <TableHead className="text-center">Vista previa</TableHead>
           <TableHead className="text-right">Acciones</TableHead>
         </TableRow>
       </TableHeader>
@@ -50,28 +44,23 @@ export default async function UsersTable({
             <TableCell className="font-medium">
               {user.telefonoCelular}
             </TableCell>
+            <TableCell className="text-center font-medium">
+              {user.firmadoPorSolicitado &&
+              user.firmadoPorRevisado &&
+              user.firmadoPorAprobado &&
+              user.firmadoPorEjecutado
+                ? "Si"
+                : "No"}
+            </TableCell>
             <TableCell className="flex justify-center">
-              <Link href={`/dashboard/users/${user.id}`}>
-                <EyeIcon className="hover:text-green-500" />
+              <Link
+                href={`/dashboard/user-accounts-manangment/users/${user.id}`}
+              >
+                <EyeIcon className="hover:text-success" />
               </Link>
             </TableCell>
             <TableCell className="text-right">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="size-8">
-                    <MoreHorizontalIcon />
-                    <span className="sr-only">Open menu</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem>Edit</DropdownMenuItem>
-                  <DropdownMenuItem>Duplicate</DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem variant="destructive">
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <DropdownMenuTable id={user.id} name={user.nombreApellidos} />
             </TableCell>
           </TableRow>
         ))}

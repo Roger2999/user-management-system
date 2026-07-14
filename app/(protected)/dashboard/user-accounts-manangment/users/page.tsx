@@ -19,7 +19,7 @@ export default async function UsersPage({ searchParams }: Props) {
           ({filterConfig.label ?? filterValue})
         </span>
       </h1>
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense fallback={<div>Cargando...</div>}>
         <UsersTable where={filterConfig.where} />
       </Suspense>
     </>
