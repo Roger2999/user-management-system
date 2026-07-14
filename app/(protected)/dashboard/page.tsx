@@ -1,102 +1,59 @@
-import { getSession } from "@/helpers/getSession";
-import prisma from "@/lib/prisma";
-import Link from "next/link";
 import {
-  filtersByAccountType,
-  filtersByRequestType,
-  pendingSignatureFilter,
-} from "@/lib/filters";
-import { cn } from "@/lib/utils";
-import StatsCard from "./components/stats-card";
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { getSession } from "@/helpers/getSession";
+import Link from "next/link";
 
 export default async function Dashboard() {
   const session = await getSession();
   const username = session?.user.name;
-
-  const allUsersCount = await prisma.accountRequest.count();
-
-  const usersRequesTypeCount = await Promise.all(
-    filtersByRequestType.map((f) =>
-      prisma.accountRequest.count({ where: f.where }),
-    ),
-  );
-  const usersAccountTypeCount = await Promise.all(
-    filtersByAccountType.map((f) =>
-      prisma.accountRequest.count({ where: f.where }),
-    ),
-  );
-  const usersPendingSignatureCount = await Promise.all(
-    pendingSignatureFilter.map((f) =>
-      prisma.accountRequest.count({ where: f.where }),
-    ),
-  );
+  const dashboardCards = [
+    {
+      title: "Gestionar cuentas de usuario",
+      description: "Altas, bajas y firma cuentas de usuario pendientes",
+      href: "/dashboard/user-accounts-manangment/",
+    },
+    {
+      title: "Gestionar incidentes de ciberseguridad",
+      description: "Administra los incidentes que se producen en la empresa",
+      href: "/dashboard/user-accounts-manangment/",
+    },
+    {
+      title: "Gestionar Servidores y servicios",
+      description:
+        "Gestion de servidores de la empresa y servicios que se brindan",
+      href: "/dashboard/user-accounts-manangment/",
+    },
+  ];
   return (
     <div className="flex flex-col items-center space-y-8 py-10">
-      <header className="w-full">
-        <h1 className="text-2xl font-semibold text-muted-foreground text-center">
-          Bienvenido de vuelta, {username ?? "usuario"}
+      <header className="w-full space-y-6">
+        <h1 className="text-3xl font-semibold text-center">
+          Sistema para la gestion usuarios
         </h1>
+        <h2 className="text-2xl font-semibold text-muted-foreground text-center">
+          Bienvenido de vuelta, {username ?? "usuario"}
+        </h2>
       </header>
-
-      <section className="w-full flex flex-col gap-6">
-        <Link href={`/dashboard/users?filter=${encodeURIComponent("all")}`}>
-          <StatsCard title="Total de cuentas" statData={allUsersCount} />
-        </Link>
-
-        <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {filtersByRequestType.map((filter, i) => (
-            <Link
-              key={filter.value}
-              className="transition-all duration-100 ease-in hover:scale-102"
-              href={`/dashboard/users?filter=${encodeURIComponent(filter.value)}`}
-            >
-              <StatsCard
-                title={filter.label}
-                statData={usersRequesTypeCount[i]}
-              />
-            </Link>
-          ))}
-        </div>
+      <section className="grid xs:grid-cols-2  md:grid-cols-3 gap-4 w-full sm:px-20">
+        {dashboardCards.map((card) => (
+          <Link href={card.href} key={card.title}>
+            <Card className="text-center min-h-52">
+              <CardHeader>
+                <CardTitle className="text-xl font-bold">
+                  {card.title}{" "}
+                </CardTitle>
+                <CardDescription>
+                  <p className="text-muted-foreground">{card.description}</p>
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+        ))}
       </section>
-
-      <section className="w-full space-y-4">
-        <div className="grid gap-6 sm:grid-cols-2">
-          {filtersByAccountType.map((filter, i) => (
-            <Link
-              key={filter.value}
-              className="transition-all duration-100 ease-in hover:scale-102"
-              href={`/dashboard/users?filter=${encodeURIComponent(filter.value)}`}
-            >
-              <StatsCard
-                title={filter.label}
-                statData={usersAccountTypeCount[i]}
-              />
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {usersPendingSignatureCount[0] > 0 && (
-        <section className="w-full space-y-4">
-          <div className="grid gap-4">
-            {pendingSignatureFilter.map((filter, i) => (
-              <Link
-                key={filter.value}
-                className="transition-all duration-100 ease-in hover:scale-102"
-                href={`/dashboard/users?filter=${encodeURIComponent(filter.value)}`}
-              >
-                <StatsCard
-                  title={filter.label}
-                  statData={usersPendingSignatureCount[i]}
-                  className={cn(
-                    usersPendingSignatureCount[i] !== 0 && "bg-red-500/20",
-                  )}
-                />
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
     </div>
   );
 }
