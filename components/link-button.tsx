@@ -11,31 +11,27 @@ export default function LinkButton({
   className,
   children,
   type,
+  href = "/",
   ...props
 }: Props) {
-  const baseStyles = "text-md p-1";
+  const baseStyles = "text-md p-1 rounded-md transition-colors";
   const pathname = usePathname();
-  const isActive = pathname === props.href;
+  const isActive = pathname === href;
   return (
     <Link
-      href={"/"}
+      href={href}
       {...props}
-      type={type}
       className={cn(
         baseStyles,
         className,
-        type === "neutral" &&
-          "rounded-md border border-black/20 bg-gray-400 p-1 hover:text-gray-800",
-        type === "destructive" &&
-          "rounded-md border border-black/20 bg-gray-400 p-1 hover:text-gray-800",
-        type === "success" &&
-          "rounded-md border border-black/20 bg-gray-400 p-1 hover:text-gray-800",
-        type === "link" &&
-          "transition-all duration-100 hover:border-b-4 hover:border-b-gray-700 hover:text-blue-600",
-        isActive && "border-b-2 border-gray-400",
+        type === "neutral" && "text-foreground hover:bg-muted",
+        type === "destructive" && "text-destructive hover:bg-destructive/10",
+        type === "success" && "text-success hover:bg-success/10",
+        type === "link" && "text-primary hover:underline",
+        isActive && "border-b-2 border-primary",
       )}
     >
-      {children ? children : "label"}
+      {children ? children : "etiqueta"}
     </Link>
   );
 }

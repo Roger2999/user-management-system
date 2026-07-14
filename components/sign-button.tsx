@@ -14,11 +14,12 @@ export default function SignButton({
   href,
   ...props
 }: Props) {
-  const baseStyles = "bg-white/20 border rounded-md p-1 border-black/20";
+  const baseStyles =
+    "border border-border bg-background rounded-md p-1 hover:bg-muted transition-colors";
 
   return (
     <Link {...props} href={href} className={cn(baseStyles, className)}>
-      {children ? children : "label"}
+      {children ? children : "etiqueta"}
     </Link>
   );
 }

@@ -27,7 +27,7 @@ export function ThemeModeToggle() {
 
   return (
     <DropdownMenu onOpenChange={handleMenu}>
-      <DropdownMenuTrigger className="border-btn/50 flex w-fit cursor-pointer items-center justify-center gap-3 rounded-2xl border px-4 py-1">
+      <DropdownMenuTrigger className="border-border/50 flex w-fit cursor-pointer items-center justify-center gap-3 rounded-2xl border px-4 py-1">
         {theme === "light" ? (
           <Sun className="h-[1.2rem] w-[1.2rem]" />
         ) : (
@@ -36,7 +36,7 @@ export function ThemeModeToggle() {
 
         {isOpen ? <ArrowBigUpDash /> : <ArrowBigDownDash />}
 
-        <span className="sr-only">Toggle theme</span>
+        <span className="sr-only">Cambiar tema</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-fit" sideOffset={8} align="center">
         {themes.map((theme) => (

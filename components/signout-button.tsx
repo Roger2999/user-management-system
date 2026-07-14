@@ -13,8 +13,10 @@ export default function SignoutButton() {
   const [state, action, pending] = useActionState(signoutAction, initialState);
   return (
     <form action={action}>
-      <Button className={cn(state.dbErrors && "border border-red-500")}>
-        {pending ? "Loading..." : "Sign out"}
+      <Button
+        className={cn(state.dbErrors && "border border-destructive")}
+      >
+        {pending ? "Cerrando sesión..." : "Cerrar sesión"}
       </Button>
     </form>
   );

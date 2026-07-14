@@ -28,7 +28,7 @@ export default function SelectField({
         onChange={(e) => onChange?.(e.target.value)}
         className={cn(
           "h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed md:text-sm dark:bg-input/30",
-          errors && "border-red-500",
+          errors && "border-destructive",
         )}
       >
         <option value="">Seleccionar...</option>
@@ -40,7 +40,7 @@ export default function SelectField({
       </select>
       <ul>
         {errors?.map((e, i) => (
-          <li className="text-sm text-red-500" key={i}>
+          <li className="text-sm text-destructive" key={i}>
             {e}
           </li>
         ))}
