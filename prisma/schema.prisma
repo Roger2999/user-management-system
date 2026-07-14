@@ -182,24 +182,31 @@ model AccountRequest {
   administradorSistema Boolean @default(false)
 
   // Firmas — Solicitado
-  solicitadoNombre String?
-  solicitadoCargo  String?
+  firmadoPorSolicitado     Boolean @default(false)
   solicitadoFecha  DateTime?
+  //solicitadoNombre String?
+  //solicitadoCargo  String?
 
   // Firmas — Revisado
-  revisadoNombre String?
-  revisadoCargo  String?
+  firmadoPorRevisado     Boolean @default(false)
   revisadoFecha  DateTime?
 
+  //revisadoNombre String?
+  //revisadoCargo  String?
+
   // Firmas — Aprobado
-  aprobadoNombre String?
-  aprobadoCargo  String?
+  firmadoPorAprobado    Boolean @default(false)
   aprobadoFecha  DateTime?
 
+  //aprobadoNombre String?
+  //aprobadoCargo  String?
+
   // Firmas — Ejecutado
-  ejecutadoNombre String?
-  ejecutadoCargo  String?
+  firmadoPorEjecutado     Boolean @default(false)
   ejecutadoFecha  DateTime?
+
+  //ejecutadoNombre String?
+  //ejecutadoCargo  String?
 
   // Baja
   bajaEntidad  Boolean   @default(false)

@@ -48,7 +48,14 @@ export const pendingSignatureFilter: FilterConfig[] = [
   {
     value: "pendientesFirma",
     label: "Pendientes de firma",
-    where: { ejecutadoFecha: null },
+    where: {
+      OR: [
+        { firmadoPorAprobado: false },
+        { firmadoPorEjecutado: false },
+        { firmadoPorRevisado: false },
+        { firmadoPorSolicitado: false },
+      ],
+    },
   },
 ];
 export const allFilters: FilterConfig[] = [
