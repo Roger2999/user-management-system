@@ -33,7 +33,7 @@ export const requestPasswordResetAction = async (
       data: { email },
       success: true,
       message:
-        "Se ha enviado a su email el enlace para restablecer la contraseña",
+        "Se ha enviado a su correo el enlace para restablecer la contraseña",
       dbErrors: null,
       validationErrors: null,
     };
@@ -53,7 +53,7 @@ export const requestPasswordResetAction = async (
     return {
       data: { email },
       success: false,
-      dbErrors: { message: "Unexpected error" },
+      dbErrors: { message: "Error inesperado" },
       validationErrors: null,
     };
   }

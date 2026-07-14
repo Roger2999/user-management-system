@@ -11,13 +11,13 @@ import Link from "next/link";
 export default async function NavMenuDesktop() {
   const session = await getSession();
   return (
-    <nav className="border-b-border/90 bg-menu flex h-16 w-full items-center justify-between border-b px-5">
+    <nav className="border-b-border/90 bg-sidebar flex h-16 w-full items-center justify-between border-b px-5">
       {session && (
         <Link
           href={"/dashboard"}
           className="text-xl transition-all duration-100 ease-in hover:text-2xl"
         >
-          Dashboard
+          Inicio
         </Link>
       )}
       {/* routes */}
@@ -60,10 +60,10 @@ export default async function NavMenuDesktop() {
         ) : (
           <>
             <SignButton href="/signup" className="px-5">
-              Signup
+              Registrarse
             </SignButton>
             <SignButton href="/signin" className="px-5">
-              Signin
+              Iniciar sesión
             </SignButton>
           </>
         )}

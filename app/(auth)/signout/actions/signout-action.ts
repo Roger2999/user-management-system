@@ -29,7 +29,7 @@ export const signoutAction = async (
     }
     return {
       success: false,
-      dbErrors: { message: "Unexpected error" },
+      dbErrors: { message: "Error inesperado" },
     };
   }
 };

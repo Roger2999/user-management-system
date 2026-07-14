@@ -36,7 +36,7 @@ export const UpdateUserAction = async (
       data: { username: fields.username },
       dbErrors: null,
       validationErrors: null,
-      message: "Usuario actualizado con exito",
+      message: "Usuario actualizado con éxito",
     };
   } catch (error) {
     if (error instanceof APIError) {
@@ -54,7 +54,7 @@ export const UpdateUserAction = async (
     return {
       data: { username },
       success: false,
-      dbErrors: { message: "Unexpected error" },
+      dbErrors: { message: "Error inesperado" },
       validationErrors: null,
     };
   }

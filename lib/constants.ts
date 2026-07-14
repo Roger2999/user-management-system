@@ -1,9 +1,9 @@
 export const publicRoutes = [];
 export const privateRoutes = [];
 export const themes = [
-  { name: "light", label: "Light" },
-  { name: "dark", label: "Dark" },
-  { name: "system", label: "System" },
+  { name: "light", label: "Claro" },
+  { name: "dark", label: "Oscuro" },
+  { name: "system", label: "Sistema" },
 ];
 export const REQUEST_OPTIONS = [
   { value: "ALTA", label: "Alta" },

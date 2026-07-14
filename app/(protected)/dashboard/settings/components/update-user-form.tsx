@@ -20,19 +20,22 @@ export default function UpdateUserForm() {
   );
   return (
     <div>
-      <h2>Cambiar nombre de usuario</h2>
-      <form className="w-md max-w-[80%] p-10 border rounded-xl" action={action}>
+      <h2 className="text-xl font-semibold">Cambiar nombre de usuario</h2>
+      <form
+        className="space-y-4 w-md max-w-[80%] p-10 border rounded-xl"
+        action={action}
+      >
         <Field
-          label="Nuevo username"
+          label="Nuevo nombre de usuario"
           errors={state.validationErrors?.username}
           type="text"
           name="username"
           defaultValue={state.data?.username}
         />
-        <Button>{pending ? "Loading..." : "Enviar"}</Button>
-        {state.success && <p className="text-green-500">{state.message}</p>}
+        <Button>{pending ? "Enviando..." : "Guardar"}</Button>
+        {state.success && <p className="text-success">{state.message}</p>}
         {state.dbErrors && (
-          <p className="text-red-500">{state.dbErrors.message}</p>
+          <p className="text-destructive">{state.dbErrors.message}</p>
         )}
       </form>
     </div>

@@ -20,13 +20,13 @@ export default function SignupForm() {
       className="space-y-2 border p-10 rounded-xl w-sm max-w-[80%]"
     >
       <Field
-        label="Username"
+        label="Nombre de usuario"
         name="username"
         errors={state.validationErrors?.username}
         defaultValue={state.data?.username}
       />
       <Field
-        label="Email"
+        label="Correo electrónico"
         name="email"
         errors={state.validationErrors?.email}
         defaultValue={state.data?.email}
@@ -44,10 +44,10 @@ export default function SignupForm() {
         errors={state.validationErrors?.confirmPassword}
       />
       <Button className="w-full" disabled={pending}>
-        {pending ? "Loading..." : "Sign up"}
+        {pending ? "Cargando..." : "Registrarse"}
       </Button>
       {state.dbErrors && (
-        <p className="text-sm text-red-500 text-center">
+        <p className="text-sm text-destructive text-center">
           {state.dbErrors.message}
         </p>
       )}

@@ -25,7 +25,7 @@ export default function VerifyEmailForm({ email }: Props) {
   );
 
   if (state.success) {
-    toast.success("Email de verificación reenviado");
+    toast.success("Correo de verificación reenviado");
   }
 
   return (
@@ -40,10 +40,10 @@ export default function VerifyEmailForm({ email }: Props) {
         </p>
         <p className="text-sm font-medium">{email}</p>
       </div>
-      <p className="text-xs text-muted-foreground">
-        Haz clic en el enlace del email para completar tu registro. El enlace
-        expira en 24 horas.
-      </p>
+        <p className="text-xs text-muted-foreground">
+          Haz clic en el enlace del correo para completar tu registro. El enlace
+          expira en 24 horas.
+        </p>
       <div className="space-y-3">
         <form action={action}>
           <input type="hidden" name="email" value={email} />
@@ -53,11 +53,11 @@ export default function VerifyEmailForm({ email }: Props) {
             className="w-full"
             disabled={pending}
           >
-            {pending ? "Reenviando..." : "Reenviar email"}
+            {pending ? "Reenviando..." : "Reenviar correo"}
           </Button>
         </form>
         {state.dbErrors && (
-          <p className="text-sm text-red-500 text-center">
+          <p className="text-sm text-destructive text-center">
             {state.dbErrors.message}
           </p>
         )}

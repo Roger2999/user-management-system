@@ -43,17 +43,17 @@ export default function ResetPasswordForm() {
         {pending ? "Actualizando..." : "Actualizar contraseña"}
       </Button>
       {state.success && (
-        <p className="text-sm text-green-500 text-center">
+        <p className="text-sm text-success text-center">
           Contraseña actualizada correctamente
         </p>
       )}
       {state.dbErrors && (
-        <p className="text-sm text-red-500 text-center">
+        <p className="text-sm text-destructive text-center">
           {state.dbErrors.message}
         </p>
       )}
       <div className="text-center text-sm">
-        <Link href="/signin" className="hover:border-b border-b-white">
+        <Link href="/signin" className="hover:border-b border-b-border">
           Volver al inicio de sesión
         </Link>
       </div>

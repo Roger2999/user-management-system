@@ -45,7 +45,7 @@ export const resendVerificationAction = async (
     return {
       data: { email },
       success: false,
-      dbErrors: { message: "Error al reenviar el email" },
+      dbErrors: { message: "Error al reenviar el correo" },
       validationErrors: null,
     };
   }

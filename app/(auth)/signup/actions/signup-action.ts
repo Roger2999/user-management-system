@@ -49,7 +49,7 @@ export const signupAction = async (
     return {
       data: { email, username },
       success: false,
-      dbErrors: { message: "Unexpected error" },
+      dbErrors: { message: "Error inesperado" },
       validationErrors: null,
     };
   }

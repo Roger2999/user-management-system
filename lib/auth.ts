@@ -16,14 +16,14 @@ export const auth = betterAuth({
       void resend.emails.send({
         from: "onboarding@resend.dev",
         to: data.user.email,
-        subject: "Reset your password",
+        subject: "Restablecer contraseña",
         html: `
           <h2>Recupera tu contraseña</h2>
-          <p>Haz clic en el enlace para resetear tu contraseña:</p>
-          <a href="${data.url}">Resetear contraseña</a>
+          <p>Haz clic en el enlace para restablecer tu contraseña:</p>
+          <a href="${data.url}">Restablecer contraseña</a>
           <p>El enlace expira en 1 hora.</p>
         `,
-        text: `Click the link to reset your password: ${data.url}`,
+        text: `Haz clic en el enlace para restablecer tu contraseña: ${data.url}`,
       });
     },
   },

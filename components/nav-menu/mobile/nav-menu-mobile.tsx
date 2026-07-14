@@ -123,14 +123,14 @@ export default function NavMenuMobile({ session }: Props) {
                 className="w-full px-5"
                 onClick={closeMenu}
               >
-                Signup
+                Registrarse
               </SignButton>
               <SignButton
                 href="signin"
                 className="w-full px-5"
                 onClick={closeMenu}
               >
-                Signin
+                Iniciar sesión
               </SignButton>
             </>
           )}

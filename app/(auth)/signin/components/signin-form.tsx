@@ -22,7 +22,7 @@ export default function SigninForm() {
     >
       <Field
         defaultValue={state.data?.email}
-        label="Email"
+        label="Correo electrónico"
         name="email"
         errors={state.validationErrors?.email}
       />
@@ -35,16 +35,16 @@ export default function SigninForm() {
       <div className="flex justify-end">
         <Link
           href={"/signin/forgot-password"}
-          className="text-sm hover:border-b border-b-white"
+          className="text-sm hover:border-b border-b-border"
         >
           ¿Has olvidado la contraseña?
         </Link>
       </div>
       <Button className="w-full mt-4" disabled={pending}>
-        {pending ? "Loading..." : "Sign in"}
+        {pending ? "Cargando..." : "Iniciar sesión"}
       </Button>
       {state.dbErrors && (
-        <p className="text-sm text-center text-red-500">
+        <p className="text-sm text-center text-destructive">
           {state.dbErrors.message}
         </p>
       )}

@@ -8,7 +8,7 @@ interface Props extends React.ComponentProps<"div"> {
 }
 export default function StatsCard({
   className,
-  title = "Title",
+  title = "Título",
   statData = 0,
   ...props
 }: Props) {

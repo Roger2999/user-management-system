@@ -20,7 +20,7 @@ export default function ForgotPasswordForm() {
   return (
     <form action={action} className="space-y-2 border p-10 rounded-xl w-sm max-w-[80%]">
       <Field
-        label="Email"
+        label="Correo electrónico"
         name="email"
         type="email"
         errors={state.validationErrors?.email}
@@ -30,15 +30,15 @@ export default function ForgotPasswordForm() {
         {pending ? "Enviando..." : "Enviar enlace"}
       </Button>
       {state.success && (
-        <p className="text-sm text-green-500 text-center">{state.message}</p>
+        <p className="text-sm text-success text-center">{state.message}</p>
       )}
       {state.dbErrors && (
-        <p className="text-sm text-red-500 text-center">
+        <p className="text-sm text-destructive text-center">
           {state.dbErrors.message}
         </p>
       )}
       <div className="text-center text-sm">
-        <Link href="/signin" className="hover:border-b border-b-white">
+        <Link href="/signin" className="hover:border-b border-b-border">
           Volver al inicio de sesión
         </Link>
       </div>

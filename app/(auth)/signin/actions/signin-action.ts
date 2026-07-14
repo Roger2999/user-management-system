@@ -47,7 +47,7 @@ export const signinAction = async (
     return {
       data: { email },
       success: false,
-      dbErrors: { message: "Unexpected error" },
+      dbErrors: { message: "Error inesperado" },
       validationErrors: null,
     };
   }
