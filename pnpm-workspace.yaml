@@ -1,3 +1,6 @@
+overrides:
+  zod: ">=3.25"
+
 allowBuilds:
   '@prisma/engines': true
   esbuild: true
@@ -8,3 +11,4 @@ allowBuilds:
 ignoredBuiltDependencies:
   - sharp
   - unrs-resolver
+shamefully-hoist: true
