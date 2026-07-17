@@ -1,5 +1,6 @@
 import {
   Card,
+  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -38,18 +39,18 @@ export default async function Dashboard() {
           Bienvenido de vuelta, {username ?? "usuario"}
         </h2>
       </header>
-      <section className="grid xs:grid-cols-2  md:grid-cols-3 gap-4 w-full sm:px-20">
+      <section className="grid xs:grid-cols-2 md:grid-cols-3 gap-10 w-full max-w-5xl">
         {dashboardCards.map((card) => (
           <Link href={card.href} key={card.title}>
-            <Card className="text-center min-h-52">
+            <Card className="text-center min-h-44 p-0 justify-evenly gap-0 hover:bg-card-hover">
               <CardHeader>
                 <CardTitle className="text-xl font-bold">
                   {card.title}{" "}
                 </CardTitle>
-                <CardDescription>
-                  <p className="text-muted-foreground">{card.description}</p>
-                </CardDescription>
               </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">{card.description}</p>
+              </CardContent>
             </Card>
           </Link>
         ))}
