@@ -95,7 +95,7 @@ export default async function EditUserAccountPage({ params }: Props) {
   };
 
   return (
-    <div className="max-w-2xl mx-auto py-8">
+    <div className="mx-auto max-w-2xl py-8">
       <CreateUserAccountForm
         mode="edit"
         id={id}

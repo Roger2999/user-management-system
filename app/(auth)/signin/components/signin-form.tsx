@@ -18,7 +18,7 @@ export default function SigninForm() {
   return (
     <form
       action={action}
-      className="space-y-2 border p-10 rounded-xl w-sm max-w-[80%]"
+      className="w-sm max-w-[80%] space-y-2 rounded-xl border p-10"
     >
       <Field
         defaultValue={state.data?.email}
@@ -35,16 +35,16 @@ export default function SigninForm() {
       <div className="flex justify-end">
         <Link
           href={"/signin/forgot-password"}
-          className="text-sm hover:border-b border-b-border"
+          className="border-b-border text-sm hover:border-b"
         >
           ¿Has olvidado la contraseña?
         </Link>
       </div>
-      <Button className="w-full mt-4" disabled={pending}>
+      <Button className="mt-4 w-full" disabled={pending}>
         {pending ? "Cargando..." : "Iniciar sesión"}
       </Button>
       {state.dbErrors && (
-        <p className="text-sm text-center text-destructive">
+        <p className="text-destructive text-center text-sm">
           {state.dbErrors.message}
         </p>
       )}

@@ -28,7 +28,7 @@ export default function LinkButton({
         type === "destructive" && "text-destructive hover:bg-destructive/10",
         type === "success" && "text-success hover:bg-success/10",
         type === "link" && "text-primary hover:underline",
-        isActive && "border-b-2 border-primary",
+        isActive && "border-primary border-b-2",
       )}
     >
       {children ? children : "etiqueta"}

@@ -29,21 +29,21 @@ export default function VerifyEmailForm({ email }: Props) {
   }
 
   return (
-    <div className="space-y-6 border p-10 rounded-xl w-sm max-w-[80%] text-center">
+    <div className="w-sm max-w-[80%] space-y-6 rounded-xl border p-10 text-center">
       <div className="flex justify-center">
-        <Mail className="size-12 text-muted-foreground" />
+        <Mail className="text-muted-foreground size-12" />
       </div>
       <div className="space-y-2">
         <h1 className="text-xl font-semibold">Verifica tu email</h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           Hemos enviado un enlace de verificación a
         </p>
         <p className="text-sm font-medium">{email}</p>
       </div>
-        <p className="text-xs text-muted-foreground">
-          Haz clic en el enlace del correo para completar tu registro. El enlace
-          expira en 24 horas.
-        </p>
+      <p className="text-muted-foreground text-xs">
+        Haz clic en el enlace del correo para completar tu registro. El enlace
+        expira en 24 horas.
+      </p>
       <div className="space-y-3">
         <form action={action}>
           <input type="hidden" name="email" value={email} />
@@ -57,13 +57,13 @@ export default function VerifyEmailForm({ email }: Props) {
           </Button>
         </form>
         {state.dbErrors && (
-          <p className="text-sm text-destructive text-center">
+          <p className="text-destructive text-center text-sm">
             {state.dbErrors.message}
           </p>
         )}
         <Link
           href="/signin"
-          className="text-sm text-muted-foreground hover:underline block"
+          className="text-muted-foreground block text-sm hover:underline"
         >
           Volver al inicio de sesión
         </Link>

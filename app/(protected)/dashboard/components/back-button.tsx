@@ -15,7 +15,7 @@ export default function BackButton({ className, ...props }: Props) {
     <Button
       onClick={() => router.back()}
       {...props}
-      className={cn("flex justify-around items-center w-fit px-5", className)}
+      className={cn("flex w-fit items-center justify-around px-5", className)}
     >
       <ArrowBigLeftDash />
       Atras

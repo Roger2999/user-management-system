@@ -17,7 +17,7 @@ export default function SignupForm() {
   return (
     <form
       action={action}
-      className="space-y-2 border p-10 rounded-xl w-sm max-w-[80%]"
+      className="w-sm max-w-[80%] space-y-2 rounded-xl border p-10"
     >
       <Field
         label="Nombre de usuario"
@@ -47,7 +47,7 @@ export default function SignupForm() {
         {pending ? "Cargando..." : "Registrarse"}
       </Button>
       {state.dbErrors && (
-        <p className="text-sm text-destructive text-center">
+        <p className="text-destructive text-center text-sm">
           {state.dbErrors.message}
         </p>
       )}

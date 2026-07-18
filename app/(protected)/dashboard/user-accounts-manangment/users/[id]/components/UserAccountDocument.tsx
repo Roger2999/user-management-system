@@ -15,7 +15,7 @@ const formatDate = (date: Date | null | undefined): string => {
 function Check({ label, checked }: { label?: string; checked: boolean }) {
   return (
     <span className="mr-1.5 inline-flex items-center gap-1 whitespace-nowrap">
-      <span className="flex h-2.75 w-2.75 items-center justify-center border border-black text-[8px] font-bold leading-none">
+      <span className="flex h-2.75 w-2.75 items-center justify-center border border-black text-[8px] leading-none font-bold">
         {checked ? "X" : ""}
       </span>
       {label ? <span>{label}</span> : null}
@@ -55,7 +55,7 @@ function Row({ children }: { children: ReactNode }) {
 
 function SectionTitle({ children }: { children: ReactNode }) {
   return (
-    <div className="border border-black border-b-0 bg-[#e0e0e0] p-0.75 font-bold">
+    <div className="border border-b-0 border-black bg-[#e0e0e0] p-0.75 font-bold">
       {children}
     </div>
   );
@@ -74,7 +74,7 @@ function SubHeader({ left, right }: { left: string; right: string }) {
 
 function SignatureBox({ children }: { children: ReactNode }) {
   return (
-    <div className="border border-black border-t-0">
+    <div className="border border-t-0 border-black">
       <div className="border-b border-black bg-[#e0e0e0] p-0.5 text-center font-bold">
         {children}
       </div>
@@ -265,7 +265,7 @@ export default function UserAccountDocument({ user }: Props) {
         </Cell>
       </Row>
       <Row>
-        <Cell width="w-[45%]" className="border-r border-black h-3.5" />
+        <Cell width="w-[45%]" className="h-3.5 border-r border-black" />
         <Cell width="w-[55%]">
           <Check
             label="Administrador de Red"
@@ -275,7 +275,7 @@ export default function UserAccountDocument({ user }: Props) {
         </Cell>
       </Row>
       <Row>
-        <Cell width="w-[45%]" className="border-r border-black h-3.5" />
+        <Cell width="w-[45%]" className="h-3.5 border-r border-black" />
         <Cell width="w-[55%]">
           <Check
             label="Administrador Local"
@@ -285,7 +285,7 @@ export default function UserAccountDocument({ user }: Props) {
         </Cell>
       </Row>
       <Row>
-        <Cell width="w-[45%]" className="border-r border-black h-3.5" />
+        <Cell width="w-[45%]" className="h-3.5 border-r border-black" />
         <Cell width="w-[55%]">
           <Check
             label="Usuario avanzado"
@@ -447,7 +447,7 @@ export default function UserAccountDocument({ user }: Props) {
       </div>
 
       {/* SECCIÓN INFERIOR DE BAJA */}
-      <div className="mt-1 flex border border-black border-t-0">
+      <div className="mt-1 flex border border-t-0 border-black">
         <div className="flex w-1/4 items-center border-r border-black p-0.75">
           <Check
             label="Baja de la entidad"

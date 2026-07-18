@@ -9,8 +9,8 @@ export default async function VerifyEmailAddressPage({
 
   if (!email) {
     return (
-      <div className="border p-10 rounded-xl w-sm max-w-[80%] text-center">
-        <p className="text-sm text-muted-foreground">
+      <div className="w-sm max-w-[80%] rounded-xl border p-10 text-center">
+        <p className="text-muted-foreground text-sm">
           No se proporcionó un correo válido.
         </p>
       </div>

@@ -1,10 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getSession } from "@/helpers/getSession";
 import Link from "next/link";
 
@@ -32,17 +26,17 @@ export default async function Dashboard() {
   return (
     <div className="flex flex-col items-center space-y-8 py-10">
       <header className="w-full space-y-6">
-        <h1 className="text-3xl font-semibold text-center">
+        <h1 className="text-center text-3xl font-semibold">
           Sistema para la gestion usuarios
         </h1>
-        <h2 className="text-2xl font-semibold text-muted-foreground text-center">
+        <h2 className="text-muted-foreground text-center text-2xl font-semibold">
           Bienvenido de vuelta, {username ?? "usuario"}
         </h2>
       </header>
-      <section className="grid xs:grid-cols-2 md:grid-cols-3 gap-10 w-full max-w-5xl">
+      <section className="xs:grid-cols-2 grid w-full max-w-5xl gap-10 md:grid-cols-3">
         {dashboardCards.map((card) => (
           <Link href={card.href} key={card.title}>
-            <Card className="text-center min-h-44 p-0 justify-evenly gap-0 hover:bg-card-hover">
+            <Card className="hover:bg-card-hover min-h-44 justify-evenly gap-0 p-0 text-center">
               <CardHeader>
                 <CardTitle className="text-xl font-bold">
                   {card.title}{" "}

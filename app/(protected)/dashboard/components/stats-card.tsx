@@ -1,4 +1,10 @@
-import { Card, CardContent, CardHeader, CardTitle, CardAction } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardAction,
+} from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 interface Props extends React.ComponentProps<"div"> {
@@ -15,18 +21,21 @@ export default function StatsCard({
   ...props
 }: Props) {
   return (
-    <Card {...props} className={cn("p-6 transition-colors hover:bg-card-hover", className)}>
+    <Card
+      {...props}
+      className={cn("hover:bg-card-hover p-6 transition-colors", className)}
+    >
       <CardHeader>
-        <CardTitle className="text-center text-base font-medium text-muted-foreground">
+        <CardTitle className="text-muted-foreground text-center text-base font-medium">
           {title}
         </CardTitle>
         {Icon && (
           <CardAction>
-            <Icon className="size-6 text-brand" />
+            <Icon className="text-brand size-6" />
           </CardAction>
         )}
       </CardHeader>
-      <CardContent className="flex items-center justify-center text-3xl font-semibold">
+      <CardContent className="mr-6 flex items-center justify-center text-3xl font-semibold">
         <p>{statData}</p>
       </CardContent>
     </Card>

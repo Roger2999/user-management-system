@@ -49,7 +49,7 @@ export default function SignForm({ id, initial }: Props) {
   };
 
   return (
-    <form action={action} className="w-full flex flex-col gap-3">
+    <form action={action} className="flex w-full flex-col gap-3">
       <input type="hidden" name="id" value={id} />
       {FIELDS.map(({ key, label }) =>
         signs[key] ? (
@@ -60,7 +60,7 @@ export default function SignForm({ id, initial }: Props) {
               checked
               disabled
               readOnly
-              className="size-4 accent-primary"
+              className="accent-primary size-4"
             />
             <span>{label} (firmado)</span>
           </div>

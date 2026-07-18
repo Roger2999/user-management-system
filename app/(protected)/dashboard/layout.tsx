@@ -12,8 +12,8 @@ export default async function DashboardLayout({
     redirect("/signin");
   }
   return (
-    <div className="flex flex-col w-full gap-10 pt-5">
-      <BackButton />
+    <div className="flex w-full flex-col gap-6">
+      <BackButton className="relative top-5 left-5" />
       {children}
     </div>
   );

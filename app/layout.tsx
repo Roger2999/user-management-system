@@ -31,13 +31,13 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">
+      <body className="flex min-h-full flex-col">
         <ThemeProvider>
           <header>
             <NavMenu />
           </header>
           <main className="flex-1 px-5">{children}</main>
-          <footer className="border-t border-border py-6 text-center text-sm text-muted-foreground">
+          <footer className="border-border text-muted-foreground border-t py-4 text-center text-sm">
             Sistema de Gestión de Usuarios
           </footer>
           <Toaster />

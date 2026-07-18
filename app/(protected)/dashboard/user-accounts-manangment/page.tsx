@@ -55,17 +55,17 @@ export default async function UserAccountsManangmentPage() {
     ),
   );
   return (
-    <div className="flex flex-col gap-10 items-center">
+    <div className="flex flex-col items-center gap-10">
       <header className="w-full space-y-2">
-        <h1 className="text-3xl font-semibold text-center">
+        <h1 className="text-center text-3xl font-semibold">
           Gestión de cuentas de usuario
         </h1>
-        <h2 className="text-xl font-medium text-muted-foreground text-center">
+        <h2 className="text-muted-foreground text-center text-xl font-medium">
           Empresa Eléctrica de Matanzas — resumen de solicitudes
         </h2>
       </header>
       <article className="w-full max-w-5xl">
-        <section className="w-full flex flex-col gap-4">
+        <section className="flex w-full flex-col gap-4">
           <Link
             href={`/dashboard/user-accounts-manangment/users?filter=${encodeURIComponent("all")}`}
             className="transition-all duration-100 ease-in hover:scale-[1.02]"

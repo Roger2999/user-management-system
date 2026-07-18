@@ -23,18 +23,19 @@ export default async function SignPage({ params }: Props) {
     user?.firmadoPorEjecutado
   )
     return (
-      <div className="flex w-full min-h-full justify-center">
+      <div className="flex min-h-full w-full justify-center">
         <p className="text-2xl">Solicitud firmada ✅</p>
       </div>
     );
   return (
-    <div className="flex flex-col items-center justify-center w-full gap-10">
+    <div className="flex w-full flex-col items-center justify-center gap-10">
       <h1 className="text-3xl">
         Firmas pendientes de cuenta:{" "}
         <span className="font-bold">{user.nombreApellidos}</span>{" "}
       </h1>
-        <Suspense fallback={
-          <div className="w-full max-w-md flex flex-col gap-3">
+      <Suspense
+        fallback={
+          <div className="flex w-full max-w-md flex-col gap-3">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="flex items-center gap-2">
                 <Skeleton className="h-4 w-4 shrink-0" />
@@ -43,17 +44,18 @@ export default async function SignPage({ params }: Props) {
             ))}
             <Skeleton className="h-10 w-full rounded-md" />
           </div>
-        }>
-          <SignForm
-            id={id}
-            initial={{
-              requested: user.firmadoPorSolicitado,
-              revised: user.firmadoPorRevisado,
-              approved: user.firmadoPorAprobado,
-              executed: user.firmadoPorEjecutado,
-            }}
-          />
-        </Suspense>
+        }
+      >
+        <SignForm
+          id={id}
+          initial={{
+            requested: user.firmadoPorSolicitado,
+            revised: user.firmadoPorRevisado,
+            approved: user.firmadoPorAprobado,
+            executed: user.firmadoPorEjecutado,
+          }}
+        />
+      </Suspense>
     </div>
   );
 }

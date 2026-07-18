@@ -49,7 +49,9 @@ export default function CreateUserAccountForm({
   return (
     <div className="space-y-6">
       <h1 className="text-xl font-semibold">
-        {mode === "edit" ? "Editar solicitud de cuenta" : "Crear solicitud de cuenta"}
+        {mode === "edit"
+          ? "Editar solicitud de cuenta"
+          : "Crear solicitud de cuenta"}
       </h1>
       <form action={formAction} className="space-y-6">
         {mode === "edit" && id && <input type="hidden" name="id" value={id} />}
@@ -57,7 +59,7 @@ export default function CreateUserAccountForm({
           <CardHeader>
             <CardTitle>Encabezado</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <SelectField
               label="Tipo de solicitud"
               name="tipoSolicitud"
@@ -78,7 +80,7 @@ export default function CreateUserAccountForm({
           <CardHeader>
             <CardTitle>Datos personales</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <Field
               label="Nombre y apellidos"
               name="nombreApellidos"
@@ -118,16 +120,26 @@ export default function CreateUserAccountForm({
             <CardTitle>Correo electrónico</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <CheckboxField label="Correo Local" name="correoLocal" defaultChecked={!!state.data?.correoLocal} />
-              <CheckboxField label="Correo Nacional" name="correoNacional" defaultChecked={!!state.data?.correoNacional} />
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <CheckboxField
+                label="Correo Local"
+                name="correoLocal"
+                defaultChecked={!!state.data?.correoLocal}
+              />
+              <CheckboxField
+                label="Correo Nacional"
+                name="correoNacional"
+                defaultChecked={!!state.data?.correoNacional}
+              />
               <CheckboxField
                 label="Correo Internacional"
-                name="correoInternacional" defaultChecked={!!state.data?.correoInternacional}
+                name="correoInternacional"
+                defaultChecked={!!state.data?.correoInternacional}
               />
               <CheckboxField
                 label="Correo Internet"
-                name="correoInternet" defaultChecked={!!state.data?.correoInternet}
+                name="correoInternet"
+                defaultChecked={!!state.data?.correoInternet}
                 onChange={setCorreoInternet}
               />
             </div>
@@ -148,15 +160,21 @@ export default function CreateUserAccountForm({
             <CardTitle>Navegación web</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              <CheckboxField label="Intranet UNE" name="intranetUNE" defaultChecked={!!state.data?.intranetUNE} />
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <CheckboxField
+                label="Intranet UNE"
+                name="intranetUNE"
+                defaultChecked={!!state.data?.intranetUNE}
+              />
               <CheckboxField
                 label="Intranet Nacional"
-                name="intranetNacional" defaultChecked={!!state.data?.intranetNacional}
+                name="intranetNacional"
+                defaultChecked={!!state.data?.intranetNacional}
               />
               <CheckboxField
                 label="Internet"
-                name="internet" defaultChecked={!!state.data?.internet}
+                name="internet"
+                defaultChecked={!!state.data?.internet}
                 onChange={setInternet}
               />
             </div>
@@ -180,11 +198,13 @@ export default function CreateUserAccountForm({
             <div className="grid grid-cols-2 gap-3">
               <CheckboxField
                 label="Mensajería Corporativa"
-                name="mensajeriaCorporativa" defaultChecked={!!state.data?.mensajeriaCorporativa}
+                name="mensajeriaCorporativa"
+                defaultChecked={!!state.data?.mensajeriaCorporativa}
               />
               <CheckboxField
                 label="Chat Internet"
-                name="chatInternet" defaultChecked={!!state.data?.chatInternet}
+                name="chatInternet"
+                defaultChecked={!!state.data?.chatInternet}
                 onChange={setChatInternet}
               />
             </div>
@@ -206,9 +226,21 @@ export default function CreateUserAccountForm({
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-3 gap-3">
-              <CheckboxField label="Facebook" name="facebook" defaultChecked={!!state.data?.facebook} />
-              <CheckboxField label="Twitter" name="twitter" defaultChecked={!!state.data?.twitter} />
-              <CheckboxField label="Youtube" name="youtube" defaultChecked={!!state.data?.youtube} />
+              <CheckboxField
+                label="Facebook"
+                name="facebook"
+                defaultChecked={!!state.data?.facebook}
+              />
+              <CheckboxField
+                label="Twitter"
+                name="twitter"
+                defaultChecked={!!state.data?.twitter}
+              />
+              <CheckboxField
+                label="Youtube"
+                name="youtube"
+                defaultChecked={!!state.data?.youtube}
+              />
             </div>
             <Field
               label="Otras redes"
@@ -225,9 +257,21 @@ export default function CreateUserAccountForm({
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-3 gap-3">
-              <CheckboxField label="Admin Red" name="adminRed" defaultChecked={!!state.data?.adminRed} />
-              <CheckboxField label="Admin Local" name="adminLocal" defaultChecked={!!state.data?.adminLocal} />
-              <CheckboxField label="Usuario Avanzado" name="usuarioAvanzado" defaultChecked={!!state.data?.usuarioAvanzado} />
+              <CheckboxField
+                label="Admin Red"
+                name="adminRed"
+                defaultChecked={!!state.data?.adminRed}
+              />
+              <CheckboxField
+                label="Admin Local"
+                name="adminLocal"
+                defaultChecked={!!state.data?.adminLocal}
+              />
+              <CheckboxField
+                label="Usuario Avanzado"
+                name="usuarioAvanzado"
+                defaultChecked={!!state.data?.usuarioAvanzado}
+              />
             </div>
           </CardContent>
         </Card>
@@ -238,9 +282,21 @@ export default function CreateUserAccountForm({
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-3 gap-3">
-              <CheckboxField label="Lectura" name="ftpUneLectura" defaultChecked={!!state.data?.ftpUneLectura} />
-              <CheckboxField label="Modificar" name="ftpUneModificar" defaultChecked={!!state.data?.ftpUneModificar} />
-              <CheckboxField label="Borrar" name="ftpUneBorrar" defaultChecked={!!state.data?.ftpUneBorrar} />
+              <CheckboxField
+                label="Lectura"
+                name="ftpUneLectura"
+                defaultChecked={!!state.data?.ftpUneLectura}
+              />
+              <CheckboxField
+                label="Modificar"
+                name="ftpUneModificar"
+                defaultChecked={!!state.data?.ftpUneModificar}
+              />
+              <CheckboxField
+                label="Borrar"
+                name="ftpUneBorrar"
+                defaultChecked={!!state.data?.ftpUneBorrar}
+              />
             </div>
           </CardContent>
         </Card>
@@ -251,9 +307,21 @@ export default function CreateUserAccountForm({
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-3 gap-3">
-              <CheckboxField label="Lectura" name="ftpEntidadLectura" defaultChecked={!!state.data?.ftpEntidadLectura} />
-              <CheckboxField label="Modificar" name="ftpEntidadModificar" defaultChecked={!!state.data?.ftpEntidadModificar} />
-              <CheckboxField label="Borrar" name="ftpEntidadBorrar" defaultChecked={!!state.data?.ftpEntidadBorrar} />
+              <CheckboxField
+                label="Lectura"
+                name="ftpEntidadLectura"
+                defaultChecked={!!state.data?.ftpEntidadLectura}
+              />
+              <CheckboxField
+                label="Modificar"
+                name="ftpEntidadModificar"
+                defaultChecked={!!state.data?.ftpEntidadModificar}
+              />
+              <CheckboxField
+                label="Borrar"
+                name="ftpEntidadBorrar"
+                defaultChecked={!!state.data?.ftpEntidadBorrar}
+              />
             </div>
           </CardContent>
         </Card>
@@ -262,7 +330,7 @@ export default function CreateUserAccountForm({
           <CardHeader>
             <CardTitle>Tipo de cuenta</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <SelectField
               label="Tipo de cuenta"
               name="tipoCuenta"
@@ -290,7 +358,8 @@ export default function CreateUserAccountForm({
           <CardContent className="space-y-4">
             <CheckboxField
               label="Horario Extralaboral"
-              name="horarioExtralaboral" defaultChecked={!!state.data?.horarioExtralaboral}
+              name="horarioExtralaboral"
+              defaultChecked={!!state.data?.horarioExtralaboral}
               onChange={setHorarioExtralaboral}
             />
             {horarioExtralaboral && (
@@ -352,12 +421,21 @@ export default function CreateUserAccountForm({
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-3 gap-3">
-              <CheckboxField label="Correo Nacional" name="apnCorreoNacional" defaultChecked={!!state.data?.apnCorreoNacional} />
+              <CheckboxField
+                label="Correo Nacional"
+                name="apnCorreoNacional"
+                defaultChecked={!!state.data?.apnCorreoNacional}
+              />
               <CheckboxField
                 label="Correo Internacional"
-                name="apnCorreoInternacional" defaultChecked={!!state.data?.apnCorreoInternacional}
+                name="apnCorreoInternacional"
+                defaultChecked={!!state.data?.apnCorreoInternacional}
               />
-              <CheckboxField label="Internet" name="apnInternet" defaultChecked={!!state.data?.apnInternet} />
+              <CheckboxField
+                label="Internet"
+                name="apnInternet"
+                defaultChecked={!!state.data?.apnInternet}
+              />
             </div>
             <Field
               label="Teléfono celular"
@@ -422,7 +500,7 @@ export default function CreateUserAccountForm({
           <CardHeader>
             <CardTitle>Cuenta de usuario</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <Field
               label="Cuenta de usuario"
               name="cuentaUsuario"
@@ -438,7 +516,8 @@ export default function CreateUserAccountForm({
             <div className="col-span-full">
               <CheckboxField
                 label="Administrador del sistema"
-                name="administradorSistema" defaultChecked={!!state.data?.administradorSistema}
+                name="administradorSistema"
+                defaultChecked={!!state.data?.administradorSistema}
               />
             </div>
           </CardContent>
@@ -450,11 +529,12 @@ export default function CreateUserAccountForm({
           <CardContent className="space-y-4">
             <CheckboxField
               label="Baja de entidad"
-              name="bajaEntidad" defaultChecked={!!state.data?.bajaEntidad}
+              name="bajaEntidad"
+              defaultChecked={!!state.data?.bajaEntidad}
               onChange={setBajaEntidad}
             />
             {bajaEntidad && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <Field
                   label="Motivos de baja"
                   name="motivosBaja"
@@ -474,7 +554,7 @@ export default function CreateUserAccountForm({
         </Card>
 
         {state.dbErrors && (
-          <p className="text-sm text-destructive text-center">
+          <p className="text-destructive text-center text-sm">
             {state.dbErrors.message}
           </p>
         )}

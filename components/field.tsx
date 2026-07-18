@@ -41,7 +41,7 @@ export default function Field({
   ...props
 }: Props) {
   return (
-    <div className={cn("space-y-2 min-h-21", className)} {...props}>
+    <div className={cn("min-h-21 space-y-2", className)} {...props}>
       <Label htmlFor={name}>{label}</Label>
       <Input
         defaultValue={defaultValue}
@@ -53,7 +53,7 @@ export default function Field({
       {errors && (
         <ul>
           {errors?.map((e, index) => (
-            <li className="text-sm text-destructive" key={index}>
+            <li className="text-destructive text-sm" key={index}>
               {e}
             </li>
           ))}

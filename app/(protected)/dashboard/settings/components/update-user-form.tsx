@@ -22,7 +22,7 @@ export default function UpdateUserForm() {
     <div>
       <h2 className="text-xl font-semibold">Cambiar nombre de usuario</h2>
       <form
-        className="space-y-4 w-md max-w-[80%] p-10 border rounded-xl"
+        className="w-md max-w-[80%] space-y-4 rounded-xl border p-10"
         action={action}
       >
         <Field

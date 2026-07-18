@@ -12,13 +12,13 @@ export default function CheckboxField({
   onChange,
 }: Props) {
   return (
-    <label className="flex items-center gap-2 cursor-pointer text-sm">
+    <label className="flex cursor-pointer items-center gap-2 text-sm">
       <input
         type="checkbox"
         name={name}
         defaultChecked={defaultChecked}
         onChange={(e) => onChange?.(e.target.checked)}
-        className="size-4 accent-primary"
+        className="accent-primary size-4"
       />
       {label}
     </label>

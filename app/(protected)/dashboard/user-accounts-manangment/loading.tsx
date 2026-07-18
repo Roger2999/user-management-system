@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 function CardSkeleton({ wide = false }: { wide?: boolean }) {
   return (
-    <div className="flex flex-col gap-4 overflow-hidden rounded-xl bg-card p-6 ring-1 ring-foreground/10">
+    <div className="bg-card ring-foreground/10 flex flex-col gap-4 overflow-hidden rounded-xl p-6 ring-1">
       <div className="grid grid-cols-[1fr_auto] items-start gap-1">
         <Skeleton className="mx-auto h-4 w-28" />
         <Skeleton className="size-6 rounded-md" />
@@ -14,14 +14,14 @@ function CardSkeleton({ wide = false }: { wide?: boolean }) {
 
 export default function Loading() {
   return (
-    <div className="flex flex-col gap-10 items-center">
+    <div className="flex flex-col items-center gap-10">
       <header className="w-full space-y-2">
         <Skeleton className="mx-auto h-9 w-80" />
         <Skeleton className="mx-auto h-6 w-72" />
       </header>
 
       <article className="w-full max-w-5xl space-y-10">
-        <section className="w-full flex flex-col gap-4">
+        <section className="flex w-full flex-col gap-4">
           <CardSkeleton wide />
         </section>
 

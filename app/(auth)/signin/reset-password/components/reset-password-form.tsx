@@ -24,7 +24,7 @@ export default function ResetPasswordForm() {
   return (
     <form
       action={action}
-      className="space-y-2 border p-10 rounded-xl w-sm max-w-[80%]"
+      className="w-sm max-w-[80%] space-y-2 rounded-xl border p-10"
     >
       <input type="hidden" name="token" value={token ? token : undefined} />
       <Field
@@ -43,17 +43,17 @@ export default function ResetPasswordForm() {
         {pending ? "Actualizando..." : "Actualizar contraseña"}
       </Button>
       {state.success && (
-        <p className="text-sm text-success text-center">
+        <p className="text-success text-center text-sm">
           Contraseña actualizada correctamente
         </p>
       )}
       {state.dbErrors && (
-        <p className="text-sm text-destructive text-center">
+        <p className="text-destructive text-center text-sm">
           {state.dbErrors.message}
         </p>
       )}
       <div className="text-center text-sm">
-        <Link href="/signin" className="hover:border-b border-b-border">
+        <Link href="/signin" className="border-b-border hover:border-b">
           Volver al inicio de sesión
         </Link>
       </div>
