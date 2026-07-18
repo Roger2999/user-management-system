@@ -1,26 +1,40 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getSession } from "@/helpers/getSession";
 import Link from "next/link";
+import {
+  UsersIcon,
+  ShieldAlertIcon,
+  ServerIcon,
+  LucideIcon,
+} from "lucide-react";
 
 export default async function Dashboard() {
   const session = await getSession();
   const username = session?.user.name;
-  const dashboardCards = [
+  const dashboardCards: {
+    title: string;
+    description: string;
+    href: string;
+    icon: LucideIcon;
+  }[] = [
     {
       title: "Gestionar cuentas de usuario",
       description: "Altas, bajas y firma cuentas de usuario pendientes",
       href: "/dashboard/user-accounts-manangment/",
+      icon: UsersIcon,
     },
     {
       title: "Gestionar incidentes de ciberseguridad",
       description: "Administra los incidentes que se producen en la empresa",
       href: "/dashboard/user-accounts-manangment/",
+      icon: ShieldAlertIcon,
     },
     {
       title: "Gestionar Servidores y servicios",
       description:
         "Gestion de servidores de la empresa y servicios que se brindan",
       href: "/dashboard/user-accounts-manangment/",
+      icon: ServerIcon,
     },
   ];
   return (
@@ -38,6 +52,7 @@ export default async function Dashboard() {
           <Link href={card.href} key={card.title}>
             <Card className="hover:bg-card-hover min-h-44 justify-evenly gap-0 p-0 text-center">
               <CardHeader>
+                {<card.icon className="text-brand mx-auto my-1 size-6" />}
                 <CardTitle className="text-xl font-bold">
                   {card.title}{" "}
                 </CardTitle>

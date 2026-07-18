@@ -3,7 +3,7 @@ import { z } from "zod";
 export const AccountRequestSchema = z
   .object({
     // Encabezado
-    tipoSolicitud: z.enum(["ALTA", "ACTUALIZACION", "MODIFICACION"], {
+    tipoSolicitud: z.enum(["ALTA", "ACTUALIZACION"], {
       message: "Requerido",
     }),
     folio: z.string().min(1, "Requerido"),

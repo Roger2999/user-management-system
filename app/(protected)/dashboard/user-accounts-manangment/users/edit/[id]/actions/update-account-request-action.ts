@@ -169,6 +169,6 @@ export async function updateAccountRequestAction(
     };
   }
 
-  revalidatePath("/dashboard/user-accounts-manangment/users");
-  redirect("/dashboard/user-accounts-manangment/users");
+  revalidatePath("/dashboard/user-accounts-manangment/");
+  redirect("/dashboard/user-accounts-manangment/");
 }

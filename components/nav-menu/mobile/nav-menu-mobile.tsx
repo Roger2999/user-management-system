@@ -7,6 +7,8 @@ import { ThemeModeToggle } from "@/components/theme-mode-toggle";
 import { Separator } from "@/components/ui/separator";
 import { privateRoutes, publicRoutes } from "@/lib/constants";
 import { useNavMenuStore } from "@/stores/useNavMenuStore";
+import Link from "next/link";
+import Image from "next/image";
 
 import { useCallback, useEffect } from "react";
 interface Props {
@@ -62,53 +64,35 @@ export default function NavMenuMobile({ session }: Props) {
     >
       <aside
         onClick={stopPropagation}
-        className={`bg-sidebar absolute top-0 left-0 z-50 flex h-full w-72 max-w-[70%] flex-col gap-5 border px-5 pt-20 transition-all duration-150 sm:hidden`}
+        className={`bg-sidebar absolute top-0 left-0 z-50 flex h-full w-72 max-w-[70%] flex-col gap-5 border px-5 pt-10 transition-all duration-150 sm:hidden`}
       >
+        <Link href={"/dashboard"} className="mx-auto">
+          <Image
+            src={"/une-logo.png"}
+            width={20}
+            height={20}
+            className="h-20 w-20 transition-transform duration-100 ease-in hover:-translate-y-1 hover:scale-125"
+            priority
+            alt="logo de UNE"
+          />
+        </Link>
         {/* links */}
         <ul className="space-y-3">
           {session
-            ? privateRoutes.map(
-                (
-                  route: {
-                    name: string;
-                    href: string;
-                    current: boolean;
-                    id: string;
-                  },
-                  index: number,
-                ) => (
-                  <li key={index}>
-                    <LinkButton
-                      type="link"
-                      href={route.href}
-                      onClick={closeMenu}
-                    >
-                      {route.name}
-                    </LinkButton>
-                  </li>
-                ),
-              )
-            : publicRoutes.map(
-                (
-                  route: {
-                    name: string;
-                    href: string;
-                    current: boolean;
-                    id: string;
-                  },
-                  index: number,
-                ) => (
-                  <li key={index}>
-                    <LinkButton
-                      type="link"
-                      href={route.href}
-                      onClick={closeMenu}
-                    >
-                      {route.name}
-                    </LinkButton>
-                  </li>
-                ),
-              )}
+            ? privateRoutes.map((route, index: number) => (
+                <li key={index}>
+                  <LinkButton type="link" href={route.href} onClick={closeMenu}>
+                    {route.name}
+                  </LinkButton>
+                </li>
+              ))
+            : publicRoutes.map((route, index: number) => (
+                <li key={index}>
+                  <LinkButton type="link" href={route.href} onClick={closeMenu}>
+                    {route.name}
+                  </LinkButton>
+                </li>
+              ))}
         </ul>
 
         <Separator />

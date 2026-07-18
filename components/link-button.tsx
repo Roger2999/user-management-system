@@ -27,11 +27,11 @@ export default function LinkButton({
         type === "neutral" && "text-foreground hover:bg-muted",
         type === "destructive" && "text-destructive hover:bg-destructive/10",
         type === "success" && "text-success hover:bg-success/10",
-        type === "link" && "text-primary hover:underline",
+        type === "link" && "text-primary",
         isActive && "border-primary border-b-2",
       )}
     >
-      {children ? children : "etiqueta"}
+      {children ? children : "Link"}
     </Link>
   );
 }

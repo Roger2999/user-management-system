@@ -1,5 +1,13 @@
-export const publicRoutes = [];
-export const privateRoutes = [];
+export const publicRoutes: {
+  name: string;
+  href: string;
+  id: string;
+}[] = [];
+export const privateRoutes: {
+  name: string;
+  href: string;
+  id: string;
+}[] = [{ name: "Settings", href: "/dashboard/settings", id: "1" }];
 export const themes = [
   { name: "light", label: "Claro" },
   { name: "dark", label: "Oscuro" },
@@ -8,7 +16,6 @@ export const themes = [
 export const REQUEST_OPTIONS = [
   { value: "ALTA", label: "Alta" },
   { value: "ACTUALIZACION", label: "Actualización" },
-  { value: "MODIFICACION", label: "Modificación" },
 ] as const;
 
 export const PERSONAL_OPTIONS = [

@@ -257,10 +257,10 @@ async function main() {
       aprobadoFecha: new Date("2026-06-14"),
       ejecutadoFecha: new Date("2026-06-15"),
     },
-    // 8. Sofía Torres - MODIFICACION, PERMANENTE, ESPECIALISTA_PRINCIPAL - Cambio de cargo
+    // 8. Sofía Torres - ACTUALIZACION, PERMANENTE, ESPECIALISTA_PRINCIPAL - Cambio de cargo
     {
       folio: "FOL-2026-008",
-      tipoSolicitud: TipoSolicitud.MODIFICACION,
+      tipoSolicitud: TipoSolicitud.ACTUALIZACION,
       tipoCuenta: TipoCuenta.PERMANENTE,
       nombreApellidos: "Sofía Torres",
       cargoOcupa: "Especialista",
@@ -286,10 +286,10 @@ async function main() {
       aprobadoFecha: new Date("2026-06-16"),
       ejecutadoFecha: new Date("2026-06-17"),
     },
-    // 9. Pedro Ramírez - MODIFICACION, TEMPORAL, TECNICO - Cambio de horario
+    // 9. Pedro Ramírez - ACTUALIZACION, TEMPORAL, TECNICO - Cambio de horario
     {
       folio: "FOL-2026-009",
-      tipoSolicitud: TipoSolicitud.MODIFICACION,
+      tipoSolicitud: TipoSolicitud.ACTUALIZACION,
       tipoCuenta: TipoCuenta.TEMPORAL,
       nombreApellidos: "Pedro Ramírez",
       cargoOcupa: "Técnico",
@@ -400,10 +400,10 @@ async function main() {
       solicitadoFecha: new Date("2026-06-23"),
       revisadoFecha: new Date("2026-06-25"),
     },
-    // 13. Pendiente Carlos - MODIFICACION, PERMANENTE - Solicitado, revisado y aprobado, sin ejecutar
+    // 13. Pendiente Carlos - ACTUALIZACION, PERMANENTE - Solicitado, revisado y aprobado, sin ejecutar
     {
       folio: "FOL-2026-013",
-      tipoSolicitud: TipoSolicitud.MODIFICACION,
+      tipoSolicitud: TipoSolicitud.ACTUALIZACION,
       tipoCuenta: TipoCuenta.PERMANENTE,
       nombreApellidos: "Pendiente Carlos",
       cargoOcupa: "Técnico",

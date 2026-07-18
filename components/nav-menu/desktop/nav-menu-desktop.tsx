@@ -7,50 +7,40 @@ import { getSession } from "@/helpers/getSession";
 import { publicRoutes } from "@/lib/constants";
 import { privateRoutes } from "@/lib/constants";
 import Link from "next/link";
-
+import Image from "next/image";
 export default async function NavMenuDesktop() {
   const session = await getSession();
   return (
     <nav className="border-b-border/90 bg-sidebar flex h-16 w-full items-center justify-between border-b px-5">
       {session && (
-        <Link
-          href={"/dashboard"}
-          className="text-xl transition-all duration-100 ease-in hover:text-2xl"
-        >
-          Inicio
+        <Link href={"/dashboard"}>
+          <Image
+            src={"/une-logo.png"}
+            width={20}
+            height={20}
+            className="min-h-12 min-w-16 transition-transform duration-100 ease-in hover:-translate-y-1 hover:scale-125"
+            priority
+            alt="logo de UNE"
+          />
         </Link>
       )}
       {/* routes */}
-      <ul className="hidden gap-6 sm:flex">
+      <ul className="hidden w-full gap-6 pr-10 sm:flex sm:justify-end">
         {session
-          ? privateRoutes.map(
-              (route: {
-                name: string;
-                href: string;
-                current: boolean;
-                id: string;
-              }) => (
-                <li key={route.id}>
-                  <LinkButton type="link" href={route.href}>
-                    {route.name}
-                  </LinkButton>
-                </li>
-              ),
-            )
-          : publicRoutes.map(
-              (route: {
-                name: string;
-                href: string;
-                current: boolean;
-                id: string;
-              }) => (
-                <li key={route.id}>
-                  <LinkButton type="link" href={route.href}>
-                    {route.name}
-                  </LinkButton>
-                </li>
-              ),
-            )}
+          ? privateRoutes.map((route) => (
+              <li key={route.id}>
+                <LinkButton type="link" href={route.href}>
+                  {route.name}
+                </LinkButton>
+              </li>
+            ))
+          : publicRoutes.map((route) => (
+              <li key={route.id}>
+                <LinkButton type="link" href={route.href}>
+                  {route.name}
+                </LinkButton>
+              </li>
+            ))}
       </ul>
       {/* right buttons */}
       <div className="hidden h-full items-center justify-center gap-5 pr-10 sm:flex">

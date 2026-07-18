@@ -78,7 +78,6 @@ model Verification {
 enum TipoSolicitud {
   ALTA
   ACTUALIZACION
-  MODIFICACION
 }
 
 enum TipoPersonal {

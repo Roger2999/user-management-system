@@ -117,7 +117,7 @@ export default function UserAccountDocument({ user }: Props) {
           </div>
           <div className="flex flex-1 flex-col items-center justify-center border-r border-black p-0.5 text-[6.5px]">
             <span className="font-bold">MODIFICACIÓN</span>
-            <Check checked={user.tipoSolicitud === "MODIFICACION"} />
+            <Check checked={false} />
           </div>
           <div className="flex flex-1 flex-col items-center justify-center p-0.5 text-[6.5px]">
             <span className="font-bold">FOLIO</span>
