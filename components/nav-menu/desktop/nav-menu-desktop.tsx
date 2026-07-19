@@ -29,9 +29,7 @@ export default async function NavMenuDesktop() {
         {session
           ? privateRoutes.map((route) => (
               <li key={route.id}>
-                <LinkButton type="link" href={route.href}>
-                  {route.name}
-                </LinkButton>
+                <LinkButton href={route.href}>{route.name}</LinkButton>
               </li>
             ))
           : publicRoutes.map((route) => (

@@ -13,6 +13,7 @@ export default function BackButton({ className, ...props }: Props) {
   if (pathName === "/dashboard") return null;
   return (
     <Button
+      variant={"outline"}
       onClick={() => router.back()}
       {...props}
       className={cn("flex w-fit items-center justify-around px-5", className)}

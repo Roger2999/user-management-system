@@ -10,11 +10,11 @@ interface Props extends React.ComponentProps<"a"> {
 export default function LinkButton({
   className,
   children,
-  type,
+  type = "neutral",
   href = "/",
   ...props
 }: Props) {
-  const baseStyles = "text-md p-1 rounded-md transition-colors";
+  const baseStyles = "text-md p-1 rounded-t-md transition-colors";
   const pathname = usePathname();
   const isActive = pathname === href;
   return (
@@ -27,7 +27,6 @@ export default function LinkButton({
         type === "neutral" && "text-foreground hover:bg-muted",
         type === "destructive" && "text-destructive hover:bg-destructive/10",
         type === "success" && "text-success hover:bg-success/10",
-        type === "link" && "text-primary",
         isActive && "border-primary border-b-2",
       )}
     >

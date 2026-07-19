@@ -98,7 +98,7 @@ export default async function UserAccountsManangmentPage() {
 
         <section className="w-full space-y-4">
           <h2 className="text-lg font-semibold">Por tipo de solicitud</h2>
-          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
             {filtersByRequestType.map((filter, i) => (
               <Link
                 key={filter.value}

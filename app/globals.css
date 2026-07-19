@@ -59,7 +59,7 @@
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --card-hover: oklch(0.95 0 0);
-  --brand: oklch(0.55 0.18 250);
+  --brand: oklch(65.564% 0.13219 52.055);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
   --primary: oklch(0.205 0 0);
@@ -97,7 +97,7 @@
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
   --card-hover: oklch(0.269 0 0);
-  --brand: oklch(0.68 0.17 250);
+  --brand: oklch(54.275% 0.11278 51.618);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.922 0 0);

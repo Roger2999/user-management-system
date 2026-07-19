@@ -1,7 +1,7 @@
 "use client";
 import { useActionState } from "react";
 import { Button } from "./ui/button";
-import { signoutAction } from "@/app/(auth)/signout/actions/signout-action";
+import { signoutAction } from "@/app/(auth)/actions/signout-action";
 import { SignoutFormState } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -13,7 +13,10 @@ export default function SignoutButton() {
   const [state, action, pending] = useActionState(signoutAction, initialState);
   return (
     <form action={action}>
-      <Button className={cn(state.dbErrors && "border-destructive border")}>
+      <Button
+        variant={"outline"}
+        className={cn(state.dbErrors && "border-destructive border")}
+      >
         {pending ? "Cerrando sesión..." : "Cerrar sesión"}
       </Button>
     </form>

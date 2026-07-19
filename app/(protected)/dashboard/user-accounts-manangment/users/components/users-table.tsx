@@ -44,19 +44,19 @@ export default async function UsersTable({
             <TableCell className="font-medium">
               {user.telefonoCelular}
             </TableCell>
-            <TableCell className="text-center font-medium">
+            <TableCell className="text-center text-[1rem] font-medium">
               {user.firmadoPorSolicitado &&
               user.firmadoPorRevisado &&
               user.firmadoPorAprobado &&
               user.firmadoPorEjecutado
-                ? "Si"
-                : "No"}
+                ? "✅"
+                : "❌"}
             </TableCell>
             <TableCell className="flex justify-center">
               <Link
                 href={`/dashboard/user-accounts-manangment/users/${user.id}`}
               >
-                <EyeIcon className="hover:text-success" />
+                <EyeIcon className="hover:text-success size-6" />
               </Link>
             </TableCell>
             <TableCell className="text-right">

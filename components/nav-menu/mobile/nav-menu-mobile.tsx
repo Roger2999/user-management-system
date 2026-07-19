@@ -81,7 +81,7 @@ export default function NavMenuMobile({ session }: Props) {
           {session
             ? privateRoutes.map((route, index: number) => (
                 <li key={index}>
-                  <LinkButton type="link" href={route.href} onClick={closeMenu}>
+                  <LinkButton href={route.href} onClick={closeMenu}>
                     {route.name}
                   </LinkButton>
                 </li>

@@ -1,6 +1,11 @@
 "use client";
 import { useState } from "react";
-import { MoreHorizontalIcon } from "lucide-react";
+import {
+  MoreHorizontalIcon,
+  PencilIcon,
+  PenLineIcon,
+  Trash2Icon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -25,24 +30,35 @@ export default function DropdownMenuTable({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon">
-            <MoreHorizontalIcon />
+            <MoreHorizontalIcon className="size-6" />
             <span className="sr-only">Abrir menú</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent
+          align="end"
+          className="flex min-w-40 flex-col gap-4"
+        >
           <Link href={`/dashboard/user-accounts-manangment/users/edit/${id}`}>
-            <DropdownMenuItem>Editar</DropdownMenuItem>
+            <DropdownMenuItem className="flex justify-around text-xl">
+              <PencilIcon className="size-5" />
+              Editar
+            </DropdownMenuItem>
           </Link>
           <Link href={`/dashboard/user-accounts-manangment/users/sign/${id}`}>
-            <DropdownMenuItem>Firmar</DropdownMenuItem>
+            <DropdownMenuItem className="flex justify-around text-xl">
+              <PenLineIcon className="size-5" />
+              Firmar
+            </DropdownMenuItem>
           </Link>
           <DropdownMenuItem
+            className="flex justify-around text-xl"
             variant="destructive"
             onSelect={(e) => {
               e.preventDefault();
               setOpen(true);
             }}
           >
+            <Trash2Icon className="size-5" />
             Eliminar
           </DropdownMenuItem>
         </DropdownMenuContent>
