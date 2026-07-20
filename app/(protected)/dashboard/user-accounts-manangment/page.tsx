@@ -1,10 +1,8 @@
 import {
   filtersByAccountType,
+  filtersByExpired,
   filtersByRequestType,
-  pendingSignatureFilter,
-  expiringAccountsFilter,
 } from "@/lib/filters";
-import prisma from "@/lib/prisma";
 import StatsCard from "../components/stats-card";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -19,6 +17,15 @@ import {
   PenLine,
   AlarmClock,
 } from "lucide-react";
+import {
+  allUsersCount,
+  expiredAccountsCount,
+  expiringIn1Count,
+  expiringIn7Count,
+  usersAccountTypeCount,
+  usersPendingSignatureCount,
+  usersRequesTypeCount,
+} from "../services/getAccountsCount.service";
 
 const requestTypeIcons: Record<
   string,
@@ -39,39 +46,6 @@ const accountTypeIcons: Record<
 };
 
 export default async function UserAccountsManangmentPage() {
-  const allUsersCount = await prisma.accountRequest.count();
-
-  const usersRequesTypeCount = await Promise.all(
-    filtersByRequestType.map((f) =>
-      prisma.accountRequest.count({ where: f.where }),
-    ),
-  );
-  const usersAccountTypeCount = await Promise.all(
-    filtersByAccountType.map((f) =>
-      prisma.accountRequest.count({ where: f.where }),
-    ),
-  );
-  const usersPendingSignatureCount = await Promise.all(
-    pendingSignatureFilter.map((f) =>
-      prisma.accountRequest.count({ where: f.where }),
-    ),
-  );
-  const expiredAccounts = await prisma.accountRequest.count({
-    where: {
-      tipoCuenta: "TEMPORAL",
-      fechaExpiracion: { lt: new Date() },
-    },
-  });
-  const expiring7Config = expiringAccountsFilter.find(
-    (f) => f.value === "expiring7",
-  )!;
-  const expiring1Config = expiringAccountsFilter.find(
-    (f) => f.value === "expiring1",
-  )!;
-  const [expiring7Count, expiring1Count] = await Promise.all([
-    prisma.accountRequest.count({ where: expiring7Config.where }),
-    prisma.accountRequest.count({ where: expiring1Config.where }),
-  ]);
   return (
     <div className="flex flex-col items-center gap-6">
       <header className="w-full space-y-2">
@@ -134,66 +108,43 @@ export default async function UserAccountsManangmentPage() {
           </div>
         </section>
 
-        {usersPendingSignatureCount[0] > 0 && (
-          <section className="w-full space-y-4">
-            <div className="grid gap-4">
-              {pendingSignatureFilter.map((filter, i) => (
-                <Link
-                  key={filter.value}
-                  className="transition-all duration-100 ease-in hover:scale-105"
-                  href={`/dashboard/user-accounts-manangment/users?filter=${encodeURIComponent(filter.value)}`}
-                >
-                  <StatsCard
-                    title={filter.label}
-                    statData={usersPendingSignatureCount[i]}
-                    icon={PenLine}
-                    className={cn(
-                      usersPendingSignatureCount[i] !== 0 &&
-                        "bg-destructive/20",
-                    )}
-                  />
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
+        <section className="w-full space-y-4">
+          <div className="grid gap-4">
+            <Link
+              className="transition-all duration-100 ease-in hover:scale-105"
+              href={`/dashboard/user-accounts-manangment/users?filter=${encodeURIComponent("pendientesFirma")}`}
+            >
+              <StatsCard
+                title={"Pendientes de firma"}
+                statData={usersPendingSignatureCount}
+                icon={PenLine}
+                className={cn(
+                  usersPendingSignatureCount !== 0 && "bg-destructive/20",
+                )}
+              />
+            </Link>
+          </div>
+        </section>
 
         <section className="w-full space-y-4">
           <h2 className="text-lg font-semibold">Otras</h2>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            <Link
-              className="transition-all duration-100 ease-in hover:scale-105"
-              href={`/dashboard/user-accounts-manangment/users?filter=${encodeURIComponent("expiradas")}`}
-            >
-              <StatsCard
-                title="Cuentas expiradas"
-                statData={expiredAccounts}
-                icon={AlarmClock}
-                className={cn(expiredAccounts > 0 && "bg-destructive/20")}
-              />
-            </Link>
-            <Link
-              className="transition-all duration-100 ease-in hover:scale-105"
-              href={`/dashboard/user-accounts-manangment/users?filter=${encodeURIComponent("expiring7")}`}
-            >
-              <StatsCard
-                title="Expiran en ≤7 días"
-                statData={expiring7Count}
-                icon={Clock}
-                className={cn(expiring7Count > 0 && "bg-amber-500/20")}
-              />
-            </Link>
-            <Link
-              className="transition-all duration-100 ease-in hover:scale-105"
-              href={`/dashboard/user-accounts-manangment/users?filter=${encodeURIComponent("expiring1")}`}
-            >
-              <StatsCard
-                title="Expiran en ≤1 día"
-                statData={expiring1Count}
-                icon={AlarmClock}
-                className={cn(expiring1Count > 0 && "bg-destructive/20")}
-              />
-            </Link>
+            {filtersByExpired.map((f) => (
+              <Link
+                key={f.value}
+                className="transition-all duration-100 ease-in hover:scale-105"
+                href={`/dashboard/user-accounts-manangment/users?filter=${encodeURIComponent(f.value)}`}
+              >
+                <StatsCard
+                  title={f.label}
+                  statData={expiredAccountsCount}
+                  icon={AlarmClock}
+                  className={cn(
+                    expiredAccountsCount > 0 && "bg-destructive/20",
+                  )}
+                />
+              </Link>
+            ))}
           </div>
         </section>
       </article>

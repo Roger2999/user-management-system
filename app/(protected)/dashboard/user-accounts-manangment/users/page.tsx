@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import UsersTable from "./components/users-table";
-import { getFilterConfig } from "@/lib/filters";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getFilterConfig } from "@/lib/filters";
 
 interface Props {
   searchParams: Promise<{ filter: string | string[] | undefined }>;
