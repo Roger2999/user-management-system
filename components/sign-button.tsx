@@ -15,7 +15,7 @@ export default function SignButton({
   ...props
 }: Props) {
   const baseStyles =
-    "border border-border bg-background rounded-md p-1 hover:bg-muted transition-colors";
+    "border border-border bg-background rounded-md p-1 hover:bg-muted transition-colors text-center";
 
   return (
     <Link {...props} href={href} className={cn(baseStyles, className)}>

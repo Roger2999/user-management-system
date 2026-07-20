@@ -12,18 +12,17 @@ export default async function NavMenuDesktop() {
   const session = await getSession();
   return (
     <nav className="border-b-border/90 bg-sidebar flex h-16 w-full items-center justify-between border-b px-5">
-      {session && (
-        <Link href={"/dashboard"}>
-          <Image
-            src={"/une-logo.png"}
-            width={20}
-            height={20}
-            className="min-h-12 min-w-16 transition-transform duration-100 ease-in hover:-translate-y-1 hover:scale-125"
-            priority
-            alt="logo de UNE"
-          />
-        </Link>
-      )}
+      <Link href={"/dashboard"}>
+        <Image
+          src={"/une-logo.png"}
+          width={20}
+          height={20}
+          className="min-h-12 min-w-16 transition-transform duration-100 ease-in hover:-translate-y-1 hover:scale-110"
+          priority
+          alt="logo de UNE"
+        />
+      </Link>
+
       {/* routes */}
       <ul className="hidden w-full gap-6 pr-10 sm:flex sm:justify-end">
         {session
@@ -41,16 +40,16 @@ export default async function NavMenuDesktop() {
             ))}
       </ul>
       {/* right buttons */}
-      <div className="hidden h-full items-center justify-center gap-5 pr-10 sm:flex">
+      <div className="hidden h-full w-md items-center justify-end gap-5 pr-10 sm:flex">
         {/* sign buttons */}
         {session ? (
           <SignoutButton />
         ) : (
           <>
-            <SignButton href="/signup" className="px-5">
+            <SignButton href="/signup" className="min-w-44 px-5">
               Registrarse
             </SignButton>
-            <SignButton href="/signin" className="px-5">
+            <SignButton href="/signin" className="min-w-44 px-5">
               Iniciar sesión
             </SignButton>
           </>
