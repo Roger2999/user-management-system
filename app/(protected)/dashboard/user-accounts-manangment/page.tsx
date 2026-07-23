@@ -1,8 +1,5 @@
-import {
-  filtersByAccountType,
-  filtersByExpired,
-  filtersByRequestType,
-} from "@/lib/filters";
+import { filtersByAccountType, filtersByRequestType } from "@/lib/filters";
+import { getAccountsCounts } from "../services/getAccountsCount.service";
 import StatsCard from "../components/stats-card";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -17,15 +14,6 @@ import {
   PenLine,
   AlarmClock,
 } from "lucide-react";
-import {
-  allUsersCount,
-  expiredAccountsCount,
-  expiringIn1Count,
-  expiringIn7Count,
-  usersAccountTypeCount,
-  usersPendingSignatureCount,
-  usersRequesTypeCount,
-} from "../services/getAccountsCount.service";
 
 const requestTypeIcons: Record<
   string,
@@ -46,6 +34,8 @@ const accountTypeIcons: Record<
 };
 
 export default async function UserAccountsManangmentPage() {
+  const counts = await getAccountsCounts();
+
   return (
     <div className="flex flex-col items-center gap-6">
       <header className="w-full space-y-2">
@@ -64,7 +54,7 @@ export default async function UserAccountsManangmentPage() {
           >
             <StatsCard
               title="Total de cuentas"
-              statData={allUsersCount}
+              statData={counts.allUsersCount}
               icon={Users}
             />
           </Link>
@@ -81,7 +71,7 @@ export default async function UserAccountsManangmentPage() {
               >
                 <StatsCard
                   title={filter.label}
-                  statData={usersRequesTypeCount[i]}
+                  statData={counts.usersRequestTypeCount[i]}
                   icon={requestTypeIcons[filter.value]}
                 />
               </Link>
@@ -100,7 +90,7 @@ export default async function UserAccountsManangmentPage() {
               >
                 <StatsCard
                   title={filter.label}
-                  statData={usersAccountTypeCount[i]}
+                  statData={counts.usersAccountTypeCount[i]}
                   icon={accountTypeIcons[filter.value]}
                 />
               </Link>
@@ -108,43 +98,62 @@ export default async function UserAccountsManangmentPage() {
           </div>
         </section>
 
-        <section className="w-full space-y-4">
-          <div className="grid gap-4">
-            <Link
-              className="transition-all duration-100 ease-in hover:scale-105"
-              href={`/dashboard/user-accounts-manangment/users?filter=${encodeURIComponent("pendientesFirma")}`}
-            >
-              <StatsCard
-                title={"Pendientes de firma"}
-                statData={usersPendingSignatureCount}
-                icon={PenLine}
-                className={cn(
-                  usersPendingSignatureCount !== 0 && "bg-destructive/20",
-                )}
-              />
-            </Link>
-          </div>
-        </section>
+        {counts.usersPendingSignatureCount[0] > 0 && (
+          <section className="w-full space-y-4">
+            <div className="grid gap-4">
+              <Link
+                className="transition-all duration-100 ease-in hover:scale-105"
+                href={`/dashboard/user-accounts-manangment/users?filter=${encodeURIComponent("pendientesFirma")}`}
+              >
+                <StatsCard
+                  title="Pendientes de firma"
+                  statData={counts.usersPendingSignatureCount[0]}
+                  icon={PenLine}
+                  className={cn("bg-destructive/20")}
+                />
+              </Link>
+            </div>
+          </section>
+        )}
 
         <section className="w-full space-y-4">
           <h2 className="text-lg font-semibold">Otras</h2>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {filtersByExpired.map((f) => (
-              <Link
-                key={f.value}
-                className="transition-all duration-100 ease-in hover:scale-105"
-                href={`/dashboard/user-accounts-manangment/users?filter=${encodeURIComponent(f.value)}`}
-              >
-                <StatsCard
-                  title={f.label}
-                  statData={expiredAccountsCount}
-                  icon={AlarmClock}
-                  className={cn(
-                    expiredAccountsCount > 0 && "bg-destructive/20",
-                  )}
-                />
-              </Link>
-            ))}
+            <Link
+              className="transition-all duration-100 ease-in hover:scale-105"
+              href={`/dashboard/user-accounts-manangment/users?filter=${encodeURIComponent("expired")}`}
+            >
+              <StatsCard
+                title="Cuentas expiradas"
+                statData={counts.expiredAccounts}
+                icon={AlarmClock}
+                className={cn(
+                  counts.expiredAccounts > 0 && "bg-destructive/20",
+                )}
+              />
+            </Link>
+            <Link
+              className="transition-all duration-100 ease-in hover:scale-105"
+              href={`/dashboard/user-accounts-manangment/users?filter=${encodeURIComponent("expiredIn7")}`}
+            >
+              <StatsCard
+                title="Expiran en ≤7 días"
+                statData={counts.expiring7Count}
+                icon={Clock}
+                className={cn(counts.expiring7Count > 0 && "bg-amber-500/20")}
+              />
+            </Link>
+            <Link
+              className="transition-all duration-100 ease-in hover:scale-105"
+              href={`/dashboard/user-accounts-manangment/users?filter=${encodeURIComponent("expiredIn1")}`}
+            >
+              <StatsCard
+                title="Expiran en ≤1 día"
+                statData={counts.expiring1Count}
+                icon={AlarmClock}
+                className={cn(counts.expiring1Count > 0 && "bg-destructive/20")}
+              />
+            </Link>
           </div>
         </section>
       </article>

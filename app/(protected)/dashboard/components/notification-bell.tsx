@@ -40,11 +40,11 @@ export default function NotificationBell({ count7, count1, accounts }: Props) {
           className="hover:bg-accent relative inline-flex size-10 items-center justify-center rounded-md transition-colors"
           aria-label="Notificaciones de expiración"
         >
-          <Bell className="text-brand size-5" />
+          <Bell className="text-brand size-6" />
           {total > 0 && (
             <span
               className={cn(
-                "absolute -top-0.5 -right-0.5 flex min-w-5 items-center justify-center rounded-full px-1 text-xs font-semibold",
+                "absolute -top-1 -right-0.5 flex min-h-5 min-w-5 items-center justify-center rounded-full px-1 text-xs font-semibold",
                 count1 > 0
                   ? "bg-destructive text-destructive-foreground"
                   : "bg-amber-500 text-white",

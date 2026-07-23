@@ -8,6 +8,7 @@ import { publicRoutes } from "@/lib/constants";
 import { privateRoutes } from "@/lib/constants";
 import Link from "next/link";
 import Image from "next/image";
+
 export default async function NavMenuDesktop() {
   const session = await getSession();
   return (
@@ -28,7 +29,10 @@ export default async function NavMenuDesktop() {
         {session
           ? privateRoutes.map((route) => (
               <li key={route.id}>
-                <LinkButton href={route.href}>{route.name}</LinkButton>
+                <LinkButton href={route.href}>
+                  {route.name}
+                  {route.Icon && <route.Icon />}
+                </LinkButton>
               </li>
             ))
           : publicRoutes.map((route) => (
@@ -40,7 +44,7 @@ export default async function NavMenuDesktop() {
             ))}
       </ul>
       {/* right buttons */}
-      <div className="hidden h-full w-md items-center justify-end gap-5 pr-10 sm:flex">
+      <div className="hidden h-full items-center justify-end gap-5 sm:flex">
         {/* sign buttons */}
         {session ? (
           <SignoutButton />

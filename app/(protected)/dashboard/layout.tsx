@@ -3,10 +3,6 @@ import { redirect } from "next/navigation";
 import BackButton from "./components/back-button";
 import NotificationBell from "./components/notification-bell";
 import prisma from "@/lib/prisma";
-import {
-  expiringIn1Count,
-  expiringIn7Count,
-} from "./services/getAccountsCount.service";
 
 export default async function DashboardLayout({
   children,
@@ -17,8 +13,25 @@ export default async function DashboardLayout({
   if (!session) {
     redirect("/signin");
   }
-
-  const [accounts] = await Promise.all([
+  const [expiringIn7Count, expiringIn1Count, accounts] = await Promise.all([
+    prisma.accountRequest.count({
+      where: {
+        tipoCuenta: "TEMPORAL",
+        fechaExpiracion: {
+          gte: new Date(),
+          lte: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000),
+        },
+      },
+    }),
+    prisma.accountRequest.count({
+      where: {
+        tipoCuenta: "TEMPORAL",
+        fechaExpiracion: {
+          gte: new Date(),
+          lte: new Date(new Date().getTime() + 24 * 60 * 60 * 1000),
+        },
+      },
+    }),
     prisma.accountRequest.findMany({
       where: {
         tipoCuenta: "TEMPORAL",
@@ -40,7 +53,6 @@ export default async function DashboardLayout({
   return (
     <div className="flex w-full flex-col gap-6">
       <div className="flex w-full items-center justify-between px-5 pt-5">
-        <BackButton />
         <NotificationBell
           count7={expiringIn7Count}
           count1={expiringIn1Count}
@@ -49,8 +61,9 @@ export default async function DashboardLayout({
             fechaExpiracion: a.fechaExpiracion?.toISOString() ?? "",
           }))}
         />
+        <BackButton />
       </div>
-      {children}
+      <div className="mb-10">{children}</div>
     </div>
   );
 }

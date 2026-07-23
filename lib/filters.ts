@@ -27,6 +27,7 @@ export const filtersByRequestType: FilterConfig[] = [
     where: { bajaEntidad: true },
   },
 ];
+
 export const filtersByAccountType: FilterConfig[] = [
   {
     value: "permanente",
@@ -54,48 +55,57 @@ export const pendingSignatureFilter: FilterConfig[] = [
     },
   },
 ];
-export const filtersByExpired: FilterConfig[] = [
-  {
+
+export function getExpiredFilter(): FilterConfig {
+  return {
     value: "expired",
     label: "Cuentas expiradas",
     where: {
       tipoCuenta: "TEMPORAL",
-      fechaExpiracion: {
-        lte: new Date(),
-      },
+      fechaExpiracion: { lte: new Date() },
     },
-  },
-  {
-    value: "expiredIn7",
-    label: "Expiran en ≤7 días",
-    where: {
-      tipoCuenta: "TEMPORAL",
-      fechaExpiracion: {
-        gte: new Date(),
-        lte: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000),
-      },
-    },
-  },
-  {
-    value: "expiredIn1",
-    label: "Expiran en ≤1 días",
-    where: {
-      tipoCuenta: "TEMPORAL",
-      fechaExpiracion: {
-        gte: new Date(),
-        lte: new Date(new Date().getTime() + 24 * 60 * 60 * 1000),
-      },
-    },
-  },
-];
+  };
+}
 
-export const allFilters: FilterConfig[] = [
+export function getExpiringIn7DaysFilter(): FilterConfig {
+  const now = new Date();
+  const in7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  return {
+    value: "expiredIn7",
+    label: "Expiran en <=7 dias",
+    where: {
+      tipoCuenta: "TEMPORAL",
+      fechaExpiracion: { gte: now, lte: in7Days },
+    },
+  };
+}
+
+export function getExpiringIn1DayFilter(): FilterConfig {
+  const now = new Date();
+  const in1Day = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+  return {
+    value: "expiredIn1",
+    label: "Expiran en <=1 dias",
+    where: {
+      tipoCuenta: "TEMPORAL",
+      fechaExpiracion: { gte: now, lte: in1Day },
+    },
+  };
+}
+
+const staticFilters: FilterConfig[] = [
   ...filtersByRequestType,
   ...filtersByAccountType,
-  ...filtersByExpired,
   ...pendingSignatureFilter,
 ];
 
 export function getFilterConfig(value: string): FilterConfig {
-  return allFilters.find((f) => f.value === value) ?? filtersByAllUsers[0];
+  const staticFilter = staticFilters.find((f) => f.value === value);
+  if (staticFilter) return staticFilter;
+
+  if (value === "expired") return getExpiredFilter();
+  if (value === "expiredIn7") return getExpiringIn7DaysFilter();
+  if (value === "expiredIn1") return getExpiringIn1DayFilter();
+
+  return filtersByAllUsers[0];
 }

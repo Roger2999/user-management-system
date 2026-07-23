@@ -1,58 +1,62 @@
-import { filtersByAccountType, filtersByRequestType } from "@/lib/filters";
 import prisma from "@/lib/prisma";
+import {
+  filtersByAllUsers,
+  filtersByRequestType,
+  filtersByAccountType,
+  pendingSignatureFilter,
+  getExpiredFilter,
+  getExpiringIn7DaysFilter,
+  getExpiringIn1DayFilter,
+} from "@/lib/filters";
 
-export const [
-  allUsersCount,
-  usersRequesTypeCount,
-  usersAccountTypeCount,
-  usersPendingSignatureCount,
-  expiredAccountsCount,
-  expiringIn7Count,
-  expiringIn1Count,
-] = await Promise.all([
-  prisma.accountRequest.count(),
-  Promise.all(
-    filtersByRequestType.map((f) =>
-      prisma.accountRequest.count({ where: f.where }),
+export interface AccountsCounts {
+  allUsersCount: number;
+  usersRequestTypeCount: number[];
+  usersAccountTypeCount: number[];
+  usersPendingSignatureCount: number[];
+  expiredAccounts: number;
+  expiring7Count: number;
+  expiring1Count: number;
+}
+
+export async function getAccountsCounts(): Promise<AccountsCounts> {
+  const [
+    allUsersCount,
+    usersRequestTypeCount,
+    usersAccountTypeCount,
+    usersPendingSignatureCount,
+    expiredAccounts,
+    expiring7Count,
+    expiring1Count,
+  ] = await Promise.all([
+    prisma.accountRequest.count({ where: filtersByAllUsers[0].where }),
+    Promise.all(
+      filtersByRequestType.map((f) =>
+        prisma.accountRequest.count({ where: f.where }),
+      ),
     ),
-  ),
-  Promise.all(
-    filtersByAccountType.map((f) =>
-      prisma.accountRequest.count({ where: f.where }),
+    Promise.all(
+      filtersByAccountType.map((f) =>
+        prisma.accountRequest.count({ where: f.where }),
+      ),
     ),
-  ),
-  prisma.accountRequest.count({
-    where: {
-      OR: [
-        { firmadoPorAprobado: false },
-        { firmadoPorEjecutado: false },
-        { firmadoPorRevisado: false },
-        { firmadoPorSolicitado: false },
-      ],
-    },
-  }),
-  prisma.accountRequest.count({
-    where: {
-      tipoCuenta: "TEMPORAL",
-      fechaExpiracion: { lt: new Date() },
-    },
-  }),
-  prisma.accountRequest.count({
-    where: {
-      tipoCuenta: "TEMPORAL",
-      fechaExpiracion: {
-        gte: new Date(),
-        lte: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000),
-      },
-    },
-  }),
-  prisma.accountRequest.count({
-    where: {
-      tipoCuenta: "TEMPORAL",
-      fechaExpiracion: {
-        gte: new Date(),
-        lte: new Date(new Date().getTime() + 24 * 60 * 60 * 1000),
-      },
-    },
-  }),
-]);
+    Promise.all(
+      pendingSignatureFilter.map((f) =>
+        prisma.accountRequest.count({ where: f.where }),
+      ),
+    ),
+    prisma.accountRequest.count({ where: getExpiredFilter().where }),
+    prisma.accountRequest.count({ where: getExpiringIn7DaysFilter().where }),
+    prisma.accountRequest.count({ where: getExpiringIn1DayFilter().where }),
+  ]);
+
+  return {
+    allUsersCount,
+    usersRequestTypeCount,
+    usersAccountTypeCount,
+    usersPendingSignatureCount,
+    expiredAccounts,
+    expiring7Count,
+    expiring1Count,
+  };
+}

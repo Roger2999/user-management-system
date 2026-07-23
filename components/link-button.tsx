@@ -14,7 +14,7 @@ export default function LinkButton({
   href = "/",
   ...props
 }: Props) {
-  const baseStyles = "text-md p-1 rounded-t-md transition-colors";
+  const baseStyles = "text-md p-1 rounded-t-md transition-colors flex gap-2";
   const pathname = usePathname();
   const isActive = pathname === href;
   return (
@@ -30,7 +30,7 @@ export default function LinkButton({
         isActive && "border-primary border-b-2",
       )}
     >
-      {children ? children : "Link"}
+      {children ?? "Link"}
     </Link>
   );
 }

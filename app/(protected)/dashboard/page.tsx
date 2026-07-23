@@ -50,7 +50,7 @@ export default async function Dashboard() {
       <section className="xs:grid-cols-2 grid w-full max-w-5xl gap-10 md:grid-cols-3">
         {dashboardCards.map((card) => (
           <Link href={card.href} key={card.title}>
-            <Card className="hover:bg-card-hover min-h-44 justify-evenly gap-0 p-0 text-center">
+            <Card className="hover:bg-card-hover min-h-56 justify-evenly gap-0 p-2 text-center">
               <CardHeader>
                 {<card.icon className="text-brand mx-auto my-1 size-6" />}
                 <CardTitle className="text-xl font-bold">
