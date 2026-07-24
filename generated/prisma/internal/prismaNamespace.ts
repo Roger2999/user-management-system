@@ -881,6 +881,8 @@ export const AccountRequestScalarFieldEnum = {
   updatedAt: 'updatedAt',
   folio: 'folio',
   tipoSolicitud: 'tipoSolicitud',
+  motivosBaja: 'motivosBaja',
+  fechaBaja: 'fechaBaja',
   nombreApellidos: 'nombreApellidos',
   cargoOcupa: 'cargoOcupa',
   departamentoArea: 'departamentoArea',
@@ -939,10 +941,7 @@ export const AccountRequestScalarFieldEnum = {
   firmadoPorAprobado: 'firmadoPorAprobado',
   aprobadoFecha: 'aprobadoFecha',
   firmadoPorEjecutado: 'firmadoPorEjecutado',
-  ejecutadoFecha: 'ejecutadoFecha',
-  bajaEntidad: 'bajaEntidad',
-  motivosBaja: 'motivosBaja',
-  fechaBaja: 'fechaBaja'
+  ejecutadoFecha: 'ejecutadoFecha'
 } as const
 
 export type AccountRequestScalarFieldEnum = (typeof AccountRequestScalarFieldEnum)[keyof typeof AccountRequestScalarFieldEnum]

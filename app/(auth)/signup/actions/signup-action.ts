@@ -33,6 +33,10 @@ export const signupAction = async (
       body: { email, password, name: username, rememberMe: true },
       headers: await headers(),
     });
+    await auth.api.sendVerificationEmail({
+      body: { email },
+      headers: await headers(),
+    });
   } catch (error) {
     if (error instanceof APIError) {
       return {

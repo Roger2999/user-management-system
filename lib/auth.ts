@@ -13,7 +13,7 @@ export const auth = betterAuth({
     maxPasswordLength: 128,
     minPasswordLength: 8,
     sendResetPassword: async (data) => {
-      void resend.emails.send({
+      const { error } = await resend.emails.send({
         from: "onboarding@resend.dev",
         to: data.user.email,
         subject: "Restablecer contraseña",
@@ -25,6 +25,9 @@ export const auth = betterAuth({
         `,
         text: `Haz clic en el enlace para restablecer tu contraseña: ${data.url}`,
       });
+      if (error) {
+        console.error("Error sending reset password email:", error);
+      }
     },
   },
 
@@ -32,18 +35,20 @@ export const auth = betterAuth({
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, url }) => {
-      void resend.emails.send({
+      console.log("Sending verification email to:", user.email);
+      const result = await resend.emails.send({
         from: "onboarding@resend.dev",
         to: user.email,
         subject: "Verifica tu email",
         react: EmailTemplate({ name: user.name, url }),
       });
+      console.log("Resend result:", JSON.stringify(result, null, 2));
+      if (result.error) {
+        console.error("Error sending verification email:", result.error);
+      }
     },
   },
 
-  trustedOrigins: [
-    "http://localhost:3000",
-    "https://user-manangment.vercel.app",
-  ],
+  trustedOrigins: ["http://localhost:3000", "https://sigel-eemtz.vercel.app"],
   plugins: [nextCookies()],
 });

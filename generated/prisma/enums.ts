@@ -11,7 +11,8 @@
 
 export const TipoSolicitud = {
   ALTA: 'ALTA',
-  ACTUALIZACION: 'ACTUALIZACION'
+  ACTUALIZACION: 'ACTUALIZACION',
+  BAJA: 'BAJA'
 } as const
 
 export type TipoSolicitud = (typeof TipoSolicitud)[keyof typeof TipoSolicitud]

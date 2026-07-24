@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import prisma from "@/lib/prisma";
-import CreateUserAccountForm from "../../create/components/create-user-account-form";
+import EditUserAccountForm from "../../create/components/user-account-form";
 import { updateAccountRequestAction } from "./actions/update-account-request-action";
 import type { CreateUserAccountState } from "@/lib/types";
 
@@ -89,14 +89,13 @@ export default async function EditUserAccountPage({ params }: Props) {
     actividadRealiza: opt(user.actividadRealiza),
     administradorSistema: user.administradorSistema,
 
-    bajaEntidad: user.bajaEntidad,
     motivosBaja: opt(user.motivosBaja),
     fechaBaja: toDateInput(user.fechaBaja),
   };
 
   return (
     <div className="mx-auto max-w-2xl py-8">
-      <CreateUserAccountForm
+      <EditUserAccountForm
         mode="edit"
         id={id}
         initialData={initialData}

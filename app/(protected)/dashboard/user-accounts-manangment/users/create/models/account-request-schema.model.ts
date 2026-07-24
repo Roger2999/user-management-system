@@ -3,7 +3,7 @@ import { z } from "zod";
 export const AccountRequestSchema = z
   .object({
     // Encabezado
-    tipoSolicitud: z.enum(["ALTA", "ACTUALIZACION"], {
+    tipoSolicitud: z.enum(["ALTA", "ACTUALIZACION", "BAJA"], {
       message: "Requerido",
     }),
     folio: z.string().min(1, "Requerido"),
@@ -105,7 +105,6 @@ export const AccountRequestSchema = z
     ejecutadoFecha: z.string().optional(),
 
     // Baja
-    bajaEntidad: z.boolean().default(false),
     motivosBaja: z.string().optional(),
     fechaBaja: z.string().optional(),
   })

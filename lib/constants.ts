@@ -22,6 +22,7 @@ export const themes = [
 export const REQUEST_OPTIONS = [
   { value: "ALTA", label: "Alta" },
   { value: "ACTUALIZACION", label: "Actualización" },
+  { value: "BAJA", label: "Baja" },
 ] as const;
 
 export const PERSONAL_OPTIONS = [

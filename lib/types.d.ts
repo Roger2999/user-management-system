@@ -129,7 +129,6 @@ export type CreateUserAccountState = {
     cuentaUsuario?: string;
     actividadRealiza?: string;
     administradorSistema?: boolean;
-    bajaEntidad?: boolean;
     motivosBaja?: string;
     fechaBaja?: string;
   };

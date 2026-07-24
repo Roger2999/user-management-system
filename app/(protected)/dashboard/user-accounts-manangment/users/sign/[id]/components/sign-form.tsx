@@ -49,7 +49,7 @@ export default function SignForm({ id, initial }: Props) {
   };
 
   return (
-    <form action={action} className="flex w-full flex-col gap-3">
+    <form action={action} className="flex w-full flex-col gap-8">
       <input type="hidden" name="id" value={id} />
       {FIELDS.map(({ key, label }) =>
         signs[key] ? (
@@ -60,9 +60,9 @@ export default function SignForm({ id, initial }: Props) {
               checked
               disabled
               readOnly
-              className="accent-primary size-4"
+              className="accent-primary size-6"
             />
-            <span>{label} (firmado)</span>
+            <span className="">{label} (firmado)</span>
           </div>
         ) : (
           <CheckboxField key={key} label={label} name={key} />

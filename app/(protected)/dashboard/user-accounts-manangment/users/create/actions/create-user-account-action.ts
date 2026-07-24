@@ -83,8 +83,6 @@ export async function createUserAccountAction(
     cuentaUsuario: formData.get("cuentaUsuario") as string,
     actividadRealiza: (formData.get("actividadRealiza") as string) || undefined,
     administradorSistema: formData.get("administradorSistema") === "on",
-
-    bajaEntidad: formData.get("bajaEntidad") === "on",
     motivosBaja: (formData.get("motivosBaja") as string) || undefined,
     fechaBaja: (formData.get("fechaBaja") as string) || undefined,
   };

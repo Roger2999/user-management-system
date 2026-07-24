@@ -18,7 +18,7 @@ export default function CheckboxField({
         name={name}
         defaultChecked={defaultChecked}
         onChange={(e) => onChange?.(e.target.checked)}
-        className="accent-primary size-4"
+        className="accent-primary size-6"
       />
       {label}
     </label>

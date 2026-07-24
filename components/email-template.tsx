@@ -7,7 +7,7 @@ export function EmailTemplate({ name, url }: EmailTemplateProps) {
   return (
     <>
       <h2 className="text-xl">Verifica tu cuenta {name}</h2>
-      <p className="tex-sm">Haz clic en el enlace para verificar tu correo:</p>
+      <p className="text-sm">Haz clic en el enlace para verificar tu correo:</p>
       <a className="hover:scale-105" href={url}>
         Verificar correo
       </a>

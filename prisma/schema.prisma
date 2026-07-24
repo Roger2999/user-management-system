@@ -78,7 +78,9 @@ model Verification {
 enum TipoSolicitud {
   ALTA
   ACTUALIZACION
+  BAJA
 }
+
 
 enum TipoPersonal {
   DIRECTIVO
@@ -100,6 +102,10 @@ model AccountRequest {
   // Encabezado
   folio          String?
   tipoSolicitud  TipoSolicitud
+
+  //Baja
+  motivosBaja  String?
+  fechaBaja    DateTime?
 
   // Datos personales
   nombreApellidos  String
@@ -207,8 +213,5 @@ model AccountRequest {
   //ejecutadoNombre String?
   //ejecutadoCargo  String?
 
-  // Baja
-  bajaEntidad  Boolean   @default(false)
-  motivosBaja  String?
-  fechaBaja    DateTime?
+
 }

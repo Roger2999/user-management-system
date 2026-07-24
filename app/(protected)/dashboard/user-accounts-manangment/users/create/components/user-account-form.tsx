@@ -21,7 +21,7 @@ interface Props {
   action?: typeof createUserAccountAction;
 }
 
-export default function CreateUserAccountForm({
+export default function UserAccountForm({
   mode = "create",
   id,
   initialData,
@@ -40,11 +40,13 @@ export default function CreateUserAccountForm({
   );
   const [internet, setInternet] = useState(!!initialData?.internet);
   const [chatInternet, setChatInternet] = useState(!!initialData?.chatInternet);
+  const [tipoSolicitud, setTipoSolicitud] = useState(
+    initialData?.tipoSolicitud ?? "",
+  );
   const [tipoCuenta, setTipoCuenta] = useState(initialData?.tipoCuenta ?? "");
   const [horarioExtralaboral, setHorarioExtralaboral] = useState(
     !!initialData?.horarioExtralaboral,
   );
-  const [bajaEntidad, setBajaEntidad] = useState(!!initialData?.bajaEntidad);
 
   return (
     <div className="space-y-6">
@@ -66,7 +68,25 @@ export default function CreateUserAccountForm({
               options={REQUEST_OPTIONS}
               defaultValue={state.data?.tipoSolicitud}
               errors={state.validationErrors?.tipoSolicitud}
+              onChange={setTipoSolicitud}
             />
+            {tipoSolicitud === "BAJA" && (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <Field
+                  label="Motivos de baja"
+                  name="motivosBaja"
+                  defaultValue={state.data?.motivosBaja}
+                  errors={state.validationErrors?.motivosBaja}
+                />
+                <Field
+                  label="Fecha de baja"
+                  name="fechaBaja"
+                  type="date"
+                  defaultValue={state.data?.fechaBaja}
+                  errors={state.validationErrors?.fechaBaja}
+                />
+              </div>
+            )}
             <Field
               label="Folio"
               name="folio"
@@ -522,37 +542,6 @@ export default function CreateUserAccountForm({
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Baja</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <CheckboxField
-              label="Baja de entidad"
-              name="bajaEntidad"
-              defaultChecked={!!state.data?.bajaEntidad}
-              onChange={setBajaEntidad}
-            />
-            {bajaEntidad && (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <Field
-                  label="Motivos de baja"
-                  name="motivosBaja"
-                  defaultValue={state.data?.motivosBaja}
-                  errors={state.validationErrors?.motivosBaja}
-                />
-                <Field
-                  label="Fecha de baja"
-                  name="fechaBaja"
-                  type="date"
-                  defaultValue={state.data?.fechaBaja}
-                  errors={state.validationErrors?.fechaBaja}
-                />
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
         {state.dbErrors && (
           <p className="text-destructive text-center text-sm">
             {state.dbErrors.message}

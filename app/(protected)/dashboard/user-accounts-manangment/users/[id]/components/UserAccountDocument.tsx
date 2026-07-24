@@ -451,7 +451,7 @@ export default function UserAccountDocument({ user }: Props) {
         <div className="flex w-1/4 items-center border-r border-black p-0.75">
           <Check
             label="Baja de la entidad"
-            checked={user.bajaEntidad === true}
+            checked={user.tipoSolicitud === "BAJA"}
           />
         </div>
         <div className="flex w-1/2 items-center border-r border-black p-0.75">

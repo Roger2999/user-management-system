@@ -30,6 +30,8 @@ export type AccountRequestMinAggregateOutputType = {
   updatedAt: Date | null
   folio: string | null
   tipoSolicitud: $Enums.TipoSolicitud | null
+  motivosBaja: string | null
+  fechaBaja: Date | null
   nombreApellidos: string | null
   cargoOcupa: string | null
   departamentoArea: string | null
@@ -89,9 +91,6 @@ export type AccountRequestMinAggregateOutputType = {
   aprobadoFecha: Date | null
   firmadoPorEjecutado: boolean | null
   ejecutadoFecha: Date | null
-  bajaEntidad: boolean | null
-  motivosBaja: string | null
-  fechaBaja: Date | null
 }
 
 export type AccountRequestMaxAggregateOutputType = {
@@ -100,6 +99,8 @@ export type AccountRequestMaxAggregateOutputType = {
   updatedAt: Date | null
   folio: string | null
   tipoSolicitud: $Enums.TipoSolicitud | null
+  motivosBaja: string | null
+  fechaBaja: Date | null
   nombreApellidos: string | null
   cargoOcupa: string | null
   departamentoArea: string | null
@@ -159,9 +160,6 @@ export type AccountRequestMaxAggregateOutputType = {
   aprobadoFecha: Date | null
   firmadoPorEjecutado: boolean | null
   ejecutadoFecha: Date | null
-  bajaEntidad: boolean | null
-  motivosBaja: string | null
-  fechaBaja: Date | null
 }
 
 export type AccountRequestCountAggregateOutputType = {
@@ -170,6 +168,8 @@ export type AccountRequestCountAggregateOutputType = {
   updatedAt: number
   folio: number
   tipoSolicitud: number
+  motivosBaja: number
+  fechaBaja: number
   nombreApellidos: number
   cargoOcupa: number
   departamentoArea: number
@@ -229,9 +229,6 @@ export type AccountRequestCountAggregateOutputType = {
   aprobadoFecha: number
   firmadoPorEjecutado: number
   ejecutadoFecha: number
-  bajaEntidad: number
-  motivosBaja: number
-  fechaBaja: number
   _all: number
 }
 
@@ -242,6 +239,8 @@ export type AccountRequestMinAggregateInputType = {
   updatedAt?: true
   folio?: true
   tipoSolicitud?: true
+  motivosBaja?: true
+  fechaBaja?: true
   nombreApellidos?: true
   cargoOcupa?: true
   departamentoArea?: true
@@ -301,9 +300,6 @@ export type AccountRequestMinAggregateInputType = {
   aprobadoFecha?: true
   firmadoPorEjecutado?: true
   ejecutadoFecha?: true
-  bajaEntidad?: true
-  motivosBaja?: true
-  fechaBaja?: true
 }
 
 export type AccountRequestMaxAggregateInputType = {
@@ -312,6 +308,8 @@ export type AccountRequestMaxAggregateInputType = {
   updatedAt?: true
   folio?: true
   tipoSolicitud?: true
+  motivosBaja?: true
+  fechaBaja?: true
   nombreApellidos?: true
   cargoOcupa?: true
   departamentoArea?: true
@@ -371,9 +369,6 @@ export type AccountRequestMaxAggregateInputType = {
   aprobadoFecha?: true
   firmadoPorEjecutado?: true
   ejecutadoFecha?: true
-  bajaEntidad?: true
-  motivosBaja?: true
-  fechaBaja?: true
 }
 
 export type AccountRequestCountAggregateInputType = {
@@ -382,6 +377,8 @@ export type AccountRequestCountAggregateInputType = {
   updatedAt?: true
   folio?: true
   tipoSolicitud?: true
+  motivosBaja?: true
+  fechaBaja?: true
   nombreApellidos?: true
   cargoOcupa?: true
   departamentoArea?: true
@@ -441,9 +438,6 @@ export type AccountRequestCountAggregateInputType = {
   aprobadoFecha?: true
   firmadoPorEjecutado?: true
   ejecutadoFecha?: true
-  bajaEntidad?: true
-  motivosBaja?: true
-  fechaBaja?: true
   _all?: true
 }
 
@@ -525,6 +519,8 @@ export type AccountRequestGroupByOutputType = {
   updatedAt: Date
   folio: string | null
   tipoSolicitud: $Enums.TipoSolicitud
+  motivosBaja: string | null
+  fechaBaja: Date | null
   nombreApellidos: string
   cargoOcupa: string
   departamentoArea: string
@@ -584,9 +580,6 @@ export type AccountRequestGroupByOutputType = {
   aprobadoFecha: Date | null
   firmadoPorEjecutado: boolean
   ejecutadoFecha: Date | null
-  bajaEntidad: boolean
-  motivosBaja: string | null
-  fechaBaja: Date | null
   _count: AccountRequestCountAggregateOutputType | null
   _min: AccountRequestMinAggregateOutputType | null
   _max: AccountRequestMaxAggregateOutputType | null
@@ -616,6 +609,8 @@ export type AccountRequestWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"AccountRequest"> | Date | string
   folio?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
   tipoSolicitud?: Prisma.EnumTipoSolicitudFilter<"AccountRequest"> | $Enums.TipoSolicitud
+  motivosBaja?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
+  fechaBaja?: Prisma.DateTimeNullableFilter<"AccountRequest"> | Date | string | null
   nombreApellidos?: Prisma.StringFilter<"AccountRequest"> | string
   cargoOcupa?: Prisma.StringFilter<"AccountRequest"> | string
   departamentoArea?: Prisma.StringFilter<"AccountRequest"> | string
@@ -675,9 +670,6 @@ export type AccountRequestWhereInput = {
   aprobadoFecha?: Prisma.DateTimeNullableFilter<"AccountRequest"> | Date | string | null
   firmadoPorEjecutado?: Prisma.BoolFilter<"AccountRequest"> | boolean
   ejecutadoFecha?: Prisma.DateTimeNullableFilter<"AccountRequest"> | Date | string | null
-  bajaEntidad?: Prisma.BoolFilter<"AccountRequest"> | boolean
-  motivosBaja?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
-  fechaBaja?: Prisma.DateTimeNullableFilter<"AccountRequest"> | Date | string | null
 }
 
 export type AccountRequestOrderByWithRelationInput = {
@@ -686,6 +678,8 @@ export type AccountRequestOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   folio?: Prisma.SortOrderInput | Prisma.SortOrder
   tipoSolicitud?: Prisma.SortOrder
+  motivosBaja?: Prisma.SortOrderInput | Prisma.SortOrder
+  fechaBaja?: Prisma.SortOrderInput | Prisma.SortOrder
   nombreApellidos?: Prisma.SortOrder
   cargoOcupa?: Prisma.SortOrder
   departamentoArea?: Prisma.SortOrder
@@ -745,9 +739,6 @@ export type AccountRequestOrderByWithRelationInput = {
   aprobadoFecha?: Prisma.SortOrderInput | Prisma.SortOrder
   firmadoPorEjecutado?: Prisma.SortOrder
   ejecutadoFecha?: Prisma.SortOrderInput | Prisma.SortOrder
-  bajaEntidad?: Prisma.SortOrder
-  motivosBaja?: Prisma.SortOrderInput | Prisma.SortOrder
-  fechaBaja?: Prisma.SortOrderInput | Prisma.SortOrder
 }
 
 export type AccountRequestWhereUniqueInput = Prisma.AtLeast<{
@@ -759,6 +750,8 @@ export type AccountRequestWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"AccountRequest"> | Date | string
   folio?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
   tipoSolicitud?: Prisma.EnumTipoSolicitudFilter<"AccountRequest"> | $Enums.TipoSolicitud
+  motivosBaja?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
+  fechaBaja?: Prisma.DateTimeNullableFilter<"AccountRequest"> | Date | string | null
   nombreApellidos?: Prisma.StringFilter<"AccountRequest"> | string
   cargoOcupa?: Prisma.StringFilter<"AccountRequest"> | string
   departamentoArea?: Prisma.StringFilter<"AccountRequest"> | string
@@ -818,9 +811,6 @@ export type AccountRequestWhereUniqueInput = Prisma.AtLeast<{
   aprobadoFecha?: Prisma.DateTimeNullableFilter<"AccountRequest"> | Date | string | null
   firmadoPorEjecutado?: Prisma.BoolFilter<"AccountRequest"> | boolean
   ejecutadoFecha?: Prisma.DateTimeNullableFilter<"AccountRequest"> | Date | string | null
-  bajaEntidad?: Prisma.BoolFilter<"AccountRequest"> | boolean
-  motivosBaja?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
-  fechaBaja?: Prisma.DateTimeNullableFilter<"AccountRequest"> | Date | string | null
 }, "id">
 
 export type AccountRequestOrderByWithAggregationInput = {
@@ -829,6 +819,8 @@ export type AccountRequestOrderByWithAggregationInput = {
   updatedAt?: Prisma.SortOrder
   folio?: Prisma.SortOrderInput | Prisma.SortOrder
   tipoSolicitud?: Prisma.SortOrder
+  motivosBaja?: Prisma.SortOrderInput | Prisma.SortOrder
+  fechaBaja?: Prisma.SortOrderInput | Prisma.SortOrder
   nombreApellidos?: Prisma.SortOrder
   cargoOcupa?: Prisma.SortOrder
   departamentoArea?: Prisma.SortOrder
@@ -888,9 +880,6 @@ export type AccountRequestOrderByWithAggregationInput = {
   aprobadoFecha?: Prisma.SortOrderInput | Prisma.SortOrder
   firmadoPorEjecutado?: Prisma.SortOrder
   ejecutadoFecha?: Prisma.SortOrderInput | Prisma.SortOrder
-  bajaEntidad?: Prisma.SortOrder
-  motivosBaja?: Prisma.SortOrderInput | Prisma.SortOrder
-  fechaBaja?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.AccountRequestCountOrderByAggregateInput
   _max?: Prisma.AccountRequestMaxOrderByAggregateInput
   _min?: Prisma.AccountRequestMinOrderByAggregateInput
@@ -905,6 +894,8 @@ export type AccountRequestScalarWhereWithAggregatesInput = {
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"AccountRequest"> | Date | string
   folio?: Prisma.StringNullableWithAggregatesFilter<"AccountRequest"> | string | null
   tipoSolicitud?: Prisma.EnumTipoSolicitudWithAggregatesFilter<"AccountRequest"> | $Enums.TipoSolicitud
+  motivosBaja?: Prisma.StringNullableWithAggregatesFilter<"AccountRequest"> | string | null
+  fechaBaja?: Prisma.DateTimeNullableWithAggregatesFilter<"AccountRequest"> | Date | string | null
   nombreApellidos?: Prisma.StringWithAggregatesFilter<"AccountRequest"> | string
   cargoOcupa?: Prisma.StringWithAggregatesFilter<"AccountRequest"> | string
   departamentoArea?: Prisma.StringWithAggregatesFilter<"AccountRequest"> | string
@@ -964,9 +955,6 @@ export type AccountRequestScalarWhereWithAggregatesInput = {
   aprobadoFecha?: Prisma.DateTimeNullableWithAggregatesFilter<"AccountRequest"> | Date | string | null
   firmadoPorEjecutado?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
   ejecutadoFecha?: Prisma.DateTimeNullableWithAggregatesFilter<"AccountRequest"> | Date | string | null
-  bajaEntidad?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
-  motivosBaja?: Prisma.StringNullableWithAggregatesFilter<"AccountRequest"> | string | null
-  fechaBaja?: Prisma.DateTimeNullableWithAggregatesFilter<"AccountRequest"> | Date | string | null
 }
 
 export type AccountRequestCreateInput = {
@@ -975,6 +963,8 @@ export type AccountRequestCreateInput = {
   updatedAt?: Date | string
   folio?: string | null
   tipoSolicitud: $Enums.TipoSolicitud
+  motivosBaja?: string | null
+  fechaBaja?: Date | string | null
   nombreApellidos: string
   cargoOcupa: string
   departamentoArea: string
@@ -1034,9 +1024,6 @@ export type AccountRequestCreateInput = {
   aprobadoFecha?: Date | string | null
   firmadoPorEjecutado?: boolean
   ejecutadoFecha?: Date | string | null
-  bajaEntidad?: boolean
-  motivosBaja?: string | null
-  fechaBaja?: Date | string | null
 }
 
 export type AccountRequestUncheckedCreateInput = {
@@ -1045,6 +1032,8 @@ export type AccountRequestUncheckedCreateInput = {
   updatedAt?: Date | string
   folio?: string | null
   tipoSolicitud: $Enums.TipoSolicitud
+  motivosBaja?: string | null
+  fechaBaja?: Date | string | null
   nombreApellidos: string
   cargoOcupa: string
   departamentoArea: string
@@ -1104,9 +1093,6 @@ export type AccountRequestUncheckedCreateInput = {
   aprobadoFecha?: Date | string | null
   firmadoPorEjecutado?: boolean
   ejecutadoFecha?: Date | string | null
-  bajaEntidad?: boolean
-  motivosBaja?: string | null
-  fechaBaja?: Date | string | null
 }
 
 export type AccountRequestUpdateInput = {
@@ -1115,6 +1101,8 @@ export type AccountRequestUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   folio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipoSolicitud?: Prisma.EnumTipoSolicitudFieldUpdateOperationsInput | $Enums.TipoSolicitud
+  motivosBaja?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaBaja?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   nombreApellidos?: Prisma.StringFieldUpdateOperationsInput | string
   cargoOcupa?: Prisma.StringFieldUpdateOperationsInput | string
   departamentoArea?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1174,9 +1162,6 @@ export type AccountRequestUpdateInput = {
   aprobadoFecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   firmadoPorEjecutado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ejecutadoFecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  bajaEntidad?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  motivosBaja?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  fechaBaja?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type AccountRequestUncheckedUpdateInput = {
@@ -1185,6 +1170,8 @@ export type AccountRequestUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   folio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipoSolicitud?: Prisma.EnumTipoSolicitudFieldUpdateOperationsInput | $Enums.TipoSolicitud
+  motivosBaja?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaBaja?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   nombreApellidos?: Prisma.StringFieldUpdateOperationsInput | string
   cargoOcupa?: Prisma.StringFieldUpdateOperationsInput | string
   departamentoArea?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1244,9 +1231,6 @@ export type AccountRequestUncheckedUpdateInput = {
   aprobadoFecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   firmadoPorEjecutado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ejecutadoFecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  bajaEntidad?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  motivosBaja?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  fechaBaja?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type AccountRequestCreateManyInput = {
@@ -1255,6 +1239,8 @@ export type AccountRequestCreateManyInput = {
   updatedAt?: Date | string
   folio?: string | null
   tipoSolicitud: $Enums.TipoSolicitud
+  motivosBaja?: string | null
+  fechaBaja?: Date | string | null
   nombreApellidos: string
   cargoOcupa: string
   departamentoArea: string
@@ -1314,9 +1300,6 @@ export type AccountRequestCreateManyInput = {
   aprobadoFecha?: Date | string | null
   firmadoPorEjecutado?: boolean
   ejecutadoFecha?: Date | string | null
-  bajaEntidad?: boolean
-  motivosBaja?: string | null
-  fechaBaja?: Date | string | null
 }
 
 export type AccountRequestUpdateManyMutationInput = {
@@ -1325,6 +1308,8 @@ export type AccountRequestUpdateManyMutationInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   folio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipoSolicitud?: Prisma.EnumTipoSolicitudFieldUpdateOperationsInput | $Enums.TipoSolicitud
+  motivosBaja?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaBaja?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   nombreApellidos?: Prisma.StringFieldUpdateOperationsInput | string
   cargoOcupa?: Prisma.StringFieldUpdateOperationsInput | string
   departamentoArea?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1384,9 +1369,6 @@ export type AccountRequestUpdateManyMutationInput = {
   aprobadoFecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   firmadoPorEjecutado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ejecutadoFecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  bajaEntidad?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  motivosBaja?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  fechaBaja?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type AccountRequestUncheckedUpdateManyInput = {
@@ -1395,6 +1377,8 @@ export type AccountRequestUncheckedUpdateManyInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   folio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tipoSolicitud?: Prisma.EnumTipoSolicitudFieldUpdateOperationsInput | $Enums.TipoSolicitud
+  motivosBaja?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaBaja?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   nombreApellidos?: Prisma.StringFieldUpdateOperationsInput | string
   cargoOcupa?: Prisma.StringFieldUpdateOperationsInput | string
   departamentoArea?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1454,9 +1438,6 @@ export type AccountRequestUncheckedUpdateManyInput = {
   aprobadoFecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   firmadoPorEjecutado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ejecutadoFecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  bajaEntidad?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  motivosBaja?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  fechaBaja?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type AccountRequestCountOrderByAggregateInput = {
@@ -1465,6 +1446,8 @@ export type AccountRequestCountOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
   folio?: Prisma.SortOrder
   tipoSolicitud?: Prisma.SortOrder
+  motivosBaja?: Prisma.SortOrder
+  fechaBaja?: Prisma.SortOrder
   nombreApellidos?: Prisma.SortOrder
   cargoOcupa?: Prisma.SortOrder
   departamentoArea?: Prisma.SortOrder
@@ -1524,9 +1507,6 @@ export type AccountRequestCountOrderByAggregateInput = {
   aprobadoFecha?: Prisma.SortOrder
   firmadoPorEjecutado?: Prisma.SortOrder
   ejecutadoFecha?: Prisma.SortOrder
-  bajaEntidad?: Prisma.SortOrder
-  motivosBaja?: Prisma.SortOrder
-  fechaBaja?: Prisma.SortOrder
 }
 
 export type AccountRequestMaxOrderByAggregateInput = {
@@ -1535,6 +1515,8 @@ export type AccountRequestMaxOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
   folio?: Prisma.SortOrder
   tipoSolicitud?: Prisma.SortOrder
+  motivosBaja?: Prisma.SortOrder
+  fechaBaja?: Prisma.SortOrder
   nombreApellidos?: Prisma.SortOrder
   cargoOcupa?: Prisma.SortOrder
   departamentoArea?: Prisma.SortOrder
@@ -1594,9 +1576,6 @@ export type AccountRequestMaxOrderByAggregateInput = {
   aprobadoFecha?: Prisma.SortOrder
   firmadoPorEjecutado?: Prisma.SortOrder
   ejecutadoFecha?: Prisma.SortOrder
-  bajaEntidad?: Prisma.SortOrder
-  motivosBaja?: Prisma.SortOrder
-  fechaBaja?: Prisma.SortOrder
 }
 
 export type AccountRequestMinOrderByAggregateInput = {
@@ -1605,6 +1584,8 @@ export type AccountRequestMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
   folio?: Prisma.SortOrder
   tipoSolicitud?: Prisma.SortOrder
+  motivosBaja?: Prisma.SortOrder
+  fechaBaja?: Prisma.SortOrder
   nombreApellidos?: Prisma.SortOrder
   cargoOcupa?: Prisma.SortOrder
   departamentoArea?: Prisma.SortOrder
@@ -1664,9 +1645,6 @@ export type AccountRequestMinOrderByAggregateInput = {
   aprobadoFecha?: Prisma.SortOrder
   firmadoPorEjecutado?: Prisma.SortOrder
   ejecutadoFecha?: Prisma.SortOrder
-  bajaEntidad?: Prisma.SortOrder
-  motivosBaja?: Prisma.SortOrder
-  fechaBaja?: Prisma.SortOrder
 }
 
 export type EnumTipoSolicitudFieldUpdateOperationsInput = {
@@ -1689,6 +1667,8 @@ export type AccountRequestSelect<ExtArgs extends runtime.Types.Extensions.Intern
   updatedAt?: boolean
   folio?: boolean
   tipoSolicitud?: boolean
+  motivosBaja?: boolean
+  fechaBaja?: boolean
   nombreApellidos?: boolean
   cargoOcupa?: boolean
   departamentoArea?: boolean
@@ -1748,9 +1728,6 @@ export type AccountRequestSelect<ExtArgs extends runtime.Types.Extensions.Intern
   aprobadoFecha?: boolean
   firmadoPorEjecutado?: boolean
   ejecutadoFecha?: boolean
-  bajaEntidad?: boolean
-  motivosBaja?: boolean
-  fechaBaja?: boolean
 }, ExtArgs["result"]["accountRequest"]>
 
 export type AccountRequestSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1759,6 +1736,8 @@ export type AccountRequestSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   updatedAt?: boolean
   folio?: boolean
   tipoSolicitud?: boolean
+  motivosBaja?: boolean
+  fechaBaja?: boolean
   nombreApellidos?: boolean
   cargoOcupa?: boolean
   departamentoArea?: boolean
@@ -1818,9 +1797,6 @@ export type AccountRequestSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   aprobadoFecha?: boolean
   firmadoPorEjecutado?: boolean
   ejecutadoFecha?: boolean
-  bajaEntidad?: boolean
-  motivosBaja?: boolean
-  fechaBaja?: boolean
 }, ExtArgs["result"]["accountRequest"]>
 
 export type AccountRequestSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1829,6 +1805,8 @@ export type AccountRequestSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   updatedAt?: boolean
   folio?: boolean
   tipoSolicitud?: boolean
+  motivosBaja?: boolean
+  fechaBaja?: boolean
   nombreApellidos?: boolean
   cargoOcupa?: boolean
   departamentoArea?: boolean
@@ -1888,9 +1866,6 @@ export type AccountRequestSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   aprobadoFecha?: boolean
   firmadoPorEjecutado?: boolean
   ejecutadoFecha?: boolean
-  bajaEntidad?: boolean
-  motivosBaja?: boolean
-  fechaBaja?: boolean
 }, ExtArgs["result"]["accountRequest"]>
 
 export type AccountRequestSelectScalar = {
@@ -1899,6 +1874,8 @@ export type AccountRequestSelectScalar = {
   updatedAt?: boolean
   folio?: boolean
   tipoSolicitud?: boolean
+  motivosBaja?: boolean
+  fechaBaja?: boolean
   nombreApellidos?: boolean
   cargoOcupa?: boolean
   departamentoArea?: boolean
@@ -1958,12 +1935,9 @@ export type AccountRequestSelectScalar = {
   aprobadoFecha?: boolean
   firmadoPorEjecutado?: boolean
   ejecutadoFecha?: boolean
-  bajaEntidad?: boolean
-  motivosBaja?: boolean
-  fechaBaja?: boolean
 }
 
-export type AccountRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "folio" | "tipoSolicitud" | "nombreApellidos" | "cargoOcupa" | "departamentoArea" | "tipoPersonal" | "cuenta" | "correoLocal" | "correoNacional" | "correoInternacional" | "correoInternet" | "correoInternetFechaTemp" | "intranetUNE" | "intranetNacional" | "internet" | "internetFechaTemp" | "mensajeriaCorporativa" | "chatInternet" | "chatInternetFechaTemp" | "facebook" | "twitter" | "youtube" | "otrasRedes" | "adminRed" | "adminLocal" | "usuarioAvanzado" | "ftpUneLectura" | "ftpUneModificar" | "ftpUneBorrar" | "ftpEntidadLectura" | "ftpEntidadModificar" | "ftpEntidadBorrar" | "tipoCuenta" | "fechaExpiracion" | "horarioExtralaboral" | "extraDesde" | "extraHasta" | "sabadoDesde" | "sabadoHasta" | "domingoDesde" | "domingoHasta" | "apnCorreoNacional" | "apnCorreoInternacional" | "apnInternet" | "telefonoCelular" | "pcNombre" | "pcInventario" | "pcAdicionalNombre" | "pcAdicionalInventario" | "softwareAutorizado" | "cuentaUsuario" | "actividadRealiza" | "administradorSistema" | "firmadoPorSolicitado" | "solicitadoFecha" | "firmadoPorRevisado" | "revisadoFecha" | "firmadoPorAprobado" | "aprobadoFecha" | "firmadoPorEjecutado" | "ejecutadoFecha" | "bajaEntidad" | "motivosBaja" | "fechaBaja", ExtArgs["result"]["accountRequest"]>
+export type AccountRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "folio" | "tipoSolicitud" | "motivosBaja" | "fechaBaja" | "nombreApellidos" | "cargoOcupa" | "departamentoArea" | "tipoPersonal" | "cuenta" | "correoLocal" | "correoNacional" | "correoInternacional" | "correoInternet" | "correoInternetFechaTemp" | "intranetUNE" | "intranetNacional" | "internet" | "internetFechaTemp" | "mensajeriaCorporativa" | "chatInternet" | "chatInternetFechaTemp" | "facebook" | "twitter" | "youtube" | "otrasRedes" | "adminRed" | "adminLocal" | "usuarioAvanzado" | "ftpUneLectura" | "ftpUneModificar" | "ftpUneBorrar" | "ftpEntidadLectura" | "ftpEntidadModificar" | "ftpEntidadBorrar" | "tipoCuenta" | "fechaExpiracion" | "horarioExtralaboral" | "extraDesde" | "extraHasta" | "sabadoDesde" | "sabadoHasta" | "domingoDesde" | "domingoHasta" | "apnCorreoNacional" | "apnCorreoInternacional" | "apnInternet" | "telefonoCelular" | "pcNombre" | "pcInventario" | "pcAdicionalNombre" | "pcAdicionalInventario" | "softwareAutorizado" | "cuentaUsuario" | "actividadRealiza" | "administradorSistema" | "firmadoPorSolicitado" | "solicitadoFecha" | "firmadoPorRevisado" | "revisadoFecha" | "firmadoPorAprobado" | "aprobadoFecha" | "firmadoPorEjecutado" | "ejecutadoFecha", ExtArgs["result"]["accountRequest"]>
 
 export type $AccountRequestPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "AccountRequest"
@@ -1974,6 +1948,8 @@ export type $AccountRequestPayload<ExtArgs extends runtime.Types.Extensions.Inte
     updatedAt: Date
     folio: string | null
     tipoSolicitud: $Enums.TipoSolicitud
+    motivosBaja: string | null
+    fechaBaja: Date | null
     nombreApellidos: string
     cargoOcupa: string
     departamentoArea: string
@@ -2033,9 +2009,6 @@ export type $AccountRequestPayload<ExtArgs extends runtime.Types.Extensions.Inte
     aprobadoFecha: Date | null
     firmadoPorEjecutado: boolean
     ejecutadoFecha: Date | null
-    bajaEntidad: boolean
-    motivosBaja: string | null
-    fechaBaja: Date | null
   }, ExtArgs["result"]["accountRequest"]>
   composites: {}
 }
@@ -2464,6 +2437,8 @@ export interface AccountRequestFieldRefs {
   readonly updatedAt: Prisma.FieldRef<"AccountRequest", 'DateTime'>
   readonly folio: Prisma.FieldRef<"AccountRequest", 'String'>
   readonly tipoSolicitud: Prisma.FieldRef<"AccountRequest", 'TipoSolicitud'>
+  readonly motivosBaja: Prisma.FieldRef<"AccountRequest", 'String'>
+  readonly fechaBaja: Prisma.FieldRef<"AccountRequest", 'DateTime'>
   readonly nombreApellidos: Prisma.FieldRef<"AccountRequest", 'String'>
   readonly cargoOcupa: Prisma.FieldRef<"AccountRequest", 'String'>
   readonly departamentoArea: Prisma.FieldRef<"AccountRequest", 'String'>
@@ -2523,9 +2498,6 @@ export interface AccountRequestFieldRefs {
   readonly aprobadoFecha: Prisma.FieldRef<"AccountRequest", 'DateTime'>
   readonly firmadoPorEjecutado: Prisma.FieldRef<"AccountRequest", 'Boolean'>
   readonly ejecutadoFecha: Prisma.FieldRef<"AccountRequest", 'DateTime'>
-  readonly bajaEntidad: Prisma.FieldRef<"AccountRequest", 'Boolean'>
-  readonly motivosBaja: Prisma.FieldRef<"AccountRequest", 'String'>
-  readonly fechaBaja: Prisma.FieldRef<"AccountRequest", 'DateTime'>
 }
     
 

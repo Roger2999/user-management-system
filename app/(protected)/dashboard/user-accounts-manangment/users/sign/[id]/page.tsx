@@ -1,10 +1,9 @@
 import prisma from "@/lib/prisma";
 import SignForm from "./components/sign-form";
-import type { SignValues } from "./components/sign-form";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
-
+import { FileSignature } from "lucide-react";
 interface Props {
   params: Promise<{ id: string }>;
 }
@@ -23,8 +22,9 @@ export default async function SignPage({ params }: Props) {
     user?.firmadoPorEjecutado
   )
     return (
-      <div className="flex min-h-full w-full justify-center">
-        <p className="text-2xl">Solicitud firmada ✅</p>
+      <div className="mt-10 flex w-full flex-col items-center justify-center gap-4">
+        <p className="text-2xl">Solicitud de cuenta firmada</p>
+        <FileSignature className="text-success size-10 animate-bounce" />
       </div>
     );
   return (

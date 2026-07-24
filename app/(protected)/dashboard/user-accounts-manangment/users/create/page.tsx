@@ -1,4 +1,4 @@
-import CreateUserAccountForm from "./components/create-user-account-form";
+import CreateUserAccountForm from "./components/user-account-form";
 
 export default function CreatePage() {
   return (

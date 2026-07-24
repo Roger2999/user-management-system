@@ -24,7 +24,7 @@ export const filtersByRequestType: FilterConfig[] = [
   {
     value: "bajaEntidad",
     label: "Baja",
-    where: { bajaEntidad: true },
+    where: { tipoSolicitud: "BAJA" },
   },
 ];
 
