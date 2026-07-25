@@ -20,20 +20,20 @@ export default async function Dashboard() {
     {
       title: "Gestionar cuentas de usuario",
       description: "Altas, bajas y firma cuentas de usuario pendientes",
-      href: "/dashboard/user-accounts-manangment/",
+      href: "/dashboard/user-accounts-management/",
       icon: UsersIcon,
     },
     {
       title: "Gestionar incidentes de ciberseguridad",
       description: "Administra los incidentes que se producen en la empresa",
-      href: "/dashboard/user-accounts-manangment/",
+      href: "/dashboard/user-accounts-management/",
       icon: ShieldAlertIcon,
     },
     {
       title: "Gestionar Servidores y servicios",
       description:
         "Gestion de servidores de la empresa y servicios que se brindan",
-      href: "/dashboard/user-accounts-manangment/",
+      href: "/dashboard/user-accounts-management/",
       icon: ServerIcon,
     },
   ];

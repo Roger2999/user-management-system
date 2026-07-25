@@ -1,4 +1,4 @@
-import type { AccountRequestValidationErrors } from "../app/(protected)/dashboard/user-accounts-manangment/users/create/models/account-request-schema.model";
+import type { AccountRequestValidationErrors } from "../app/(protected)/dashboard/user-accounts-management/users/create/models/account-request-schema.model";
 
 type DbError = {
   status?: number;

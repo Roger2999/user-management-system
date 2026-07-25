@@ -68,7 +68,7 @@ export default function NotificationBell({ count7, count1, accounts }: Props) {
           <>
             <DropdownMenuItem asChild>
               <Link
-                href={`/dashboard/user-accounts-manangment/users?filter=${encodeURIComponent("expiring7")}`}
+                href={`/dashboard/user-accounts-management/users?filter=${encodeURIComponent("expiring7")}`}
                 className="flex w-full items-center justify-between"
               >
                 <span>Expiran en ≤7 días</span>
@@ -77,7 +77,7 @@ export default function NotificationBell({ count7, count1, accounts }: Props) {
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link
-                href={`/dashboard/user-accounts-manangment/users?filter=${encodeURIComponent("expiring1")}`}
+                href={`/dashboard/user-accounts-management/users?filter=${encodeURIComponent("expiring1")}`}
                 className="flex w-full items-center justify-between"
               >
                 <span>Expiran en ≤1 día</span>
@@ -93,7 +93,7 @@ export default function NotificationBell({ count7, count1, accounts }: Props) {
                 return (
                   <DropdownMenuItem key={account.id} asChild>
                     <Link
-                      href={`/dashboard/user-accounts-manangment/users/edit/${account.id}`}
+                      href={`/dashboard/user-accounts-management/users/edit/${account.id}`}
                       className="flex w-full items-center justify-between gap-2"
                     >
                       <span className="truncate">
