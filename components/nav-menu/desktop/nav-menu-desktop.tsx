@@ -29,7 +29,7 @@ export default async function NavMenuDesktop() {
         {session
           ? privateRoutes.map((route) => (
               <li key={route.id}>
-                <LinkButton href={route.href}>
+                <LinkButton className="flex gap-2" href={route.href}>
                   {route.name}
                   {route.Icon && <route.Icon />}
                 </LinkButton>

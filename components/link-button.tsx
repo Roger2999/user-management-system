@@ -14,7 +14,7 @@ export default function LinkButton({
   href = "/",
   ...props
 }: Props) {
-  const baseStyles = "text-md p-1 rounded-t-md transition-colors flex gap-2";
+  const baseStyles = "text-md p-1 rounded-md transition-colors";
   const pathname = usePathname();
   const isActive = pathname === href;
   return (
@@ -26,7 +26,9 @@ export default function LinkButton({
         className,
         type === "neutral" && "text-foreground hover:bg-muted",
         type === "destructive" && "text-destructive hover:bg-destructive/10",
-        type === "success" && "text-success hover:bg-success/10",
+        type === "success" &&
+          "text-foreground bg-success/40 hover:bg-success/20",
+        type === "link" && "text-success hover:bg-success/10",
         isActive && "border-primary border-b-2",
       )}
     >

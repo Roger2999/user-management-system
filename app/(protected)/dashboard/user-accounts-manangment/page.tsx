@@ -14,6 +14,7 @@ import {
   PenLine,
   AlarmClock,
 } from "lucide-react";
+import LinkButton from "@/components/link-button";
 
 const requestTypeIcons: Record<
   string,
@@ -38,13 +39,20 @@ export default async function UserAccountsManangmentPage() {
 
   return (
     <div className="flex flex-col items-center gap-6">
-      <header className="w-full space-y-2">
+      <header className="w-full max-w-5xl space-y-2">
         <h1 className="text-center text-3xl font-semibold">
           Gestión de cuentas de usuario
         </h1>
-        <h2 className="text-muted-foreground text-center text-xl font-medium">
+        <h2 className="text-muted-foreground mb-10 text-center text-xl font-medium">
           Empresa Eléctrica de Matanzas
         </h2>
+        <LinkButton
+          className="p-2 text-center"
+          type="success"
+          href="/dashboard/user-accounts-manangment/users/create/"
+        >
+          Crear cuenta
+        </LinkButton>
       </header>
       <article className="w-full max-w-5xl space-y-10">
         <section className="flex w-full flex-col gap-4">
