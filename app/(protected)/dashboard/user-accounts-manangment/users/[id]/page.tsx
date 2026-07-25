@@ -1,7 +1,6 @@
 import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import UserAccountDocument from "./components/UserAccountDocument";
-import { PrintButton } from "./components/print-button";
+import DocumentPreview from "./components/DocumentPreview";
 
 export default async function UserDetailsPage({
   params,
@@ -15,13 +14,5 @@ export default async function UserDetailsPage({
 
   if (!user) notFound();
 
-  return (
-    <div className="bg-muted/40 min-h-screen p-4 print:bg-white print:p-0">
-      <div className="mx-auto mb-4 flex max-w-3xl justify-end print:hidden"></div>
-      <PrintButton />
-      <div className="mx-auto w-[210mm] max-w-full bg-white p-[12mm] shadow-lg print:w-auto print:p-0 print:shadow-none">
-        <UserAccountDocument user={user} />
-      </div>
-    </div>
-  );
+  return <DocumentPreview user={user} />;
 }

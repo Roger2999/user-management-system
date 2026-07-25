@@ -56,7 +56,7 @@ export default async function UsersTable({
               <Link
                 href={`/dashboard/user-accounts-manangment/users/${user.id}`}
               >
-                <EyeIcon className="hover:text-success size-6" />
+                <EyeIcon className="hover:text-success size-8" />
               </Link>
             </TableCell>
             <TableCell className="text-right">

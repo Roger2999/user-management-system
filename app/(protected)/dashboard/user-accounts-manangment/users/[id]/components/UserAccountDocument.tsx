@@ -14,8 +14,8 @@ const formatDate = (date: Date | null | undefined): string => {
 
 function Check({ label, checked }: { label?: string; checked: boolean }) {
   return (
-    <span className="mr-1.5 inline-flex items-center gap-1 whitespace-nowrap">
-      <span className="flex h-2.75 w-2.75 items-center justify-center border border-black text-[8px] leading-none font-bold">
+    <span className="mr-1 inline-flex items-center gap-1 whitespace-nowrap">
+      <span className="flex h-3 w-3 items-center justify-center border border-black text-[8px] leading-none">
         {checked ? "X" : ""}
       </span>
       {label ? <span>{label}</span> : null}
@@ -43,7 +43,7 @@ function Cell({
   className?: string;
 }) {
   return (
-    <div className={`flex items-center p-0.75 ${width} ${className}`}>
+    <div className={`flex items-center p-1 ${width} ${className}`}>
       {children}
     </div>
   );
@@ -53,19 +53,10 @@ function Row({ children }: { children: ReactNode }) {
   return <div className="flex border-x border-b border-black">{children}</div>;
 }
 
-function SectionTitle({ children }: { children: ReactNode }) {
+function MotivoColumn() {
   return (
-    <div className="border border-b-0 border-black bg-[#e0e0e0] p-0.75 font-bold">
-      {children}
-    </div>
-  );
-}
-
-function SubHeader({ left, right }: { left: string; right: string }) {
-  return (
-    <div className="flex border-x border-b border-black bg-[#f2f2f2] font-bold">
-      <div className="w-[45%] p-0.75">{left}</div>
-      <div className="w-[55%] border-l border-black p-0.75">{right}</div>
+    <div className="flex w-[45%] items-center border-l border-black p-1">
+      <span className="text-[7px]">MOTIVO DE LA SOLICITUD</span>
     </div>
   );
 }
@@ -75,20 +66,20 @@ function SubHeader({ left, right }: { left: string; right: string }) {
 function SignatureBox({ children }: { children: ReactNode }) {
   return (
     <div className="border border-t-0 border-black">
-      <div className="border-b border-black bg-[#e0e0e0] p-0.5 text-center font-bold">
+      <div className="border-b border-black bg-[#e0e0e0] p-1 text-center text-[8px] font-bold">
         {children}
       </div>
-      <div className="flex h-8">
-        <div className="w-[40%] border-r border-black p-0.75">
+      <div className="flex h-10">
+        <div className="w-[35%] border-r border-black p-1">
           <Label>Nombre y apellidos:</Label>
         </div>
-        <div className="w-[30%] border-r border-black p-0.75">
+        <div className="w-[25%] border-r border-black p-1">
           <Label>Cargo:</Label>
         </div>
-        <div className="w-[15%] border-r border-black p-0.75">
+        <div className="w-[20%] border-r border-black p-1">
           <Label>Fecha:</Label>
         </div>
-        <div className="w-[15%] p-0.75">
+        <div className="w-[20%] p-1">
           <Label>Firma:</Label>
         </div>
       </div>
@@ -100,26 +91,31 @@ function SignatureBox({ children }: { children: ReactNode }) {
 
 export default function UserAccountDocument({ user }: Props) {
   return (
-    <div className="font-sans text-[7.5px] leading-tight text-black">
+    <div className="font-sans text-[8px] leading-tight text-black">
+      {/* TÍTULO CENTRADO FUERA DEL CUADRO */}
+      <div className="mb-1 text-center text-[11px] font-bold">
+        ANEXO OM-PP 0001. A1 Solicitud de cuenta de usuario y servicios de red
+      </div>
+
       {/* ENCABEZADO SUPERIOR DE TRÁMITE */}
       <div className="mb-1 flex border border-black">
-        <div className="w-[60%] p-1.5 text-[9.5px] font-bold">
-          ANEXO OM-PP 0001. A1 Solicitud de cuenta de usuario y servicios de red
+        <div className="w-[60%] p-1.5 text-[9px] font-bold">
+          SOLICITUD DE CUENTA DE USUARIO Y SERVICIOS DE RED
         </div>
         <div className="flex w-[40%] border-l border-black">
-          <div className="flex flex-1 flex-col items-center justify-center border-r border-black p-0.5 text-[6.5px]">
+          <div className="flex flex-1 flex-col items-center justify-center border-r border-black p-0.5 text-[7px]">
             <span className="font-bold">ALTA</span>
             <Check checked={user.tipoSolicitud === "ALTA"} />
           </div>
-          <div className="flex flex-1 flex-col items-center justify-center border-r border-black p-0.5 text-[6.5px]">
+          <div className="flex flex-1 flex-col items-center justify-center border-r border-black p-0.5 text-[7px]">
             <span className="font-bold">ACTUALIZACIÓN</span>
             <Check checked={user.tipoSolicitud === "ACTUALIZACION"} />
           </div>
-          <div className="flex flex-1 flex-col items-center justify-center border-r border-black p-0.5 text-[6.5px]">
+          <div className="flex flex-1 flex-col items-center justify-center border-r border-black p-0.5 text-[7px]">
             <span className="font-bold">MODIFICACIÓN</span>
             <Check checked={false} />
           </div>
-          <div className="flex flex-1 flex-col items-center justify-center p-0.5 text-[6.5px]">
+          <div className="flex flex-1 flex-col items-center justify-center p-0.5 text-[7px]">
             <span className="font-bold">FOLIO</span>
             <span className="mt-0.5">{user.folio || ""}</span>
           </div>
@@ -127,19 +123,12 @@ export default function UserAccountDocument({ user }: Props) {
       </div>
 
       {/* SECCIÓN 1: DATOS GENERALES */}
-      <SectionTitle>
-        SOLICITUD DE CUENTA DE USUARIO Y SERVICIOS DE RED
-      </SectionTitle>
-
       <Row>
         <Cell width="w-1/2" className="border-r border-black">
           <Label>Nombre y apellidos:</Label>
           <Value>{user.nombreApellidos || ""}</Value>
         </Cell>
-        <Cell width="w-1/2">
-          <Label>Departamento/Área:</Label>
-          <Value>{user.departamentoArea || ""}</Value>
-        </Cell>
+        <Cell width="w-1/2" />
       </Row>
 
       <Row>
@@ -148,8 +137,8 @@ export default function UserAccountDocument({ user }: Props) {
           <Value>{user.cargoOcupa || ""}</Value>
         </Cell>
         <Cell width="w-1/2">
-          <Label>Cuenta:</Label>
-          <Value>{user.cuenta || ""}</Value>
+          <Label>Departamento/ Area:</Label>
+          <Value>{user.departamentoArea || ""}</Value>
         </Cell>
       </Row>
 
@@ -166,17 +155,22 @@ export default function UserAccountDocument({ user }: Props) {
           />
           <Check label="Técnico" checked={user.tipoPersonal === "TECNICO"} />
           <Check label="Otro" checked={user.tipoPersonal === "OTRO"} />
+          <span className="ml-auto">
+            <Label>Cuenta:</Label> {user.cuenta || ""}
+          </span>
         </Cell>
       </Row>
 
       {/* SECCIÓN 2: MATRIZ DE SERVICIOS REQUERIDOS */}
-      <SubHeader left="Servicios requeridos:" right="MOTIVO DE LA SOLICITUD" />
+      <div className="border-x border-b border-black bg-[#e0e0e0] p-1 font-bold">
+        Servicios requeridos:
+      </div>
 
       {/* CORREO ELECTRÓNICO */}
       <Row>
-        <Cell width="w-[45%]" className="border-r border-black">
+        <Cell width="w-[55%]" className="border-r border-black">
           <div className="w-full">
-            <div className="mb-0.5 font-bold">CORREO ELECTRONICO</div>
+            <div className="mb-1 font-bold">CORREO ELECTRONICO</div>
             <CheckRow label="Correo Local:" yes={user.correoLocal} />
             <CheckRow label="Correo Nacional:" yes={user.correoNacional} />
             <CheckRow
@@ -184,63 +178,58 @@ export default function UserAccountDocument({ user }: Props) {
               yes={user.correoInternacional}
             />
             <div className="flex items-center">
-              <span className="w-22.5">Correo Internet:</span>
+              <span className="w-24">Correo Internet:</span>
               <Check label="Si" checked={user.correoInternet === true} />
               <Check label="No" checked={user.correoInternet === false} />
-              <span className="text-[6px]">No. Temp. ___/___/20__</span>
+              <span className="ml-1 text-[6px]">No. Temp. ___/___/20__</span>
             </div>
           </div>
         </Cell>
-        <Cell width="w-[55%]">
-          <div className="h-10" />
-        </Cell>
+        <MotivoColumn />
       </Row>
 
       {/* ACCESO A NAVEGACIÓN WEB */}
       <Row>
-        <Cell width="w-[45%]" className="border-r border-black">
+        <Cell width="w-[55%]" className="border-r border-black">
           <div className="w-full">
+            <div className="mb-1 font-bold">ACCESO A NAVEGACIÓN WEB</div>
             <CheckRow label="Intranet UNE:" yes={user.intranetUNE} />
             <CheckRow label="Intranet Nacional:" yes={user.intranetNacional} />
             <div className="flex items-center">
-              <span className="w-22.5">Internet:</span>
+              <span className="w-24">Internet:</span>
               <Check label="Si" checked={user.internet === true} />
               <Check label="No" checked={user.internet === false} />
-              <span className="text-[6px]">No. Temp. ___/___/20__</span>
+              <span className="ml-1 text-[6px]">No. Temp. ___/___/20__</span>
             </div>
           </div>
         </Cell>
-        <Cell width="w-[55%]">
-          <div className="h-10" />
-        </Cell>
+        <MotivoColumn />
       </Row>
 
       {/* MENSAJERÍA INSTANTÁNEA / CHAT */}
       <Row>
-        <Cell width="w-[45%]" className="border-r border-black">
+        <Cell width="w-[55%]" className="border-r border-black">
           <div className="w-full">
-            <div className="mb-0.5 font-bold">
+            <div className="mb-1 font-bold">
               Mensajería Instantánea / Chat
             </div>
             <CheckRow label="Corporativa:" yes={user.mensajeriaCorporativa} />
             <div className="flex items-center">
-              <span className="w-22.5">Chat Internet:</span>
+              <span className="w-24">Chat Internet:</span>
               <Check label="Si" checked={user.chatInternet === true} />
               <Check label="No" checked={user.chatInternet === false} />
-              <span className="text-[6px]">No. Temp. ___/___/20__</span>
+              <span className="ml-1 text-[6px]">No. Temp. ___/___/20__</span>
             </div>
           </div>
         </Cell>
-        <Cell width="w-[55%]">
-          <div className="h-10" />
-        </Cell>
+        <MotivoColumn />
       </Row>
 
       {/* REDES SOCIALES */}
       <Row>
-        <Cell width="w-[45%]" className="border-r border-black">
+        <Cell width="w-[55%]" className="border-r border-black">
           <div className="w-full">
-            <div className="mb-0.5 font-bold">Redes Sociales</div>
+            <div className="mb-1 font-bold">Redes Sociales</div>
             <div className="flex flex-wrap">
               <Check label="Facebook" checked={user.facebook} />
               <Check label="Twitter" checked={user.twitter} />
@@ -249,65 +238,72 @@ export default function UserAccountDocument({ user }: Props) {
             </div>
           </div>
         </Cell>
-        <Cell width="w-[55%]">
-          <div className="h-10" />
-        </Cell>
+        <MotivoColumn />
       </Row>
 
       {/* OTRAS Y PRIVILEGIOS */}
       <Row>
-        <Cell width="w-[45%]" className="border-r border-black">
+        <Cell width="w-[55%]" className="border-r border-black">
           <Label>Otras: Especificar:</Label>
           <Value>{user.otrasRedes || ""}</Value>
         </Cell>
-        <Cell width="w-[55%]">
-          <Label>Privilegios de usuario sobre la red y el ordenador:</Label>
-        </Cell>
+        <MotivoColumn />
       </Row>
+
+      {/* PRIVILEGIOS DE USUARIO */}
       <Row>
-        <Cell width="w-[45%]" className="h-3.5 border-r border-black" />
-        <Cell width="w-[55%]">
-          <Check
-            label="Administrador de Red"
-            checked={user.adminRed === true}
-          />
-          <Check label="No" checked={user.adminRed === false} />
+        <Cell width="w-[55%]" className="border-r border-black">
+          <div className="w-full">
+            <div className="mb-1 font-bold">
+              Privilegios de usuario sobre la red y el ordenador
+            </div>
+            <div className="flex items-center">
+              <span className="w-24">Administrador de Red:</span>
+              <Check label="Si" checked={user.adminRed === true} />
+              <Check label="No" checked={user.adminRed === false} />
+            </div>
+            <div className="flex items-center">
+              <span className="w-24">Administrador Local:</span>
+              <Check label="Si" checked={user.adminLocal === true} />
+              <Check label="No" checked={user.adminLocal === false} />
+            </div>
+            <div className="flex items-center">
+              <span className="w-24">Usuario avanzado:</span>
+              <Check label="Si" checked={user.usuarioAvanzado === true} />
+              <Check label="No" checked={user.usuarioAvanzado === false} />
+            </div>
+          </div>
         </Cell>
-      </Row>
-      <Row>
-        <Cell width="w-[45%]" className="h-3.5 border-r border-black" />
-        <Cell width="w-[55%]">
-          <Check
-            label="Administrador Local"
-            checked={user.adminLocal === true}
-          />
-          <Check label="No" checked={user.adminLocal === false} />
-        </Cell>
-      </Row>
-      <Row>
-        <Cell width="w-[45%]" className="h-3.5 border-r border-black" />
-        <Cell width="w-[55%]">
-          <Check
-            label="Usuario avanzado"
-            checked={user.usuarioAvanzado === true}
-          />
-          <Check label="No" checked={user.usuarioAvanzado === false} />
-        </Cell>
+        <MotivoColumn />
       </Row>
 
       {/* COMPARTIMENTOS FTP */}
       <Row>
         <Cell width="w-1/2" className="border-r border-black">
-          <Label>Acceso FTP UNE</Label>
-          <Check label="Solo Lectura" checked={user.ftpUneLectura} />
-          <Check label="Modificar" checked={user.ftpUneModificar} />
-          <Check label="Borrar" checked={user.ftpUneBorrar} />
+          <div className="w-full">
+            <div className="mb-1 font-bold">Acceso FTP UNE</div>
+            <div className="flex items-center">
+              <span className="w-20">Solo Lectura</span>
+              <Check checked={user.ftpUneLectura} />
+              <span className="w-16">Modificar</span>
+              <Check checked={user.ftpUneModificar} />
+              <span className="w-12">Borrar</span>
+              <Check checked={user.ftpUneBorrar} />
+            </div>
+          </div>
         </Cell>
         <Cell width="w-1/2">
-          <Label>Acceso FTP Entidad</Label>
-          <Check label="Solo Lectura" checked={user.ftpEntidadLectura} />
-          <Check label="Modificar" checked={user.ftpEntidadModificar} />
-          <Check label="Borrar" checked={user.ftpEntidadBorrar} />
+          <div className="w-full">
+            <div className="mb-1 font-bold">Acceso FTP Entidad</div>
+            <div className="flex items-center">
+              <span className="w-20">Solo Lectura</span>
+              <Check checked={user.ftpEntidadLectura} />
+              <span className="w-16">Modificar</span>
+              <Check checked={user.ftpEntidadModificar} />
+              <span className="w-12">Borrar</span>
+              <Check checked={user.ftpEntidadBorrar} />
+            </div>
+          </div>
         </Cell>
       </Row>
 
@@ -362,7 +358,7 @@ export default function UserAccountDocument({ user }: Props) {
           <Label>Acceso por APN:</Label>
           <Check label="Correo nacional" checked={user.apnCorreoNacional} />
           <Check
-            label="Correo internacional"
+            label="Correo Internacional"
             checked={user.apnCorreoInternacional}
           />
           <Check label="Internet" checked={user.apnInternet} />
@@ -384,10 +380,10 @@ export default function UserAccountDocument({ user }: Props) {
         </Cell>
       </Row>
       <Row>
-        <Cell width="w-1/2" className="h-3.5 border-r border-black">
+        <Cell width="w-1/2" className="h-4 border-r border-black">
           <Value>{user.pcNombre || ""}</Value>
         </Cell>
-        <Cell width="w-1/2" className="h-3.5">
+        <Cell width="w-1/2" className="h-4">
           <Value>{user.pcAdicionalNombre || ""}</Value>
         </Cell>
       </Row>
@@ -448,24 +444,24 @@ export default function UserAccountDocument({ user }: Props) {
 
       {/* SECCIÓN INFERIOR DE BAJA */}
       <div className="mt-1 flex border border-t-0 border-black">
-        <div className="flex w-1/4 items-center border-r border-black p-0.75">
+        <div className="flex w-1/4 items-center border-r border-black p-1">
           <Check
             label="Baja de la entidad"
             checked={user.tipoSolicitud === "BAJA"}
           />
         </div>
-        <div className="flex w-1/2 items-center border-r border-black p-0.75">
+        <div className="flex w-1/2 items-center border-r border-black p-1">
           <Label>Motivos de la baja:</Label>
           <Value>{user.motivosBaja || ""}</Value>
         </div>
-        <div className="flex w-1/4 items-center p-0.75">
+        <div className="flex w-1/4 items-center p-1">
           <Label>Fecha:</Label>
           <Value>{formatDate(user.fechaBaja) || "__/__/20__"}</Value>
         </div>
       </div>
 
       {/* NOTA ACLARATORIA AL PIE */}
-      <p className="mt-2 text-center text-[6.5px] italic">
+      <p className="mt-2 text-center text-[7px] italic">
         La presente planilla así como la cuenta de usuario asociada y los
         servicios implementados tiene una vigencia de dos (2) años a partir de
         su habilitación.
@@ -478,8 +474,8 @@ export default function UserAccountDocument({ user }: Props) {
 
 function CheckRow({ label, yes }: { label: string; yes: boolean }) {
   return (
-    <div className="mb-0.5 flex items-center">
-      <span className="w-22.5">{label}</span>
+    <div className="mb-1 flex items-center">
+      <span className="w-24">{label}</span>
       <Check label="Si" checked={yes === true} />
       <Check label="No" checked={yes === false} />
     </div>

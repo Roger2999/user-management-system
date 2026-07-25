@@ -8,6 +8,7 @@ interface Props {
   defaultValue?: string;
   errors?: string[];
   onChange?: (value: string) => void;
+  disabledValues?: string[];
 }
 
 export default function SelectField({
@@ -17,6 +18,7 @@ export default function SelectField({
   defaultValue,
   errors,
   onChange,
+  disabledValues,
 }: Props) {
   return (
     <div className="min-h-21 space-y-2">
@@ -33,7 +35,7 @@ export default function SelectField({
       >
         <option value="">Seleccionar...</option>
         {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
+          <option key={opt.value} value={opt.value} disabled={disabledValues?.includes(opt.value)}>
             {opt.label}
           </option>
         ))}

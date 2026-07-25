@@ -69,6 +69,7 @@ export default function UserAccountForm({
               defaultValue={state.data?.tipoSolicitud}
               errors={state.validationErrors?.tipoSolicitud}
               onChange={setTipoSolicitud}
+              disabledValues={mode === "create" ? ["BAJA"] : []}
             />
             {tipoSolicitud === "BAJA" && (
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

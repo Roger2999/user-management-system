@@ -141,7 +141,6 @@
   }
 }
 
-/* Impresión del documento de solicitud de cuenta de usuario (A4) */
 @page {
   size: A4;
   margin: 12mm;
@@ -149,6 +148,27 @@
 
 @media print {
   body {
-    background: #fff;
+    background: #fff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  [data-print-target],
+  [data-print-target] * {
+    visibility: visible !important;
+  }
+
+  [data-print-target] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
   }
 }

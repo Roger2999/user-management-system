@@ -52,7 +52,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="flex w-full flex-col gap-6">
-      <div className="flex w-full items-center justify-between px-5 pt-5">
+      <div className="flex w-full items-center justify-between px-5 pt-5 print:hidden">
         <NotificationBell
           count7={expiringIn7Count}
           count1={expiringIn1Count}
