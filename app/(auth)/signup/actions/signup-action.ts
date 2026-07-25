@@ -6,7 +6,6 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { SignupFormState } from "@/lib/types";
 import { SignupFormSchema } from "../models/signupFormSchema.model";
-import { APIError } from "better-auth";
 
 export const signupAction = async (
   prevState: SignupFormState,
@@ -37,23 +36,11 @@ export const signupAction = async (
       body: { email },
       headers: await headers(),
     });
-  } catch (error) {
-    if (error instanceof APIError) {
-      return {
-        data: { email, username },
-        success: false,
-        dbErrors: {
-          name: error.name,
-          message: error.message,
-          status: error.statusCode,
-        },
-        validationErrors: null,
-      };
-    }
+  } catch {
     return {
       data: { email, username },
       success: false,
-      dbErrors: { message: "Error inesperado" },
+      dbErrors: { message: "Error al crear la cuenta. Intenta de nuevo." },
       validationErrors: null,
     };
   }

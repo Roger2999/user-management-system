@@ -6,7 +6,6 @@ import z from "zod";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { APIError } from "better-auth";
 
 export const signinAction = async (
   prevState: SigninFormState,
@@ -31,23 +30,11 @@ export const signinAction = async (
       body: { email, password, rememberMe: true },
       headers: await headers(),
     });
-  } catch (error) {
-    if (error instanceof APIError) {
-      return {
-        data: { email },
-        success: false,
-        dbErrors: {
-          name: error.name,
-          message: error.message,
-          status: error.statusCode,
-        },
-        validationErrors: null,
-      };
-    }
+  } catch {
     return {
       data: { email },
       success: false,
-      dbErrors: { message: "Error inesperado" },
+      dbErrors: { message: "Credenciales incorrectas. Intenta de nuevo." },
       validationErrors: null,
     };
   }
