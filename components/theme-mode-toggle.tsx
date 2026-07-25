@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useState } from "react";
-import { themes } from "@/lib/constants";
+import { THEMES } from "@/lib/constants";
 
 export function ThemeModeToggle() {
   const { theme, setTheme } = useTheme();
@@ -39,7 +39,7 @@ export function ThemeModeToggle() {
         <span className="sr-only">Cambiar tema</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-fit" sideOffset={8} align="center">
-        {themes.map((theme) => (
+        {THEMES.map((theme) => (
           <DropdownMenuItem
             key={theme.name}
             onClick={() => setTheme(theme.name)}

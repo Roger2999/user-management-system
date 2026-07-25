@@ -4,8 +4,7 @@ import SignButton from "@/components/sign-button";
 import SignoutButton from "@/components/signout-button";
 import { ThemeModeToggle } from "@/components/theme-mode-toggle";
 import { getSession } from "@/helpers/getSession";
-import { publicRoutes } from "@/lib/constants";
-import { privateRoutes } from "@/lib/constants";
+import { PUBLIC_ROUTES, PRIVATE_ROUTES } from "@/lib/constants";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -27,7 +26,7 @@ export default async function NavMenuDesktop() {
       {/* routes */}
       <ul className="hidden w-full gap-6 pr-10 sm:flex sm:justify-end">
         {session
-          ? privateRoutes.map((route) => (
+          ? PRIVATE_ROUTES.map((route) => (
               <li key={route.id}>
                 <LinkButton className="flex gap-2" href={route.href}>
                   {route.name}
@@ -35,7 +34,7 @@ export default async function NavMenuDesktop() {
                 </LinkButton>
               </li>
             ))
-          : publicRoutes.map((route) => (
+          : PUBLIC_ROUTES.map((route) => (
               <li key={route.id}>
                 <LinkButton type="link" href={route.href}>
                   {route.name}

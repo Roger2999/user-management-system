@@ -5,7 +5,7 @@ import SignButton from "@/components/sign-button";
 import SignoutButton from "@/components/signout-button";
 import { ThemeModeToggle } from "@/components/theme-mode-toggle";
 import { Separator } from "@/components/ui/separator";
-import { privateRoutes, publicRoutes } from "@/lib/constants";
+import { PRIVATE_ROUTES, PUBLIC_ROUTES } from "@/lib/constants";
 import { useNavMenuStore } from "@/stores/useNavMenuStore";
 import Link from "next/link";
 import Image from "next/image";
@@ -79,14 +79,14 @@ export default function NavMenuMobile({ session }: Props) {
         {/* links */}
         <ul className="space-y-3">
           {session
-            ? privateRoutes.map((route, index: number) => (
+            ? PRIVATE_ROUTES.map((route, index: number) => (
                 <li key={index}>
                   <LinkButton href={route.href} onClick={closeMenu}>
                     {route.name}
                   </LinkButton>
                 </li>
               ))
-            : publicRoutes.map((route, index: number) => (
+            : PUBLIC_ROUTES.map((route, index: number) => (
                 <li key={index}>
                   <LinkButton type="link" href={route.href} onClick={closeMenu}>
                     {route.name}

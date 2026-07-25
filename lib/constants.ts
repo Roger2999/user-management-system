@@ -1,12 +1,12 @@
 import { LucideIcon, Settings } from "lucide-react";
 
-export const publicRoutes: {
+export const PUBLIC_ROUTES: {
   name: string;
   href: string;
   id: string;
   Icon?: LucideIcon;
 }[] = [];
-export const privateRoutes: {
+export const PRIVATE_ROUTES: {
   name: string;
   href: string;
   id: string;
@@ -14,11 +14,12 @@ export const privateRoutes: {
 }[] = [
   { name: "Settings", href: "/dashboard/settings", id: "1", Icon: Settings },
 ];
-export const themes = [
+export const THEMES = [
   { name: "light", label: "Claro" },
   { name: "dark", label: "Oscuro" },
   { name: "system", label: "Sistema" },
 ];
+
 export const REQUEST_OPTIONS = [
   { value: "ALTA", label: "Alta" },
   { value: "ACTUALIZACION", label: "Actualización" },

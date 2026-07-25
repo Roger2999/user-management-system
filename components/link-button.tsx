@@ -27,7 +27,7 @@ export default function LinkButton({
         type === "neutral" && "text-foreground hover:bg-muted",
         type === "destructive" && "text-destructive hover:bg-destructive/10",
         type === "success" &&
-          "text-foreground bg-success/40 hover:bg-success/20",
+          "text-foreground bg-success/40 hover:bg-success/60",
         type === "link" && "text-success hover:bg-success/10",
         isActive && "border-primary border-b-2",
       )}
