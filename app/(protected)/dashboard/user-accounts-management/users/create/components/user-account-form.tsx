@@ -70,7 +70,7 @@ export default function UserAccountForm({
               errors={state.validationErrors?.tipoSolicitud}
               onChange={setTipoSolicitud}
               disabledValues={
-                mode === "create" ? ["BAJA", "ACTUALIZACION"] : ["ALTA", "BAJA"]
+                mode === "create" ? ["BAJA", "ACTUALIZACION"] : []
               }
             />
             {tipoSolicitud === "BAJA" && (
