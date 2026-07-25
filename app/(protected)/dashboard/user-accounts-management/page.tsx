@@ -49,7 +49,7 @@ export default async function UserAccountsManangmentPage() {
         <LinkButton
           className="p-2 text-center"
           type="success"
-          href="/dashboard/user-accounts-manangment/users/create/"
+          href="/dashboard/user-accounts-management/users/create/"
         >
           Crear cuenta
         </LinkButton>
@@ -57,7 +57,7 @@ export default async function UserAccountsManangmentPage() {
       <article className="w-full max-w-5xl space-y-10">
         <section className="flex w-full flex-col gap-4">
           <Link
-            href={`/dashboard/user-accounts-manangment/users?filter=${encodeURIComponent("all")}`}
+            href={`/dashboard/user-accounts-management/users?filter=${encodeURIComponent("all")}`}
             className="transition-all duration-100 ease-in hover:scale-[1.02]"
           >
             <StatsCard
@@ -75,7 +75,7 @@ export default async function UserAccountsManangmentPage() {
               <Link
                 key={filter.value}
                 className="transition-all duration-100 ease-in hover:scale-105"
-                href={`/dashboard/user-accounts-manangment/users?filter=${encodeURIComponent(filter.value)}`}
+                href={`/dashboard/user-accounts-management/users?filter=${encodeURIComponent(filter.value)}`}
               >
                 <StatsCard
                   title={filter.label}
@@ -94,7 +94,7 @@ export default async function UserAccountsManangmentPage() {
               <Link
                 key={filter.value}
                 className="transition-all duration-100 ease-in hover:scale-105"
-                href={`/dashboard/user-accounts-manangment/users?filter=${encodeURIComponent(filter.value)}`}
+                href={`/dashboard/user-accounts-management/users?filter=${encodeURIComponent(filter.value)}`}
               >
                 <StatsCard
                   title={filter.label}
@@ -111,7 +111,7 @@ export default async function UserAccountsManangmentPage() {
             <div className="grid gap-4">
               <Link
                 className="transition-all duration-100 ease-in hover:scale-105"
-                href={`/dashboard/user-accounts-manangment/users?filter=${encodeURIComponent("pendientesFirma")}`}
+                href={`/dashboard/user-accounts-management/users?filter=${encodeURIComponent("pendientesFirma")}`}
               >
                 <StatsCard
                   title="Pendientes de firma"
@@ -129,7 +129,7 @@ export default async function UserAccountsManangmentPage() {
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             <Link
               className="transition-all duration-100 ease-in hover:scale-105"
-              href={`/dashboard/user-accounts-manangment/users?filter=${encodeURIComponent("expired")}`}
+              href={`/dashboard/user-accounts-management/users?filter=${encodeURIComponent("expired")}`}
             >
               <StatsCard
                 title="Cuentas expiradas"
@@ -142,7 +142,7 @@ export default async function UserAccountsManangmentPage() {
             </Link>
             <Link
               className="transition-all duration-100 ease-in hover:scale-105"
-              href={`/dashboard/user-accounts-manangment/users?filter=${encodeURIComponent("expiredIn7")}`}
+              href={`/dashboard/user-accounts-management/users?filter=${encodeURIComponent("expiredIn7")}`}
             >
               <StatsCard
                 title="Expiran en ≤7 días"
@@ -153,7 +153,7 @@ export default async function UserAccountsManangmentPage() {
             </Link>
             <Link
               className="transition-all duration-100 ease-in hover:scale-105"
-              href={`/dashboard/user-accounts-manangment/users?filter=${encodeURIComponent("expiredIn1")}`}
+              href={`/dashboard/user-accounts-management/users?filter=${encodeURIComponent("expiredIn1")}`}
             >
               <StatsCard
                 title="Expiran en ≤1 día"

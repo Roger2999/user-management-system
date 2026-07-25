@@ -38,18 +38,24 @@ export default function DropdownMenuTable({
           align="end"
           className="flex min-w-40 flex-col gap-4"
         >
-          <Link href={`/dashboard/user-accounts-manangment/users/edit/${id}`}>
-            <DropdownMenuItem className="flex justify-around text-xl">
+          <DropdownMenuItem asChild>
+            <Link
+              href={`/dashboard/user-accounts-management/users/edit/${id}`}
+              className="flex w-full justify-around text-xl"
+            >
               <PencilIcon className="size-5" />
               Editar
-            </DropdownMenuItem>
-          </Link>
-          <Link href={`/dashboard/user-accounts-manangment/users/sign/${id}`}>
-            <DropdownMenuItem className="flex justify-around text-xl">
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link
+              href={`/dashboard/user-accounts-management/users/sign/${id}`}
+              className="flex w-full justify-around text-xl"
+            >
               <PenLineIcon className="size-5" />
               Firmar
-            </DropdownMenuItem>
-          </Link>
+            </Link>
+          </DropdownMenuItem>
           <DropdownMenuItem
             className="flex justify-around text-xl"
             variant="destructive"
