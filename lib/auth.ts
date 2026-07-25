@@ -6,6 +6,25 @@ import { resend } from "./resend";
 import { EmailTemplate } from "@/components/email-template";
 export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: "postgresql" }),
+  rateLimit: {
+    enabled: true,
+    window: 10,
+    max: 100,
+    customRules: {
+      "/api/auth/sign-in/email": { window: 60, max: 10 },
+      "/api/auth/sign-up/email": { window: 60, max: 5 },
+      "/api/auth/forget-password": { window: 60, max: 3 },
+    },
+    storage: "memory",
+  },
+  advanced: {
+    useSecureCookies: process.env.NODE_ENV === "production",
+    defaultCookieAttributes: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+    },
+  },
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
@@ -35,17 +54,12 @@ export const auth = betterAuth({
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, url }) => {
-      console.log("Sending verification email to:", user.email);
-      const result = await resend.emails.send({
+      await resend.emails.send({
         from: "onboarding@resend.dev",
         to: user.email,
         subject: "Verifica tu email",
         react: EmailTemplate({ name: user.name, url }),
       });
-      console.log("Resend result:", JSON.stringify(result, null, 2));
-      if (result.error) {
-        console.error("Error sending verification email:", result.error);
-      }
     },
   },
 
