@@ -30,7 +30,7 @@ export default function DropdownMenuTable({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon">
-            <MoreHorizontalIcon className="size-6" />
+            <MoreHorizontalIcon className="size-8" />
             <span className="sr-only">Abrir menú</span>
           </Button>
         </DropdownMenuTrigger>
