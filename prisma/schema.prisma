@@ -100,71 +100,68 @@ model AccountRequest {
   updatedAt DateTime @updatedAt
 
   // Encabezado
-  folio          String?
-  tipoSolicitud  TipoSolicitud
+  folio         String?
+  tipoSolicitud TipoSolicitud
 
-  //Baja
-  motivosBaja  String?
-  fechaBaja    DateTime?
+  // Baja
+  motivosBaja String?
+  fechaBaja   DateTime?
 
   // Datos personales
-  nombreApellidos  String
-  cargoOcupa       String
-  departamentoArea String
-  tipoPersonal     TipoPersonal
-  cuenta           String?
+  nombreApellidos   String
+  telefonoExtension String?
+  cargoOcupa        String
+  departamentoArea  String
+  tipoPersonal      TipoPersonal
+  identificadorCuentaUsuario String?
 
   // Correo electrónico
-  correoLocal         Boolean   @default(false)
-  correoNacional      Boolean   @default(false)
-  correoInternacional Boolean   @default(false)
-  correoInternet      Boolean   @default(false)
-  correoInternetFechaTemp DateTime?
+  correoNacional      Boolean @default(false)
+  correoInternacional Boolean @default(false)
+  correoInternet      Boolean @default(false)
 
   // Navegación web
-  intranetUNE       Boolean @default(false)
-  intranetNacional  Boolean @default(false)
-  internet          Boolean @default(false)
-  internetFechaTemp DateTime?
+  intranetUNE      Boolean @default(false)
+  intranetNacional Boolean @default(false)
+  internet         Boolean @default(false)
 
   // Mensajería
-  mensajeriaCorporativa  Boolean   @default(false)
-  chatInternet           Boolean   @default(false)
-  chatInternetFechaTemp  DateTime?
+  mensajeriaCorporativa Boolean @default(false)
 
   // Redes sociales
   facebook   Boolean @default(false)
   twitter    Boolean @default(false)
   youtube    Boolean @default(false)
+  whatsapp   Boolean @default(false)
+  telegram   Boolean @default(false)
+  instagram  Boolean @default(false)
   otrasRedes String?
 
   // Privilegios
-  adminRed        Boolean @default(false)
-  adminLocal      Boolean @default(false)
+  usuario         Boolean @default(false)
   usuarioAvanzado Boolean @default(false)
+  adminLocal      Boolean @default(false)
+  adminRed        Boolean @default(false)
 
-  // FTP UNE
-  ftpUneLectura   Boolean @default(false)
-  ftpUneModificar Boolean @default(false)
-  ftpUneBorrar    Boolean @default(false)
-
-  // FTP Entidad
-  ftpEntidadLectura   Boolean @default(false)
-  ftpEntidadModificar Boolean @default(false)
-  ftpEntidadBorrar    Boolean @default(false)
+  // Acceso Nube UNE
+  accesoNubeLectura      Boolean @default(false)
+  accesoNubeModificar    Boolean @default(false)
+  accesoNubeBorrar       Boolean @default(false)
+  accesoNubeControlTotal Boolean @default(false)
 
   // Tipo de cuenta
   tipoCuenta      TipoCuenta
   fechaExpiracion DateTime?
 
   // Horarios
-  horarioExtralaboral  Boolean @default(false)
-  extraDesde           String?
-  extraHasta           String?
-  sabadoDesde          String?
-  sabadoHasta          String?
-  domingoDesde         String?
-  domingoHasta         String?
+  horarioExtralaboral Boolean @default(false)
+  horario24Horas      Boolean @default(false)
+  extraDesde          String?
+  extraHasta          String?
+  sabadoDesde         String?
+  sabadoHasta         String?
+  domingoDesde        String?
+  domingoHasta        String?
 
   // APN
   apnCorreoNacional      Boolean @default(false)
@@ -173,10 +170,10 @@ model AccountRequest {
   telefonoCelular        String?
 
   // PC autorizado
-  pcNombre     String?
-  pcInventario String?
-  pcAdicionalNombre     String?
-  pcAdicionalInventario String?
+  pcNombre               String?
+  pcInventario           String?
+  pcAdicionalNombre      String?
+  pcAdicionalInventario  String?
 
   // Software
   softwareAutorizado String?
@@ -187,31 +184,26 @@ model AccountRequest {
   administradorSistema Boolean @default(false)
 
   // Firmas — Solicitado
-  firmadoPorSolicitado     Boolean @default(false)
-  solicitadoFecha  DateTime?
-  //solicitadoNombre String?
-  //solicitadoCargo  String?
+  firmadoPorSolicitado Boolean @default(false)
+  solicitadoFecha      DateTime?
+  //solicitadoNombre   String?
+  //solicitadoCargo    String?
 
   // Firmas — Revisado
-  firmadoPorRevisado     Boolean @default(false)
-  revisadoFecha  DateTime?
-
-  //revisadoNombre String?
-  //revisadoCargo  String?
+  firmadoPorRevisado Boolean @default(false)
+  revisadoFecha      DateTime?
+  //revisadoNombre    String?
+  //revisadoCargo     String?
 
   // Firmas — Aprobado
-  firmadoPorAprobado    Boolean @default(false)
-  aprobadoFecha  DateTime?
-
-  //aprobadoNombre String?
-  //aprobadoCargo  String?
+  firmadoPorAprobado Boolean @default(false)
+  aprobadoFecha      DateTime?
+  //aprobadoNombre    String?
+  //aprobadoCargo     String?
 
   // Firmas — Ejecutado
-  firmadoPorEjecutado     Boolean @default(false)
-  ejecutadoFecha  DateTime?
-
-  //ejecutadoNombre String?
-  //ejecutadoCargo  String?
-
-
+  firmadoPorEjecutado Boolean @default(false)
+  ejecutadoFecha      DateTime?
+  //ejecutadoNombre    String?
+  //ejecutadoCargo     String?
 }

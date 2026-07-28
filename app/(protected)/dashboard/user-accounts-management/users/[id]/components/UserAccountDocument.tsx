@@ -14,11 +14,11 @@ const formatDate = (date: Date | null | undefined): string => {
 
 function Check({ label, checked }: { label?: string; checked: boolean }) {
   return (
-    <span className="mr-1 inline-flex items-center gap-1 whitespace-nowrap">
-      <span className="flex h-3 w-3 items-center justify-center border border-black text-[8px] leading-none">
+    <span className="mr-2 inline-flex items-center gap-1 whitespace-nowrap">
+      <span className="inline-flex h-2.5 w-2.5 items-center justify-center border border-black text-[6px] leading-none">
         {checked ? "X" : ""}
       </span>
-      {label ? <span>{label}</span> : null}
+      {label ? <span className="text-[7.5px]">{label}</span> : null}
     </span>
   );
 }
@@ -43,7 +43,7 @@ function Cell({
   className?: string;
 }) {
   return (
-    <div className={`flex items-center p-1 ${width} ${className}`}>
+    <div className={`flex items-center px-1 py-0.5 ${width} ${className}`}>
       {children}
     </div>
   );
@@ -53,34 +53,101 @@ function Row({ children }: { children: ReactNode }) {
   return <div className="flex border-x border-b border-black">{children}</div>;
 }
 
-function MotivoColumn() {
+/* ---------- Fila de servicio con columna de motivo ---------- */
+
+function ServiceSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
   return (
-    <div className="flex w-[45%] items-center border-l border-black p-1">
-      <span className="text-[7px]">MOTIVO DE LA SOLICITUD</span>
+    <div className="flex border-x border-b border-black">
+      <div className="w-[55%] border-r border-black">
+        <div className="border-b border-black px-1 py-0.5 text-[7.5px] font-bold">
+          {title}
+        </div>
+        <div className="space-y-0.5 px-1 py-0.5">{children}</div>
+      </div>
+      <div className="flex w-[45%] flex-col">
+        <div className="border-b border-black px-1 py-0.5 text-center text-[7.5px] font-bold">
+          MOTIVO DE LA SOLICITUD
+        </div>
+        <div className="flex-1 px-1 py-0.5" />
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Filas de datos con líneas ---------- */
+
+function DataFieldRow({
+  label,
+  value,
+}: {
+  label: string;
+  value?: string | null;
+}) {
+  return (
+    <div className="flex border-x border-b border-black">
+      <div className="flex items-center px-1 py-1">
+        <Label>{label}</Label>
+        <span className="ml-1 flex-1">{value || ""}</span>
+      </div>
+    </div>
+  );
+}
+
+function DataFieldTwoCol({
+  leftLabel,
+  leftValue,
+  rightLabel,
+  rightValue,
+}: {
+  leftLabel: string;
+  leftValue?: string | null;
+  rightLabel: string;
+  rightValue?: string | null;
+}) {
+  return (
+    <div className="flex border-x border-b border-black">
+      <div className="w-1/2 border-r border-black px-1 py-1">
+        <Label>{leftLabel}</Label>
+        <span className="ml-1 border-b">{leftValue || ""}</span>
+      </div>
+      <div className="w-1/2 px-1 py-1">
+        <Label>{rightLabel}</Label>
+        <span className="ml-1">{rightValue || ""}</span>
+      </div>
     </div>
   );
 }
 
 /* ---------- Firmas ---------- */
 
-function SignatureBox({ children }: { children: ReactNode }) {
+function SignatureBox({ title, cargo }: { title: string; cargo?: string }) {
   return (
-    <div className="border border-t-0 border-black">
-      <div className="border-b border-black bg-[#e0e0e0] p-1 text-center text-[8px] font-bold">
-        {children}
+    <div className="flex flex-1 flex-col border border-t-0 border-black">
+      <div className="border-b border-black px-1 py-0.5 text-[7.5px] font-bold">
+        {title}
       </div>
-      <div className="flex h-10">
-        <div className="w-[35%] border-r border-black p-1">
-          <Label>Nombre y apellidos:</Label>
+      <div className="flex flex-1">
+        <div className="w-[25%] border-r border-black px-1 py-0.5">
+          <div className="text-[6.5px]">Nombre y apellidos</div>
+          <div className="mt-auto border-b border-black" />
         </div>
-        <div className="w-[25%] border-r border-black p-1">
-          <Label>Cargo:</Label>
+        <div className="w-[30%] border-r border-black px-1 py-0.5">
+          <div className="text-[6.5px]">Cargo: {cargo || ""}</div>
+          <div className="mt-auto border-b border-black" />
         </div>
-        <div className="w-[20%] border-r border-black p-1">
-          <Label>Fecha:</Label>
+        <div className="flex w-[20%] items-center gap-2 border-r border-black px-1 py-0.5">
+          <div className="text-[6.5px]">Fecha:</div>
+          <div className="text-[6.5px]">___/___/202_</div>
         </div>
-        <div className="w-[20%] p-1">
-          <Label>Firma:</Label>
+        <div className="w-[25%] px-1 py-0.5">
+          <div className="text-[6.5px]">Firma</div>
+          <div className="mt-auto border-b border-black" />
         </div>
       </div>
     </div>
@@ -91,62 +158,89 @@ function SignatureBox({ children }: { children: ReactNode }) {
 
 export default function UserAccountDocument({ user }: Props) {
   return (
-    <div className="font-sans text-[8px] leading-tight text-black">
-      {/* TÍTULO CENTRADO FUERA DEL CUADRO */}
-      <div className="mb-1 text-center text-[11px] font-bold">
-        ANEXO OM-PP 0001. A1 Solicitud de cuenta de usuario y servicios de red
+    <div
+      className="font-sans text-[8px] leading-tight text-black"
+      style={{
+        fontSize: "7.5px",
+        lineHeight: "1.1",
+        height: "255mm",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+      }}
+    >
+      {/* TÍTULO CENTRADO */}
+      <div className="mb-0.5 text-center text-[9px] font-bold">
+        ANEXO XXXX-1 A1: SOLICITUD DE CUENTA DE USUARIO Y GESTIÓN DE ACCESOS
       </div>
 
-      {/* ENCABEZADO SUPERIOR DE TRÁMITE */}
-      <div className="mb-1 flex border border-black">
-        <div className="w-[60%] p-1.5 text-[9px] font-bold">
-          SOLICITUD DE CUENTA DE USUARIO Y SERVICIOS DE RED
+      {/* ENCABEZADO SUPERIOR - TABLA */}
+      <div className="mb-0.5 border border-black">
+        {/* Fila 1: Código y título */}
+        <div className="flex border-b border-black">
+          <div className="w-[20%] border-r border-black px-1 py-0.5 text-[7.5px] font-bold">
+            UD-PG 0074-A1.1
+          </div>
+          <div className="flex-1 px-1 py-0.5 text-center text-[8px] font-bold">
+            SOLICITUD DE CUENTA DE USUARIO Y SERVICIOS DE RED
+          </div>
         </div>
-        <div className="flex w-[40%] border-l border-black">
-          <div className="flex flex-1 flex-col items-center justify-center border-r border-black p-0.5 text-[7px]">
-            <span className="font-bold">ALTA</span>
-            <Check checked={user.tipoSolicitud === "ALTA"} />
+        {/* Fila 2: Folio y fecha */}
+        <div className="flex border-b border-black">
+          <div className="w-[50%] border-r border-black px-1 py-0.5 text-[7.5px]">
+            <Label>Folio Único:</Label>
+            <span className="ml-1">{user.folio || ""}</span>
           </div>
-          <div className="flex flex-1 flex-col items-center justify-center border-r border-black p-0.5 text-[7px]">
-            <span className="font-bold">ACTUALIZACIÓN</span>
-            <Check checked={user.tipoSolicitud === "ACTUALIZACION"} />
+          <div className="w-[50%] px-1 py-0.5 text-[7.5px]">
+            <Label>Fecha de Solicitud:</Label>
+            <span className="ml-1 border-b border-black">
+              {formatDate(user.createdAt) || "___/___/202_"}
+            </span>
           </div>
-          <div className="flex flex-1 flex-col items-center justify-center border-r border-black p-0.5 text-[7px]">
-            <span className="font-bold">MODIFICACIÓN</span>
-            <Check checked={false} />
+        </div>
+        {/* Fila 3: Tipo de gestión */}
+        <div className="flex">
+          <div className="w-[20%] border-r border-black px-1 py-0.5 text-[7.5px] font-bold">
+            TIPO DE GESTIÓN:
           </div>
-          <div className="flex flex-1 flex-col items-center justify-center p-0.5 text-[7px]">
-            <span className="font-bold">FOLIO</span>
-            <span className="mt-0.5">{user.folio || ""}</span>
+          <div className="flex flex-1">
+            <div className="flex flex-1 items-center justify-center gap-2 border-r border-black px-1 py-0.5 text-[7.5px]">
+              <span className="font-bold">ALTA</span>
+              <Check checked={user.tipoSolicitud === "ALTA"} />
+            </div>
+            <div className="flex flex-1 items-center justify-center gap-2 border-r border-black px-1 py-0.5 text-[7.5px]">
+              <span className="font-bold">ACTUALIZACIÓN</span>
+              <Check checked={user.tipoSolicitud === "ACTUALIZACION"} />
+            </div>
+            <div className="flex flex-1 items-center justify-center gap-2 px-1 py-0.5 text-[7.5px]">
+              <span className="font-bold">MODIFICACIÓN</span>
+              <Check checked={false} />
+            </div>
           </div>
         </div>
       </div>
 
       {/* SECCIÓN 1: DATOS GENERALES */}
-      <Row>
-        <Cell width="w-1/2" className="border-r border-black">
-          <Label>Nombre y apellidos:</Label>
-          <Value>{user.nombreApellidos || ""}</Value>
-        </Cell>
-        <Cell width="w-1/2" />
-      </Row>
+      <DataFieldRow label="Nombre y apellidos:" value={user.nombreApellidos} />
+      <DataFieldRow
+        label="Teléfono/Extensión:"
+        value={user.telefonoExtension}
+      />
+      <DataFieldTwoCol
+        leftLabel="Cargo:"
+        leftValue={user.cargoOcupa}
+        rightLabel="Departamento/Área:"
+        rightValue={user.departamentoArea}
+      />
 
-      <Row>
-        <Cell width="w-1/2" className="border-r border-black">
-          <Label>Cargo que ocupa:</Label>
-          <Value>{user.cargoOcupa || ""}</Value>
-        </Cell>
-        <Cell width="w-1/2">
-          <Label>Departamento/ Area:</Label>
-          <Value>{user.departamentoArea || ""}</Value>
-        </Cell>
-      </Row>
-
-      <Row>
-        <Cell width="w-full">
+      {/* Tipo de personal */}
+      <div className="border-x border-b border-black">
+        <div className="px-1 py-0.5">
           <Label>Tipo de personal:</Label>
+        </div>
+        <div className="flex flex-wrap border-t border-black px-1 py-0.5">
           <Check
-            label="Directivo."
+            label="Directivo"
             checked={user.tipoPersonal === "DIRECTIVO"}
           />
           <Check
@@ -155,218 +249,187 @@ export default function UserAccountDocument({ user }: Props) {
           />
           <Check label="Técnico" checked={user.tipoPersonal === "TECNICO"} />
           <Check label="Otro" checked={user.tipoPersonal === "OTRO"} />
-          <span className="ml-auto">
-            <Label>Cuenta:</Label> {user.cuenta || ""}
-          </span>
-        </Cell>
-      </Row>
+        </div>
+      </div>
 
-      {/* SECCIÓN 2: MATRIZ DE SERVICIOS REQUERIDOS */}
-      <div className="border-x border-b border-black bg-[#e0e0e0] p-1 font-bold">
-        Servicios requeridos:
+      <DataFieldRow
+        label="Identificador de cuenta de usuario:"
+        value={user.identificadorCuentaUsuario}
+      />
+
+      {/* SECCIÓN 2: SERVICIOS REQUERIDOS */}
+      <div className="border-x border-b border-black px-1 py-0.5 text-center text-[8px] font-bold">
+        SERVICIOS REQUERIDOS
       </div>
 
       {/* CORREO ELECTRÓNICO */}
-      <Row>
-        <Cell width="w-[55%]" className="border-r border-black">
-          <div className="w-full">
-            <div className="mb-1 font-bold">CORREO ELECTRONICO</div>
-            <CheckRow label="Correo Local:" yes={user.correoLocal} />
-            <CheckRow label="Correo Nacional:" yes={user.correoNacional} />
-            <CheckRow
-              label="Correo Internacional:"
-              yes={user.correoInternacional}
-            />
-            <div className="flex items-center">
-              <span className="w-24">Correo Internet:</span>
-              <Check label="Si" checked={user.correoInternet === true} />
-              <Check label="No" checked={user.correoInternet === false} />
-              <span className="ml-1 text-[6px]">No. Temp. ___/___/20__</span>
-            </div>
-          </div>
-        </Cell>
-        <MotivoColumn />
-      </Row>
+      <ServiceSection title="CORREO ELECTRÓNICO">
+        <CheckRow label="Correo Nacional:" yes={user.correoNacional} />
+        <CheckRow
+          label="Correo Internacional:"
+          yes={user.correoInternacional}
+        />
+        <CheckRow label="Correo Internet:" yes={user.correoInternet} />
+      </ServiceSection>
 
-      {/* ACCESO A NAVEGACIÓN WEB */}
-      <Row>
-        <Cell width="w-[55%]" className="border-r border-black">
-          <div className="w-full">
-            <div className="mb-1 font-bold">ACCESO A NAVEGACIÓN WEB</div>
-            <CheckRow label="Intranet UNE:" yes={user.intranetUNE} />
-            <CheckRow label="Intranet Nacional:" yes={user.intranetNacional} />
-            <div className="flex items-center">
-              <span className="w-24">Internet:</span>
-              <Check label="Si" checked={user.internet === true} />
-              <Check label="No" checked={user.internet === false} />
-              <span className="ml-1 text-[6px]">No. Temp. ___/___/20__</span>
-            </div>
-          </div>
-        </Cell>
-        <MotivoColumn />
-      </Row>
+      {/* NAVEGACIÓN WEB */}
+      <ServiceSection title="NAVEGACIÓN WEB">
+        <CheckRow label="Intranet UNE:" yes={user.intranetUNE} />
+        <CheckRow label="Intranet Nacional:" yes={user.intranetNacional} />
+        <CheckRow label="Internet:" yes={user.internet} />
+      </ServiceSection>
 
       {/* MENSAJERÍA INSTANTÁNEA / CHAT */}
-      <Row>
-        <Cell width="w-[55%]" className="border-r border-black">
-          <div className="w-full">
-            <div className="mb-1 font-bold">
-              Mensajería Instantánea / Chat
-            </div>
-            <CheckRow label="Corporativa:" yes={user.mensajeriaCorporativa} />
-            <div className="flex items-center">
-              <span className="w-24">Chat Internet:</span>
-              <Check label="Si" checked={user.chatInternet === true} />
-              <Check label="No" checked={user.chatInternet === false} />
-              <span className="ml-1 text-[6px]">No. Temp. ___/___/20__</span>
-            </div>
-          </div>
-        </Cell>
-        <MotivoColumn />
-      </Row>
+      <ServiceSection title="MENSAJERÍA INSTANTÁNEA / CHAT">
+        <CheckRow label="Corporativa:" yes={user.mensajeriaCorporativa} />
+      </ServiceSection>
 
       {/* REDES SOCIALES */}
-      <Row>
-        <Cell width="w-[55%]" className="border-r border-black">
-          <div className="w-full">
-            <div className="mb-1 font-bold">Redes Sociales</div>
-            <div className="flex flex-wrap">
-              <Check label="Facebook" checked={user.facebook} />
-              <Check label="Twitter" checked={user.twitter} />
-              <Check label="YouTube" checked={user.youtube} />
-              <Check label="Otro" checked={!!user.otrasRedes} />
-            </div>
-          </div>
-        </Cell>
-        <MotivoColumn />
-      </Row>
-
-      {/* OTRAS Y PRIVILEGIOS */}
-      <Row>
-        <Cell width="w-[55%]" className="border-r border-black">
-          <Label>Otras: Especificar:</Label>
-          <Value>{user.otrasRedes || ""}</Value>
-        </Cell>
-        <MotivoColumn />
-      </Row>
+      <ServiceSection title="REDES SOCIALES">
+        <div className="flex flex-wrap gap-x-3">
+          <Check label="Facebook" checked={user.facebook} />
+          <Check label="Twitter" checked={user.twitter} />
+          <Check label="YouTube" checked={user.youtube} />
+          <Check label="WhatsApp" checked={user.whatsapp} />
+          <Check label="Telegram" checked={user.telegram} />
+          <Check label="Instagram" checked={user.instagram} />
+        </div>
+        <div className="mt-0.5">
+          <Label>Otras:</Label>{" "}
+          <span className="border-b border-black">{user.otrasRedes || ""}</span>
+        </div>
+      </ServiceSection>
 
       {/* PRIVILEGIOS DE USUARIO */}
-      <Row>
-        <Cell width="w-[55%]" className="border-r border-black">
-          <div className="w-full">
-            <div className="mb-1 font-bold">
-              Privilegios de usuario sobre la red y el ordenador
-            </div>
-            <div className="flex items-center">
-              <span className="w-24">Administrador de Red:</span>
-              <Check label="Si" checked={user.adminRed === true} />
-              <Check label="No" checked={user.adminRed === false} />
-            </div>
-            <div className="flex items-center">
-              <span className="w-24">Administrador Local:</span>
-              <Check label="Si" checked={user.adminLocal === true} />
-              <Check label="No" checked={user.adminLocal === false} />
-            </div>
-            <div className="flex items-center">
-              <span className="w-24">Usuario avanzado:</span>
-              <Check label="Si" checked={user.usuarioAvanzado === true} />
-              <Check label="No" checked={user.usuarioAvanzado === false} />
-            </div>
-          </div>
-        </Cell>
-        <MotivoColumn />
-      </Row>
+      <ServiceSection title="PRIVILEGIOS DE USUARIO SOBRE LA RED Y EL ORDENADOR">
+        <CheckRow label="Usuario:" yes={user.usuario} />
+        <CheckRow label="Usuario Avanzado:" yes={user.usuarioAvanzado} />
+        <CheckRow label="Administrador Local:" yes={user.adminLocal} />
+        <CheckRow label="Administrador de Red:" yes={user.adminRed} />
+      </ServiceSection>
 
-      {/* COMPARTIMENTOS FTP */}
-      <Row>
-        <Cell width="w-1/2" className="border-r border-black">
-          <div className="w-full">
-            <div className="mb-1 font-bold">Acceso FTP UNE</div>
-            <div className="flex items-center">
-              <span className="w-20">Solo Lectura</span>
-              <Check checked={user.ftpUneLectura} />
-              <span className="w-16">Modificar</span>
-              <Check checked={user.ftpUneModificar} />
-              <span className="w-12">Borrar</span>
-              <Check checked={user.ftpUneBorrar} />
-            </div>
-          </div>
-        </Cell>
-        <Cell width="w-1/2">
-          <div className="w-full">
-            <div className="mb-1 font-bold">Acceso FTP Entidad</div>
-            <div className="flex items-center">
-              <span className="w-20">Solo Lectura</span>
-              <Check checked={user.ftpEntidadLectura} />
-              <span className="w-16">Modificar</span>
-              <Check checked={user.ftpEntidadModificar} />
-              <span className="w-12">Borrar</span>
-              <Check checked={user.ftpEntidadBorrar} />
-            </div>
-          </div>
-        </Cell>
-      </Row>
+      {/* ACCESO NUBE UNE */}
+      <ServiceSection title="ACCESO NUBE UNE">
+        <div className="flex flex-wrap gap-x-3">
+          <Check label="Solo lectura" checked={user.accesoNubeLectura} />
+          <Check label="Modificar" checked={user.accesoNubeModificar} />
+          <Check label="Borrar" checked={user.accesoNubeBorrar} />
+        </div>
+        <Check label="Control total" checked={user.accesoNubeControlTotal} />
+      </ServiceSection>
 
-      {/* RESTRICCIONES DE TIEMPO Y EXPIRACIÓN */}
+      {/* TIPO DE CUENTA */}
+      <div className="border-x border-b border-black px-1 py-0.5 text-center text-[8px] font-bold">
+        TIPO DE CUENTA
+      </div>
+
       <Row>
-        <Cell width="w-2/5" className="border-r border-black">
-          <Label>Tipo de cuenta:</Label>
+        <Cell width="w-full">
           <Check
             label="Permanente"
             checked={user.tipoCuenta === "PERMANENTE"}
           />
-          <Check label="Temporal" checked={user.tipoCuenta === "TEMPORAL"} />
-        </Cell>
-        <Cell width="w-3/5">
-          <Label>En caso de cuenta temporal: Fecha de expiración:</Label>
-          <Value>{formatDate(user.fechaExpiracion) || "__/__/20__"}</Value>
+          <span className="ml-1 text-[7px]">
+            Válida por 2 años a partir de su creación o actualización.
+          </span>
         </Cell>
       </Row>
 
       <Row>
         <Cell width="w-full">
-          <Label>Días y horas de uso de la cuenta:</Label>
-          <Check label="Lunes a Viernes" checked={!user.horarioExtralaboral} />
+          <Check label="Temporal" checked={user.tipoCuenta === "TEMPORAL"} />
+          <span className="ml-1 text-[7px]">
+            Fecha de expiración{" "}
+            <span className="border-b border-black">
+              {formatDate(user.fechaExpiracion) || "___/___/202_"}
+            </span>
+          </span>
+        </Cell>
+      </Row>
+
+      {/* DÍAS Y HORAS DE USO DE LA CUENTA */}
+      <div className="border-x border-b border-black px-1 py-0.5 text-center text-[8px] font-bold">
+        DÍAS Y HORAS DE USO DE LA CUENTA:
+      </div>
+
+      <Row>
+        <Cell width="w-full">
+          <Check
+            label="Lunes a Viernes"
+            checked={!user.horarioExtralaboral && !user.horario24Horas}
+          />
           <Check
             label="Horario Extralaboral"
-            checked={user.horarioExtralaboral === true}
+            checked={user.horarioExtralaboral}
           />
-          <span>
-            De {user.extraDesde || "__"} hrs a {user.extraHasta || "__"} hrs.
-          </span>
+          {!user.horario24Horas && (
+            <span>
+              de{" "}
+              <span className="border-b border-black">
+                {user.extraDesde || "_____"}
+              </span>{" "}
+              hrs. a{" "}
+              <span className="border-b border-black">
+                {user.extraHasta || "_____"}
+              </span>{" "}
+              hrs.
+            </span>
+          )}
         </Cell>
       </Row>
 
       <Row>
         <Cell width="w-full">
-          <Label>No laborables:</Label>
-          <Check label="Sábado" checked={!!user.sabadoDesde} />
+          <span className="mr-1">No laborables:</span>
           <span>
-            De {user.sabadoDesde || "__"} hrs a {user.sabadoHasta || "__"} hrs.
-          </span>
-          <Check label="Domingo" checked={!!user.domingoDesde} />
-          <span>
-            De {user.domingoDesde || "__"} hrs a {user.domingoHasta || "__"}{" "}
+            Sábado de{" "}
+            <span className="border-b border-black">
+              {user.sabadoDesde || "_____"}
+            </span>{" "}
+            hrs. a{" "}
+            <span className="border-b border-black">
+              {user.sabadoHasta || "_____"}
+            </span>{" "}
             hrs.
           </span>
+          <span className="ml-2">
+            Domingo de{" "}
+            <span className="border-b border-black">
+              {user.domingoDesde || "_____"}
+            </span>{" "}
+            hrs. a{" "}
+            <span className="border-b border-black">
+              {user.domingoHasta || "_____"}
+            </span>{" "}
+            hrs.
+          </span>
+          <span className="ml-4">
+            <Check label="24 horas" checked={user.horario24Horas} />
+          </span>
         </Cell>
       </Row>
 
-      {/* ASIGNACIONES TECNOLÓGICAS (APN / PC / SOFTWARE) */}
+      {/* ACCESO POR APN */}
+      <div className="border-x border-b border-black px-1 py-0.5 text-center text-[8px] font-bold">
+        ACCESO POR APN
+      </div>
+
       <Row>
         <Cell width="w-full">
-          <Label>Acceso por APN:</Label>
           <Check label="Correo nacional" checked={user.apnCorreoNacional} />
           <Check
             label="Correo Internacional"
             checked={user.apnCorreoInternacional}
           />
           <Check label="Internet" checked={user.apnInternet} />
-          <Label>Número teléfono celular:</Label>
-          <Value>{user.telefonoCelular || "________________"}</Value>
+          <Label>Número celular:</Label>
+          <span className="ml-1 border-b border-black">
+            {user.telefonoCelular || ""}
+          </span>
         </Cell>
       </Row>
 
+      {/* MEDIO INFORMÁTICO */}
       <Row>
         <Cell width="w-1/2" className="border-r border-black">
           <Label>
@@ -380,26 +443,17 @@ export default function UserAccountDocument({ user }: Props) {
         </Cell>
       </Row>
       <Row>
-        <Cell width="w-1/2" className="h-4 border-r border-black">
+        <Cell width="w-1/2" className="h-6 border-r border-black">
           <Value>{user.pcNombre || ""}</Value>
         </Cell>
-        <Cell width="w-1/2" className="h-4">
+        <Cell width="w-1/2" className="h-6">
           <Value>{user.pcAdicionalNombre || ""}</Value>
         </Cell>
       </Row>
-      <Row>
-        <Cell width="w-1/2" className="border-r border-black">
-          <Label>No. Inventario:</Label>
-          <Value>{user.pcInventario || ""}</Value>
-        </Cell>
-        <Cell width="w-1/2">
-          <Label>No. Inventario:</Label>
-          <Value>{user.pcAdicionalInventario || ""}</Value>
-        </Cell>
-      </Row>
 
+      {/* SOFTWARE */}
       <Row>
-        <Cell width="w-full">
+        <Cell width="w-full" className="h-5">
           <Label>
             Software autorizado (Además del autorizado por política):
           </Label>
@@ -407,64 +461,38 @@ export default function UserAccountDocument({ user }: Props) {
         </Cell>
       </Row>
 
-      <Row>
-        <Cell width="w-[35%]" className="border-r border-black">
-          <Label>Cuenta de Usuario:</Label>
-          <Value>{user.cuentaUsuario || ""}</Value>
-        </Cell>
-        <Cell width="w-[40%]" className="border-r border-black">
-          <Label>Actividad que realiza:</Label>
-          <Value>{user.actividadRealiza || ""}</Value>
-        </Cell>
-        <Cell width="w-[25%]">
-          <Label>Administrador de Sistema:</Label>
-          <Check label="Si" checked={user.administradorSistema === true} />
-          <Check label="No" checked={user.administradorSistema === false} />
-        </Cell>
-      </Row>
-
-      {/* SECCIÓN 3: CUADROS DE REVISIÓN Y FIRMAS */}
-      <div className="mt-1">
-        <SignatureBox>
-          SOLICITADO POR EL DIRECTOR QUE SOLICITA EL SERVICIO. (Este responde
-          por los servicios solicitados)
-        </SignatureBox>
-        <SignatureBox>
-          REVISADO POR: (Esp. Seguridad Informática y Tecnológica)
-        </SignatureBox>
-        <SignatureBox>
-          APROBADO POR (Director que autoriza el servicio o persona designada
-          por Resolución del Director General de la Entidad)
-        </SignatureBox>
-        <SignatureBox>
-          EJECUTADO POR (Especialista que configura la cuenta de usuario y los
-          servicios)
-        </SignatureBox>
+      {/* SECCIÓN 3: CUADROS DE FIRMAS */}
+      <div className="mt-0.5 flex flex-1 flex-col">
+        <SignatureBox title="SOLICITADO POR EL DIRECTOR QUE SOLICITA EL SERVICIO. (Este responde por los servicios solicitados)" />
+        <SignatureBox title="REVISADO POR:" />
+        <SignatureBox title="APROBADO POR (Director que autoriza el servicio o persona designada por Resolución del Director General de la Entidad)" />
+        <SignatureBox title="EJECUTADO POR (Especialista que configura la cuenta de usuario y los servicios)" />
       </div>
 
       {/* SECCIÓN INFERIOR DE BAJA */}
-      <div className="mt-1 flex border border-t-0 border-black">
-        <div className="flex w-1/4 items-center border-r border-black p-1">
+      <div className="flex border border-t-0 border-black">
+        <div className="flex w-1/4 items-center border-r border-black px-1 py-1">
           <Check
             label="Baja de la entidad"
             checked={user.tipoSolicitud === "BAJA"}
           />
         </div>
-        <div className="flex w-1/2 items-center border-r border-black p-1">
-          <Label>Motivos de la baja:</Label>
-          <Value>{user.motivosBaja || ""}</Value>
+        <div className="flex w-1/2 items-center border-r border-black px-1 py-1">
+          <Label>Motivos</Label>
         </div>
-        <div className="flex w-1/4 items-center p-1">
-          <Label>Fecha:</Label>
-          <Value>{formatDate(user.fechaBaja) || "__/__/20__"}</Value>
+        <div className="flex w-1/4 items-center px-1 py-1">
+          <Label>Fecha</Label>
+          <span className="ml-1">
+            {formatDate(user.fechaBaja) || "___/___/202_"}
+          </span>
         </div>
       </div>
 
       {/* NOTA ACLARATORIA AL PIE */}
-      <p className="mt-2 text-center text-[7px] italic">
-        La presente planilla así como la cuenta de usuario asociada y los
-        servicios implementados tiene una vigencia de dos (2) años a partir de
-        su habilitación.
+      <p className="mt-1 text-center text-[7.5px]">
+        La presente planilla, así como la cuenta de usuario asociada y los
+        servicios autorizados e implementados tienen una vigencia de dos (2)
+        años a partir de su habilitación.
       </p>
     </div>
   );
@@ -474,8 +502,8 @@ export default function UserAccountDocument({ user }: Props) {
 
 function CheckRow({ label, yes }: { label: string; yes: boolean }) {
   return (
-    <div className="mb-1 flex items-center">
-      <span className="w-24">{label}</span>
+    <div className="mb-0.5 flex items-center">
+      <span className="w-28 text-[7.5px]">{label}</span>
       <Check label="Si" checked={yes === true} />
       <Check label="No" checked={yes === false} />
     </div>

@@ -37,7 +37,7 @@ export default async function UsersTable({
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
-    <>
+    <div className="flex w-full flex-1 flex-col items-center justify-between">
       <Table>
         <TableHeader>
           <TableRow>
@@ -104,6 +104,6 @@ export default async function UsersTable({
         baseUrl="/dashboard/user-accounts-management/users"
         searchParams={searchParams}
       />
-    </>
+    </div>
   );
 }

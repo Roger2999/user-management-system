@@ -33,38 +33,37 @@ export type AccountRequestMinAggregateOutputType = {
   motivosBaja: string | null
   fechaBaja: Date | null
   nombreApellidos: string | null
+  telefonoExtension: string | null
   cargoOcupa: string | null
   departamentoArea: string | null
   tipoPersonal: $Enums.TipoPersonal | null
-  cuenta: string | null
-  correoLocal: boolean | null
+  identificadorCuentaUsuario: string | null
   correoNacional: boolean | null
   correoInternacional: boolean | null
   correoInternet: boolean | null
-  correoInternetFechaTemp: Date | null
   intranetUNE: boolean | null
   intranetNacional: boolean | null
   internet: boolean | null
-  internetFechaTemp: Date | null
   mensajeriaCorporativa: boolean | null
-  chatInternet: boolean | null
-  chatInternetFechaTemp: Date | null
   facebook: boolean | null
   twitter: boolean | null
   youtube: boolean | null
+  whatsapp: boolean | null
+  telegram: boolean | null
+  instagram: boolean | null
   otrasRedes: string | null
-  adminRed: boolean | null
-  adminLocal: boolean | null
+  usuario: boolean | null
   usuarioAvanzado: boolean | null
-  ftpUneLectura: boolean | null
-  ftpUneModificar: boolean | null
-  ftpUneBorrar: boolean | null
-  ftpEntidadLectura: boolean | null
-  ftpEntidadModificar: boolean | null
-  ftpEntidadBorrar: boolean | null
+  adminLocal: boolean | null
+  adminRed: boolean | null
+  accesoNubeLectura: boolean | null
+  accesoNubeModificar: boolean | null
+  accesoNubeBorrar: boolean | null
+  accesoNubeControlTotal: boolean | null
   tipoCuenta: $Enums.TipoCuenta | null
   fechaExpiracion: Date | null
   horarioExtralaboral: boolean | null
+  horario24Horas: boolean | null
   extraDesde: string | null
   extraHasta: string | null
   sabadoDesde: string | null
@@ -102,38 +101,37 @@ export type AccountRequestMaxAggregateOutputType = {
   motivosBaja: string | null
   fechaBaja: Date | null
   nombreApellidos: string | null
+  telefonoExtension: string | null
   cargoOcupa: string | null
   departamentoArea: string | null
   tipoPersonal: $Enums.TipoPersonal | null
-  cuenta: string | null
-  correoLocal: boolean | null
+  identificadorCuentaUsuario: string | null
   correoNacional: boolean | null
   correoInternacional: boolean | null
   correoInternet: boolean | null
-  correoInternetFechaTemp: Date | null
   intranetUNE: boolean | null
   intranetNacional: boolean | null
   internet: boolean | null
-  internetFechaTemp: Date | null
   mensajeriaCorporativa: boolean | null
-  chatInternet: boolean | null
-  chatInternetFechaTemp: Date | null
   facebook: boolean | null
   twitter: boolean | null
   youtube: boolean | null
+  whatsapp: boolean | null
+  telegram: boolean | null
+  instagram: boolean | null
   otrasRedes: string | null
-  adminRed: boolean | null
-  adminLocal: boolean | null
+  usuario: boolean | null
   usuarioAvanzado: boolean | null
-  ftpUneLectura: boolean | null
-  ftpUneModificar: boolean | null
-  ftpUneBorrar: boolean | null
-  ftpEntidadLectura: boolean | null
-  ftpEntidadModificar: boolean | null
-  ftpEntidadBorrar: boolean | null
+  adminLocal: boolean | null
+  adminRed: boolean | null
+  accesoNubeLectura: boolean | null
+  accesoNubeModificar: boolean | null
+  accesoNubeBorrar: boolean | null
+  accesoNubeControlTotal: boolean | null
   tipoCuenta: $Enums.TipoCuenta | null
   fechaExpiracion: Date | null
   horarioExtralaboral: boolean | null
+  horario24Horas: boolean | null
   extraDesde: string | null
   extraHasta: string | null
   sabadoDesde: string | null
@@ -171,38 +169,37 @@ export type AccountRequestCountAggregateOutputType = {
   motivosBaja: number
   fechaBaja: number
   nombreApellidos: number
+  telefonoExtension: number
   cargoOcupa: number
   departamentoArea: number
   tipoPersonal: number
-  cuenta: number
-  correoLocal: number
+  identificadorCuentaUsuario: number
   correoNacional: number
   correoInternacional: number
   correoInternet: number
-  correoInternetFechaTemp: number
   intranetUNE: number
   intranetNacional: number
   internet: number
-  internetFechaTemp: number
   mensajeriaCorporativa: number
-  chatInternet: number
-  chatInternetFechaTemp: number
   facebook: number
   twitter: number
   youtube: number
+  whatsapp: number
+  telegram: number
+  instagram: number
   otrasRedes: number
-  adminRed: number
-  adminLocal: number
+  usuario: number
   usuarioAvanzado: number
-  ftpUneLectura: number
-  ftpUneModificar: number
-  ftpUneBorrar: number
-  ftpEntidadLectura: number
-  ftpEntidadModificar: number
-  ftpEntidadBorrar: number
+  adminLocal: number
+  adminRed: number
+  accesoNubeLectura: number
+  accesoNubeModificar: number
+  accesoNubeBorrar: number
+  accesoNubeControlTotal: number
   tipoCuenta: number
   fechaExpiracion: number
   horarioExtralaboral: number
+  horario24Horas: number
   extraDesde: number
   extraHasta: number
   sabadoDesde: number
@@ -242,38 +239,37 @@ export type AccountRequestMinAggregateInputType = {
   motivosBaja?: true
   fechaBaja?: true
   nombreApellidos?: true
+  telefonoExtension?: true
   cargoOcupa?: true
   departamentoArea?: true
   tipoPersonal?: true
-  cuenta?: true
-  correoLocal?: true
+  identificadorCuentaUsuario?: true
   correoNacional?: true
   correoInternacional?: true
   correoInternet?: true
-  correoInternetFechaTemp?: true
   intranetUNE?: true
   intranetNacional?: true
   internet?: true
-  internetFechaTemp?: true
   mensajeriaCorporativa?: true
-  chatInternet?: true
-  chatInternetFechaTemp?: true
   facebook?: true
   twitter?: true
   youtube?: true
+  whatsapp?: true
+  telegram?: true
+  instagram?: true
   otrasRedes?: true
-  adminRed?: true
-  adminLocal?: true
+  usuario?: true
   usuarioAvanzado?: true
-  ftpUneLectura?: true
-  ftpUneModificar?: true
-  ftpUneBorrar?: true
-  ftpEntidadLectura?: true
-  ftpEntidadModificar?: true
-  ftpEntidadBorrar?: true
+  adminLocal?: true
+  adminRed?: true
+  accesoNubeLectura?: true
+  accesoNubeModificar?: true
+  accesoNubeBorrar?: true
+  accesoNubeControlTotal?: true
   tipoCuenta?: true
   fechaExpiracion?: true
   horarioExtralaboral?: true
+  horario24Horas?: true
   extraDesde?: true
   extraHasta?: true
   sabadoDesde?: true
@@ -311,38 +307,37 @@ export type AccountRequestMaxAggregateInputType = {
   motivosBaja?: true
   fechaBaja?: true
   nombreApellidos?: true
+  telefonoExtension?: true
   cargoOcupa?: true
   departamentoArea?: true
   tipoPersonal?: true
-  cuenta?: true
-  correoLocal?: true
+  identificadorCuentaUsuario?: true
   correoNacional?: true
   correoInternacional?: true
   correoInternet?: true
-  correoInternetFechaTemp?: true
   intranetUNE?: true
   intranetNacional?: true
   internet?: true
-  internetFechaTemp?: true
   mensajeriaCorporativa?: true
-  chatInternet?: true
-  chatInternetFechaTemp?: true
   facebook?: true
   twitter?: true
   youtube?: true
+  whatsapp?: true
+  telegram?: true
+  instagram?: true
   otrasRedes?: true
-  adminRed?: true
-  adminLocal?: true
+  usuario?: true
   usuarioAvanzado?: true
-  ftpUneLectura?: true
-  ftpUneModificar?: true
-  ftpUneBorrar?: true
-  ftpEntidadLectura?: true
-  ftpEntidadModificar?: true
-  ftpEntidadBorrar?: true
+  adminLocal?: true
+  adminRed?: true
+  accesoNubeLectura?: true
+  accesoNubeModificar?: true
+  accesoNubeBorrar?: true
+  accesoNubeControlTotal?: true
   tipoCuenta?: true
   fechaExpiracion?: true
   horarioExtralaboral?: true
+  horario24Horas?: true
   extraDesde?: true
   extraHasta?: true
   sabadoDesde?: true
@@ -380,38 +375,37 @@ export type AccountRequestCountAggregateInputType = {
   motivosBaja?: true
   fechaBaja?: true
   nombreApellidos?: true
+  telefonoExtension?: true
   cargoOcupa?: true
   departamentoArea?: true
   tipoPersonal?: true
-  cuenta?: true
-  correoLocal?: true
+  identificadorCuentaUsuario?: true
   correoNacional?: true
   correoInternacional?: true
   correoInternet?: true
-  correoInternetFechaTemp?: true
   intranetUNE?: true
   intranetNacional?: true
   internet?: true
-  internetFechaTemp?: true
   mensajeriaCorporativa?: true
-  chatInternet?: true
-  chatInternetFechaTemp?: true
   facebook?: true
   twitter?: true
   youtube?: true
+  whatsapp?: true
+  telegram?: true
+  instagram?: true
   otrasRedes?: true
-  adminRed?: true
-  adminLocal?: true
+  usuario?: true
   usuarioAvanzado?: true
-  ftpUneLectura?: true
-  ftpUneModificar?: true
-  ftpUneBorrar?: true
-  ftpEntidadLectura?: true
-  ftpEntidadModificar?: true
-  ftpEntidadBorrar?: true
+  adminLocal?: true
+  adminRed?: true
+  accesoNubeLectura?: true
+  accesoNubeModificar?: true
+  accesoNubeBorrar?: true
+  accesoNubeControlTotal?: true
   tipoCuenta?: true
   fechaExpiracion?: true
   horarioExtralaboral?: true
+  horario24Horas?: true
   extraDesde?: true
   extraHasta?: true
   sabadoDesde?: true
@@ -522,38 +516,37 @@ export type AccountRequestGroupByOutputType = {
   motivosBaja: string | null
   fechaBaja: Date | null
   nombreApellidos: string
+  telefonoExtension: string | null
   cargoOcupa: string
   departamentoArea: string
   tipoPersonal: $Enums.TipoPersonal
-  cuenta: string | null
-  correoLocal: boolean
+  identificadorCuentaUsuario: string | null
   correoNacional: boolean
   correoInternacional: boolean
   correoInternet: boolean
-  correoInternetFechaTemp: Date | null
   intranetUNE: boolean
   intranetNacional: boolean
   internet: boolean
-  internetFechaTemp: Date | null
   mensajeriaCorporativa: boolean
-  chatInternet: boolean
-  chatInternetFechaTemp: Date | null
   facebook: boolean
   twitter: boolean
   youtube: boolean
+  whatsapp: boolean
+  telegram: boolean
+  instagram: boolean
   otrasRedes: string | null
-  adminRed: boolean
-  adminLocal: boolean
+  usuario: boolean
   usuarioAvanzado: boolean
-  ftpUneLectura: boolean
-  ftpUneModificar: boolean
-  ftpUneBorrar: boolean
-  ftpEntidadLectura: boolean
-  ftpEntidadModificar: boolean
-  ftpEntidadBorrar: boolean
+  adminLocal: boolean
+  adminRed: boolean
+  accesoNubeLectura: boolean
+  accesoNubeModificar: boolean
+  accesoNubeBorrar: boolean
+  accesoNubeControlTotal: boolean
   tipoCuenta: $Enums.TipoCuenta
   fechaExpiracion: Date | null
   horarioExtralaboral: boolean
+  horario24Horas: boolean
   extraDesde: string | null
   extraHasta: string | null
   sabadoDesde: string | null
@@ -612,38 +605,37 @@ export type AccountRequestWhereInput = {
   motivosBaja?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
   fechaBaja?: Prisma.DateTimeNullableFilter<"AccountRequest"> | Date | string | null
   nombreApellidos?: Prisma.StringFilter<"AccountRequest"> | string
+  telefonoExtension?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
   cargoOcupa?: Prisma.StringFilter<"AccountRequest"> | string
   departamentoArea?: Prisma.StringFilter<"AccountRequest"> | string
   tipoPersonal?: Prisma.EnumTipoPersonalFilter<"AccountRequest"> | $Enums.TipoPersonal
-  cuenta?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
-  correoLocal?: Prisma.BoolFilter<"AccountRequest"> | boolean
+  identificadorCuentaUsuario?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
   correoNacional?: Prisma.BoolFilter<"AccountRequest"> | boolean
   correoInternacional?: Prisma.BoolFilter<"AccountRequest"> | boolean
   correoInternet?: Prisma.BoolFilter<"AccountRequest"> | boolean
-  correoInternetFechaTemp?: Prisma.DateTimeNullableFilter<"AccountRequest"> | Date | string | null
   intranetUNE?: Prisma.BoolFilter<"AccountRequest"> | boolean
   intranetNacional?: Prisma.BoolFilter<"AccountRequest"> | boolean
   internet?: Prisma.BoolFilter<"AccountRequest"> | boolean
-  internetFechaTemp?: Prisma.DateTimeNullableFilter<"AccountRequest"> | Date | string | null
   mensajeriaCorporativa?: Prisma.BoolFilter<"AccountRequest"> | boolean
-  chatInternet?: Prisma.BoolFilter<"AccountRequest"> | boolean
-  chatInternetFechaTemp?: Prisma.DateTimeNullableFilter<"AccountRequest"> | Date | string | null
   facebook?: Prisma.BoolFilter<"AccountRequest"> | boolean
   twitter?: Prisma.BoolFilter<"AccountRequest"> | boolean
   youtube?: Prisma.BoolFilter<"AccountRequest"> | boolean
+  whatsapp?: Prisma.BoolFilter<"AccountRequest"> | boolean
+  telegram?: Prisma.BoolFilter<"AccountRequest"> | boolean
+  instagram?: Prisma.BoolFilter<"AccountRequest"> | boolean
   otrasRedes?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
-  adminRed?: Prisma.BoolFilter<"AccountRequest"> | boolean
-  adminLocal?: Prisma.BoolFilter<"AccountRequest"> | boolean
+  usuario?: Prisma.BoolFilter<"AccountRequest"> | boolean
   usuarioAvanzado?: Prisma.BoolFilter<"AccountRequest"> | boolean
-  ftpUneLectura?: Prisma.BoolFilter<"AccountRequest"> | boolean
-  ftpUneModificar?: Prisma.BoolFilter<"AccountRequest"> | boolean
-  ftpUneBorrar?: Prisma.BoolFilter<"AccountRequest"> | boolean
-  ftpEntidadLectura?: Prisma.BoolFilter<"AccountRequest"> | boolean
-  ftpEntidadModificar?: Prisma.BoolFilter<"AccountRequest"> | boolean
-  ftpEntidadBorrar?: Prisma.BoolFilter<"AccountRequest"> | boolean
+  adminLocal?: Prisma.BoolFilter<"AccountRequest"> | boolean
+  adminRed?: Prisma.BoolFilter<"AccountRequest"> | boolean
+  accesoNubeLectura?: Prisma.BoolFilter<"AccountRequest"> | boolean
+  accesoNubeModificar?: Prisma.BoolFilter<"AccountRequest"> | boolean
+  accesoNubeBorrar?: Prisma.BoolFilter<"AccountRequest"> | boolean
+  accesoNubeControlTotal?: Prisma.BoolFilter<"AccountRequest"> | boolean
   tipoCuenta?: Prisma.EnumTipoCuentaFilter<"AccountRequest"> | $Enums.TipoCuenta
   fechaExpiracion?: Prisma.DateTimeNullableFilter<"AccountRequest"> | Date | string | null
   horarioExtralaboral?: Prisma.BoolFilter<"AccountRequest"> | boolean
+  horario24Horas?: Prisma.BoolFilter<"AccountRequest"> | boolean
   extraDesde?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
   extraHasta?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
   sabadoDesde?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
@@ -681,38 +673,37 @@ export type AccountRequestOrderByWithRelationInput = {
   motivosBaja?: Prisma.SortOrderInput | Prisma.SortOrder
   fechaBaja?: Prisma.SortOrderInput | Prisma.SortOrder
   nombreApellidos?: Prisma.SortOrder
+  telefonoExtension?: Prisma.SortOrderInput | Prisma.SortOrder
   cargoOcupa?: Prisma.SortOrder
   departamentoArea?: Prisma.SortOrder
   tipoPersonal?: Prisma.SortOrder
-  cuenta?: Prisma.SortOrderInput | Prisma.SortOrder
-  correoLocal?: Prisma.SortOrder
+  identificadorCuentaUsuario?: Prisma.SortOrderInput | Prisma.SortOrder
   correoNacional?: Prisma.SortOrder
   correoInternacional?: Prisma.SortOrder
   correoInternet?: Prisma.SortOrder
-  correoInternetFechaTemp?: Prisma.SortOrderInput | Prisma.SortOrder
   intranetUNE?: Prisma.SortOrder
   intranetNacional?: Prisma.SortOrder
   internet?: Prisma.SortOrder
-  internetFechaTemp?: Prisma.SortOrderInput | Prisma.SortOrder
   mensajeriaCorporativa?: Prisma.SortOrder
-  chatInternet?: Prisma.SortOrder
-  chatInternetFechaTemp?: Prisma.SortOrderInput | Prisma.SortOrder
   facebook?: Prisma.SortOrder
   twitter?: Prisma.SortOrder
   youtube?: Prisma.SortOrder
+  whatsapp?: Prisma.SortOrder
+  telegram?: Prisma.SortOrder
+  instagram?: Prisma.SortOrder
   otrasRedes?: Prisma.SortOrderInput | Prisma.SortOrder
-  adminRed?: Prisma.SortOrder
-  adminLocal?: Prisma.SortOrder
+  usuario?: Prisma.SortOrder
   usuarioAvanzado?: Prisma.SortOrder
-  ftpUneLectura?: Prisma.SortOrder
-  ftpUneModificar?: Prisma.SortOrder
-  ftpUneBorrar?: Prisma.SortOrder
-  ftpEntidadLectura?: Prisma.SortOrder
-  ftpEntidadModificar?: Prisma.SortOrder
-  ftpEntidadBorrar?: Prisma.SortOrder
+  adminLocal?: Prisma.SortOrder
+  adminRed?: Prisma.SortOrder
+  accesoNubeLectura?: Prisma.SortOrder
+  accesoNubeModificar?: Prisma.SortOrder
+  accesoNubeBorrar?: Prisma.SortOrder
+  accesoNubeControlTotal?: Prisma.SortOrder
   tipoCuenta?: Prisma.SortOrder
   fechaExpiracion?: Prisma.SortOrderInput | Prisma.SortOrder
   horarioExtralaboral?: Prisma.SortOrder
+  horario24Horas?: Prisma.SortOrder
   extraDesde?: Prisma.SortOrderInput | Prisma.SortOrder
   extraHasta?: Prisma.SortOrderInput | Prisma.SortOrder
   sabadoDesde?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -753,38 +744,37 @@ export type AccountRequestWhereUniqueInput = Prisma.AtLeast<{
   motivosBaja?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
   fechaBaja?: Prisma.DateTimeNullableFilter<"AccountRequest"> | Date | string | null
   nombreApellidos?: Prisma.StringFilter<"AccountRequest"> | string
+  telefonoExtension?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
   cargoOcupa?: Prisma.StringFilter<"AccountRequest"> | string
   departamentoArea?: Prisma.StringFilter<"AccountRequest"> | string
   tipoPersonal?: Prisma.EnumTipoPersonalFilter<"AccountRequest"> | $Enums.TipoPersonal
-  cuenta?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
-  correoLocal?: Prisma.BoolFilter<"AccountRequest"> | boolean
+  identificadorCuentaUsuario?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
   correoNacional?: Prisma.BoolFilter<"AccountRequest"> | boolean
   correoInternacional?: Prisma.BoolFilter<"AccountRequest"> | boolean
   correoInternet?: Prisma.BoolFilter<"AccountRequest"> | boolean
-  correoInternetFechaTemp?: Prisma.DateTimeNullableFilter<"AccountRequest"> | Date | string | null
   intranetUNE?: Prisma.BoolFilter<"AccountRequest"> | boolean
   intranetNacional?: Prisma.BoolFilter<"AccountRequest"> | boolean
   internet?: Prisma.BoolFilter<"AccountRequest"> | boolean
-  internetFechaTemp?: Prisma.DateTimeNullableFilter<"AccountRequest"> | Date | string | null
   mensajeriaCorporativa?: Prisma.BoolFilter<"AccountRequest"> | boolean
-  chatInternet?: Prisma.BoolFilter<"AccountRequest"> | boolean
-  chatInternetFechaTemp?: Prisma.DateTimeNullableFilter<"AccountRequest"> | Date | string | null
   facebook?: Prisma.BoolFilter<"AccountRequest"> | boolean
   twitter?: Prisma.BoolFilter<"AccountRequest"> | boolean
   youtube?: Prisma.BoolFilter<"AccountRequest"> | boolean
+  whatsapp?: Prisma.BoolFilter<"AccountRequest"> | boolean
+  telegram?: Prisma.BoolFilter<"AccountRequest"> | boolean
+  instagram?: Prisma.BoolFilter<"AccountRequest"> | boolean
   otrasRedes?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
-  adminRed?: Prisma.BoolFilter<"AccountRequest"> | boolean
-  adminLocal?: Prisma.BoolFilter<"AccountRequest"> | boolean
+  usuario?: Prisma.BoolFilter<"AccountRequest"> | boolean
   usuarioAvanzado?: Prisma.BoolFilter<"AccountRequest"> | boolean
-  ftpUneLectura?: Prisma.BoolFilter<"AccountRequest"> | boolean
-  ftpUneModificar?: Prisma.BoolFilter<"AccountRequest"> | boolean
-  ftpUneBorrar?: Prisma.BoolFilter<"AccountRequest"> | boolean
-  ftpEntidadLectura?: Prisma.BoolFilter<"AccountRequest"> | boolean
-  ftpEntidadModificar?: Prisma.BoolFilter<"AccountRequest"> | boolean
-  ftpEntidadBorrar?: Prisma.BoolFilter<"AccountRequest"> | boolean
+  adminLocal?: Prisma.BoolFilter<"AccountRequest"> | boolean
+  adminRed?: Prisma.BoolFilter<"AccountRequest"> | boolean
+  accesoNubeLectura?: Prisma.BoolFilter<"AccountRequest"> | boolean
+  accesoNubeModificar?: Prisma.BoolFilter<"AccountRequest"> | boolean
+  accesoNubeBorrar?: Prisma.BoolFilter<"AccountRequest"> | boolean
+  accesoNubeControlTotal?: Prisma.BoolFilter<"AccountRequest"> | boolean
   tipoCuenta?: Prisma.EnumTipoCuentaFilter<"AccountRequest"> | $Enums.TipoCuenta
   fechaExpiracion?: Prisma.DateTimeNullableFilter<"AccountRequest"> | Date | string | null
   horarioExtralaboral?: Prisma.BoolFilter<"AccountRequest"> | boolean
+  horario24Horas?: Prisma.BoolFilter<"AccountRequest"> | boolean
   extraDesde?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
   extraHasta?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
   sabadoDesde?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
@@ -822,38 +812,37 @@ export type AccountRequestOrderByWithAggregationInput = {
   motivosBaja?: Prisma.SortOrderInput | Prisma.SortOrder
   fechaBaja?: Prisma.SortOrderInput | Prisma.SortOrder
   nombreApellidos?: Prisma.SortOrder
+  telefonoExtension?: Prisma.SortOrderInput | Prisma.SortOrder
   cargoOcupa?: Prisma.SortOrder
   departamentoArea?: Prisma.SortOrder
   tipoPersonal?: Prisma.SortOrder
-  cuenta?: Prisma.SortOrderInput | Prisma.SortOrder
-  correoLocal?: Prisma.SortOrder
+  identificadorCuentaUsuario?: Prisma.SortOrderInput | Prisma.SortOrder
   correoNacional?: Prisma.SortOrder
   correoInternacional?: Prisma.SortOrder
   correoInternet?: Prisma.SortOrder
-  correoInternetFechaTemp?: Prisma.SortOrderInput | Prisma.SortOrder
   intranetUNE?: Prisma.SortOrder
   intranetNacional?: Prisma.SortOrder
   internet?: Prisma.SortOrder
-  internetFechaTemp?: Prisma.SortOrderInput | Prisma.SortOrder
   mensajeriaCorporativa?: Prisma.SortOrder
-  chatInternet?: Prisma.SortOrder
-  chatInternetFechaTemp?: Prisma.SortOrderInput | Prisma.SortOrder
   facebook?: Prisma.SortOrder
   twitter?: Prisma.SortOrder
   youtube?: Prisma.SortOrder
+  whatsapp?: Prisma.SortOrder
+  telegram?: Prisma.SortOrder
+  instagram?: Prisma.SortOrder
   otrasRedes?: Prisma.SortOrderInput | Prisma.SortOrder
-  adminRed?: Prisma.SortOrder
-  adminLocal?: Prisma.SortOrder
+  usuario?: Prisma.SortOrder
   usuarioAvanzado?: Prisma.SortOrder
-  ftpUneLectura?: Prisma.SortOrder
-  ftpUneModificar?: Prisma.SortOrder
-  ftpUneBorrar?: Prisma.SortOrder
-  ftpEntidadLectura?: Prisma.SortOrder
-  ftpEntidadModificar?: Prisma.SortOrder
-  ftpEntidadBorrar?: Prisma.SortOrder
+  adminLocal?: Prisma.SortOrder
+  adminRed?: Prisma.SortOrder
+  accesoNubeLectura?: Prisma.SortOrder
+  accesoNubeModificar?: Prisma.SortOrder
+  accesoNubeBorrar?: Prisma.SortOrder
+  accesoNubeControlTotal?: Prisma.SortOrder
   tipoCuenta?: Prisma.SortOrder
   fechaExpiracion?: Prisma.SortOrderInput | Prisma.SortOrder
   horarioExtralaboral?: Prisma.SortOrder
+  horario24Horas?: Prisma.SortOrder
   extraDesde?: Prisma.SortOrderInput | Prisma.SortOrder
   extraHasta?: Prisma.SortOrderInput | Prisma.SortOrder
   sabadoDesde?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -897,38 +886,37 @@ export type AccountRequestScalarWhereWithAggregatesInput = {
   motivosBaja?: Prisma.StringNullableWithAggregatesFilter<"AccountRequest"> | string | null
   fechaBaja?: Prisma.DateTimeNullableWithAggregatesFilter<"AccountRequest"> | Date | string | null
   nombreApellidos?: Prisma.StringWithAggregatesFilter<"AccountRequest"> | string
+  telefonoExtension?: Prisma.StringNullableWithAggregatesFilter<"AccountRequest"> | string | null
   cargoOcupa?: Prisma.StringWithAggregatesFilter<"AccountRequest"> | string
   departamentoArea?: Prisma.StringWithAggregatesFilter<"AccountRequest"> | string
   tipoPersonal?: Prisma.EnumTipoPersonalWithAggregatesFilter<"AccountRequest"> | $Enums.TipoPersonal
-  cuenta?: Prisma.StringNullableWithAggregatesFilter<"AccountRequest"> | string | null
-  correoLocal?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
+  identificadorCuentaUsuario?: Prisma.StringNullableWithAggregatesFilter<"AccountRequest"> | string | null
   correoNacional?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
   correoInternacional?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
   correoInternet?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
-  correoInternetFechaTemp?: Prisma.DateTimeNullableWithAggregatesFilter<"AccountRequest"> | Date | string | null
   intranetUNE?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
   intranetNacional?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
   internet?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
-  internetFechaTemp?: Prisma.DateTimeNullableWithAggregatesFilter<"AccountRequest"> | Date | string | null
   mensajeriaCorporativa?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
-  chatInternet?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
-  chatInternetFechaTemp?: Prisma.DateTimeNullableWithAggregatesFilter<"AccountRequest"> | Date | string | null
   facebook?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
   twitter?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
   youtube?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
+  whatsapp?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
+  telegram?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
+  instagram?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
   otrasRedes?: Prisma.StringNullableWithAggregatesFilter<"AccountRequest"> | string | null
-  adminRed?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
-  adminLocal?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
+  usuario?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
   usuarioAvanzado?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
-  ftpUneLectura?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
-  ftpUneModificar?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
-  ftpUneBorrar?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
-  ftpEntidadLectura?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
-  ftpEntidadModificar?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
-  ftpEntidadBorrar?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
+  adminLocal?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
+  adminRed?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
+  accesoNubeLectura?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
+  accesoNubeModificar?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
+  accesoNubeBorrar?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
+  accesoNubeControlTotal?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
   tipoCuenta?: Prisma.EnumTipoCuentaWithAggregatesFilter<"AccountRequest"> | $Enums.TipoCuenta
   fechaExpiracion?: Prisma.DateTimeNullableWithAggregatesFilter<"AccountRequest"> | Date | string | null
   horarioExtralaboral?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
+  horario24Horas?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
   extraDesde?: Prisma.StringNullableWithAggregatesFilter<"AccountRequest"> | string | null
   extraHasta?: Prisma.StringNullableWithAggregatesFilter<"AccountRequest"> | string | null
   sabadoDesde?: Prisma.StringNullableWithAggregatesFilter<"AccountRequest"> | string | null
@@ -966,38 +954,37 @@ export type AccountRequestCreateInput = {
   motivosBaja?: string | null
   fechaBaja?: Date | string | null
   nombreApellidos: string
+  telefonoExtension?: string | null
   cargoOcupa: string
   departamentoArea: string
   tipoPersonal: $Enums.TipoPersonal
-  cuenta?: string | null
-  correoLocal?: boolean
+  identificadorCuentaUsuario?: string | null
   correoNacional?: boolean
   correoInternacional?: boolean
   correoInternet?: boolean
-  correoInternetFechaTemp?: Date | string | null
   intranetUNE?: boolean
   intranetNacional?: boolean
   internet?: boolean
-  internetFechaTemp?: Date | string | null
   mensajeriaCorporativa?: boolean
-  chatInternet?: boolean
-  chatInternetFechaTemp?: Date | string | null
   facebook?: boolean
   twitter?: boolean
   youtube?: boolean
+  whatsapp?: boolean
+  telegram?: boolean
+  instagram?: boolean
   otrasRedes?: string | null
-  adminRed?: boolean
-  adminLocal?: boolean
+  usuario?: boolean
   usuarioAvanzado?: boolean
-  ftpUneLectura?: boolean
-  ftpUneModificar?: boolean
-  ftpUneBorrar?: boolean
-  ftpEntidadLectura?: boolean
-  ftpEntidadModificar?: boolean
-  ftpEntidadBorrar?: boolean
+  adminLocal?: boolean
+  adminRed?: boolean
+  accesoNubeLectura?: boolean
+  accesoNubeModificar?: boolean
+  accesoNubeBorrar?: boolean
+  accesoNubeControlTotal?: boolean
   tipoCuenta: $Enums.TipoCuenta
   fechaExpiracion?: Date | string | null
   horarioExtralaboral?: boolean
+  horario24Horas?: boolean
   extraDesde?: string | null
   extraHasta?: string | null
   sabadoDesde?: string | null
@@ -1035,38 +1022,37 @@ export type AccountRequestUncheckedCreateInput = {
   motivosBaja?: string | null
   fechaBaja?: Date | string | null
   nombreApellidos: string
+  telefonoExtension?: string | null
   cargoOcupa: string
   departamentoArea: string
   tipoPersonal: $Enums.TipoPersonal
-  cuenta?: string | null
-  correoLocal?: boolean
+  identificadorCuentaUsuario?: string | null
   correoNacional?: boolean
   correoInternacional?: boolean
   correoInternet?: boolean
-  correoInternetFechaTemp?: Date | string | null
   intranetUNE?: boolean
   intranetNacional?: boolean
   internet?: boolean
-  internetFechaTemp?: Date | string | null
   mensajeriaCorporativa?: boolean
-  chatInternet?: boolean
-  chatInternetFechaTemp?: Date | string | null
   facebook?: boolean
   twitter?: boolean
   youtube?: boolean
+  whatsapp?: boolean
+  telegram?: boolean
+  instagram?: boolean
   otrasRedes?: string | null
-  adminRed?: boolean
-  adminLocal?: boolean
+  usuario?: boolean
   usuarioAvanzado?: boolean
-  ftpUneLectura?: boolean
-  ftpUneModificar?: boolean
-  ftpUneBorrar?: boolean
-  ftpEntidadLectura?: boolean
-  ftpEntidadModificar?: boolean
-  ftpEntidadBorrar?: boolean
+  adminLocal?: boolean
+  adminRed?: boolean
+  accesoNubeLectura?: boolean
+  accesoNubeModificar?: boolean
+  accesoNubeBorrar?: boolean
+  accesoNubeControlTotal?: boolean
   tipoCuenta: $Enums.TipoCuenta
   fechaExpiracion?: Date | string | null
   horarioExtralaboral?: boolean
+  horario24Horas?: boolean
   extraDesde?: string | null
   extraHasta?: string | null
   sabadoDesde?: string | null
@@ -1104,38 +1090,37 @@ export type AccountRequestUpdateInput = {
   motivosBaja?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaBaja?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   nombreApellidos?: Prisma.StringFieldUpdateOperationsInput | string
+  telefonoExtension?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cargoOcupa?: Prisma.StringFieldUpdateOperationsInput | string
   departamentoArea?: Prisma.StringFieldUpdateOperationsInput | string
   tipoPersonal?: Prisma.EnumTipoPersonalFieldUpdateOperationsInput | $Enums.TipoPersonal
-  cuenta?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  correoLocal?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  identificadorCuentaUsuario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   correoNacional?: Prisma.BoolFieldUpdateOperationsInput | boolean
   correoInternacional?: Prisma.BoolFieldUpdateOperationsInput | boolean
   correoInternet?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  correoInternetFechaTemp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   intranetUNE?: Prisma.BoolFieldUpdateOperationsInput | boolean
   intranetNacional?: Prisma.BoolFieldUpdateOperationsInput | boolean
   internet?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  internetFechaTemp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   mensajeriaCorporativa?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  chatInternet?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  chatInternetFechaTemp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   facebook?: Prisma.BoolFieldUpdateOperationsInput | boolean
   twitter?: Prisma.BoolFieldUpdateOperationsInput | boolean
   youtube?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  whatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  telegram?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  instagram?: Prisma.BoolFieldUpdateOperationsInput | boolean
   otrasRedes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  adminRed?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  adminLocal?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  usuario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   usuarioAvanzado?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  ftpUneLectura?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  ftpUneModificar?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  ftpUneBorrar?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  ftpEntidadLectura?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  ftpEntidadModificar?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  ftpEntidadBorrar?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adminLocal?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adminRed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  accesoNubeLectura?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  accesoNubeModificar?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  accesoNubeBorrar?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  accesoNubeControlTotal?: Prisma.BoolFieldUpdateOperationsInput | boolean
   tipoCuenta?: Prisma.EnumTipoCuentaFieldUpdateOperationsInput | $Enums.TipoCuenta
   fechaExpiracion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horarioExtralaboral?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  horario24Horas?: Prisma.BoolFieldUpdateOperationsInput | boolean
   extraDesde?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   extraHasta?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sabadoDesde?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1173,38 +1158,37 @@ export type AccountRequestUncheckedUpdateInput = {
   motivosBaja?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaBaja?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   nombreApellidos?: Prisma.StringFieldUpdateOperationsInput | string
+  telefonoExtension?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cargoOcupa?: Prisma.StringFieldUpdateOperationsInput | string
   departamentoArea?: Prisma.StringFieldUpdateOperationsInput | string
   tipoPersonal?: Prisma.EnumTipoPersonalFieldUpdateOperationsInput | $Enums.TipoPersonal
-  cuenta?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  correoLocal?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  identificadorCuentaUsuario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   correoNacional?: Prisma.BoolFieldUpdateOperationsInput | boolean
   correoInternacional?: Prisma.BoolFieldUpdateOperationsInput | boolean
   correoInternet?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  correoInternetFechaTemp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   intranetUNE?: Prisma.BoolFieldUpdateOperationsInput | boolean
   intranetNacional?: Prisma.BoolFieldUpdateOperationsInput | boolean
   internet?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  internetFechaTemp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   mensajeriaCorporativa?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  chatInternet?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  chatInternetFechaTemp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   facebook?: Prisma.BoolFieldUpdateOperationsInput | boolean
   twitter?: Prisma.BoolFieldUpdateOperationsInput | boolean
   youtube?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  whatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  telegram?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  instagram?: Prisma.BoolFieldUpdateOperationsInput | boolean
   otrasRedes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  adminRed?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  adminLocal?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  usuario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   usuarioAvanzado?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  ftpUneLectura?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  ftpUneModificar?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  ftpUneBorrar?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  ftpEntidadLectura?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  ftpEntidadModificar?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  ftpEntidadBorrar?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adminLocal?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adminRed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  accesoNubeLectura?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  accesoNubeModificar?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  accesoNubeBorrar?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  accesoNubeControlTotal?: Prisma.BoolFieldUpdateOperationsInput | boolean
   tipoCuenta?: Prisma.EnumTipoCuentaFieldUpdateOperationsInput | $Enums.TipoCuenta
   fechaExpiracion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horarioExtralaboral?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  horario24Horas?: Prisma.BoolFieldUpdateOperationsInput | boolean
   extraDesde?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   extraHasta?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sabadoDesde?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1242,38 +1226,37 @@ export type AccountRequestCreateManyInput = {
   motivosBaja?: string | null
   fechaBaja?: Date | string | null
   nombreApellidos: string
+  telefonoExtension?: string | null
   cargoOcupa: string
   departamentoArea: string
   tipoPersonal: $Enums.TipoPersonal
-  cuenta?: string | null
-  correoLocal?: boolean
+  identificadorCuentaUsuario?: string | null
   correoNacional?: boolean
   correoInternacional?: boolean
   correoInternet?: boolean
-  correoInternetFechaTemp?: Date | string | null
   intranetUNE?: boolean
   intranetNacional?: boolean
   internet?: boolean
-  internetFechaTemp?: Date | string | null
   mensajeriaCorporativa?: boolean
-  chatInternet?: boolean
-  chatInternetFechaTemp?: Date | string | null
   facebook?: boolean
   twitter?: boolean
   youtube?: boolean
+  whatsapp?: boolean
+  telegram?: boolean
+  instagram?: boolean
   otrasRedes?: string | null
-  adminRed?: boolean
-  adminLocal?: boolean
+  usuario?: boolean
   usuarioAvanzado?: boolean
-  ftpUneLectura?: boolean
-  ftpUneModificar?: boolean
-  ftpUneBorrar?: boolean
-  ftpEntidadLectura?: boolean
-  ftpEntidadModificar?: boolean
-  ftpEntidadBorrar?: boolean
+  adminLocal?: boolean
+  adminRed?: boolean
+  accesoNubeLectura?: boolean
+  accesoNubeModificar?: boolean
+  accesoNubeBorrar?: boolean
+  accesoNubeControlTotal?: boolean
   tipoCuenta: $Enums.TipoCuenta
   fechaExpiracion?: Date | string | null
   horarioExtralaboral?: boolean
+  horario24Horas?: boolean
   extraDesde?: string | null
   extraHasta?: string | null
   sabadoDesde?: string | null
@@ -1311,38 +1294,37 @@ export type AccountRequestUpdateManyMutationInput = {
   motivosBaja?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaBaja?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   nombreApellidos?: Prisma.StringFieldUpdateOperationsInput | string
+  telefonoExtension?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cargoOcupa?: Prisma.StringFieldUpdateOperationsInput | string
   departamentoArea?: Prisma.StringFieldUpdateOperationsInput | string
   tipoPersonal?: Prisma.EnumTipoPersonalFieldUpdateOperationsInput | $Enums.TipoPersonal
-  cuenta?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  correoLocal?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  identificadorCuentaUsuario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   correoNacional?: Prisma.BoolFieldUpdateOperationsInput | boolean
   correoInternacional?: Prisma.BoolFieldUpdateOperationsInput | boolean
   correoInternet?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  correoInternetFechaTemp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   intranetUNE?: Prisma.BoolFieldUpdateOperationsInput | boolean
   intranetNacional?: Prisma.BoolFieldUpdateOperationsInput | boolean
   internet?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  internetFechaTemp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   mensajeriaCorporativa?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  chatInternet?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  chatInternetFechaTemp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   facebook?: Prisma.BoolFieldUpdateOperationsInput | boolean
   twitter?: Prisma.BoolFieldUpdateOperationsInput | boolean
   youtube?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  whatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  telegram?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  instagram?: Prisma.BoolFieldUpdateOperationsInput | boolean
   otrasRedes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  adminRed?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  adminLocal?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  usuario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   usuarioAvanzado?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  ftpUneLectura?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  ftpUneModificar?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  ftpUneBorrar?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  ftpEntidadLectura?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  ftpEntidadModificar?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  ftpEntidadBorrar?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adminLocal?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adminRed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  accesoNubeLectura?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  accesoNubeModificar?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  accesoNubeBorrar?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  accesoNubeControlTotal?: Prisma.BoolFieldUpdateOperationsInput | boolean
   tipoCuenta?: Prisma.EnumTipoCuentaFieldUpdateOperationsInput | $Enums.TipoCuenta
   fechaExpiracion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horarioExtralaboral?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  horario24Horas?: Prisma.BoolFieldUpdateOperationsInput | boolean
   extraDesde?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   extraHasta?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sabadoDesde?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1380,38 +1362,37 @@ export type AccountRequestUncheckedUpdateManyInput = {
   motivosBaja?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaBaja?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   nombreApellidos?: Prisma.StringFieldUpdateOperationsInput | string
+  telefonoExtension?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cargoOcupa?: Prisma.StringFieldUpdateOperationsInput | string
   departamentoArea?: Prisma.StringFieldUpdateOperationsInput | string
   tipoPersonal?: Prisma.EnumTipoPersonalFieldUpdateOperationsInput | $Enums.TipoPersonal
-  cuenta?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  correoLocal?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  identificadorCuentaUsuario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   correoNacional?: Prisma.BoolFieldUpdateOperationsInput | boolean
   correoInternacional?: Prisma.BoolFieldUpdateOperationsInput | boolean
   correoInternet?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  correoInternetFechaTemp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   intranetUNE?: Prisma.BoolFieldUpdateOperationsInput | boolean
   intranetNacional?: Prisma.BoolFieldUpdateOperationsInput | boolean
   internet?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  internetFechaTemp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   mensajeriaCorporativa?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  chatInternet?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  chatInternetFechaTemp?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   facebook?: Prisma.BoolFieldUpdateOperationsInput | boolean
   twitter?: Prisma.BoolFieldUpdateOperationsInput | boolean
   youtube?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  whatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  telegram?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  instagram?: Prisma.BoolFieldUpdateOperationsInput | boolean
   otrasRedes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  adminRed?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  adminLocal?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  usuario?: Prisma.BoolFieldUpdateOperationsInput | boolean
   usuarioAvanzado?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  ftpUneLectura?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  ftpUneModificar?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  ftpUneBorrar?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  ftpEntidadLectura?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  ftpEntidadModificar?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  ftpEntidadBorrar?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adminLocal?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adminRed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  accesoNubeLectura?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  accesoNubeModificar?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  accesoNubeBorrar?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  accesoNubeControlTotal?: Prisma.BoolFieldUpdateOperationsInput | boolean
   tipoCuenta?: Prisma.EnumTipoCuentaFieldUpdateOperationsInput | $Enums.TipoCuenta
   fechaExpiracion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   horarioExtralaboral?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  horario24Horas?: Prisma.BoolFieldUpdateOperationsInput | boolean
   extraDesde?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   extraHasta?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sabadoDesde?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1449,38 +1430,37 @@ export type AccountRequestCountOrderByAggregateInput = {
   motivosBaja?: Prisma.SortOrder
   fechaBaja?: Prisma.SortOrder
   nombreApellidos?: Prisma.SortOrder
+  telefonoExtension?: Prisma.SortOrder
   cargoOcupa?: Prisma.SortOrder
   departamentoArea?: Prisma.SortOrder
   tipoPersonal?: Prisma.SortOrder
-  cuenta?: Prisma.SortOrder
-  correoLocal?: Prisma.SortOrder
+  identificadorCuentaUsuario?: Prisma.SortOrder
   correoNacional?: Prisma.SortOrder
   correoInternacional?: Prisma.SortOrder
   correoInternet?: Prisma.SortOrder
-  correoInternetFechaTemp?: Prisma.SortOrder
   intranetUNE?: Prisma.SortOrder
   intranetNacional?: Prisma.SortOrder
   internet?: Prisma.SortOrder
-  internetFechaTemp?: Prisma.SortOrder
   mensajeriaCorporativa?: Prisma.SortOrder
-  chatInternet?: Prisma.SortOrder
-  chatInternetFechaTemp?: Prisma.SortOrder
   facebook?: Prisma.SortOrder
   twitter?: Prisma.SortOrder
   youtube?: Prisma.SortOrder
+  whatsapp?: Prisma.SortOrder
+  telegram?: Prisma.SortOrder
+  instagram?: Prisma.SortOrder
   otrasRedes?: Prisma.SortOrder
-  adminRed?: Prisma.SortOrder
-  adminLocal?: Prisma.SortOrder
+  usuario?: Prisma.SortOrder
   usuarioAvanzado?: Prisma.SortOrder
-  ftpUneLectura?: Prisma.SortOrder
-  ftpUneModificar?: Prisma.SortOrder
-  ftpUneBorrar?: Prisma.SortOrder
-  ftpEntidadLectura?: Prisma.SortOrder
-  ftpEntidadModificar?: Prisma.SortOrder
-  ftpEntidadBorrar?: Prisma.SortOrder
+  adminLocal?: Prisma.SortOrder
+  adminRed?: Prisma.SortOrder
+  accesoNubeLectura?: Prisma.SortOrder
+  accesoNubeModificar?: Prisma.SortOrder
+  accesoNubeBorrar?: Prisma.SortOrder
+  accesoNubeControlTotal?: Prisma.SortOrder
   tipoCuenta?: Prisma.SortOrder
   fechaExpiracion?: Prisma.SortOrder
   horarioExtralaboral?: Prisma.SortOrder
+  horario24Horas?: Prisma.SortOrder
   extraDesde?: Prisma.SortOrder
   extraHasta?: Prisma.SortOrder
   sabadoDesde?: Prisma.SortOrder
@@ -1518,38 +1498,37 @@ export type AccountRequestMaxOrderByAggregateInput = {
   motivosBaja?: Prisma.SortOrder
   fechaBaja?: Prisma.SortOrder
   nombreApellidos?: Prisma.SortOrder
+  telefonoExtension?: Prisma.SortOrder
   cargoOcupa?: Prisma.SortOrder
   departamentoArea?: Prisma.SortOrder
   tipoPersonal?: Prisma.SortOrder
-  cuenta?: Prisma.SortOrder
-  correoLocal?: Prisma.SortOrder
+  identificadorCuentaUsuario?: Prisma.SortOrder
   correoNacional?: Prisma.SortOrder
   correoInternacional?: Prisma.SortOrder
   correoInternet?: Prisma.SortOrder
-  correoInternetFechaTemp?: Prisma.SortOrder
   intranetUNE?: Prisma.SortOrder
   intranetNacional?: Prisma.SortOrder
   internet?: Prisma.SortOrder
-  internetFechaTemp?: Prisma.SortOrder
   mensajeriaCorporativa?: Prisma.SortOrder
-  chatInternet?: Prisma.SortOrder
-  chatInternetFechaTemp?: Prisma.SortOrder
   facebook?: Prisma.SortOrder
   twitter?: Prisma.SortOrder
   youtube?: Prisma.SortOrder
+  whatsapp?: Prisma.SortOrder
+  telegram?: Prisma.SortOrder
+  instagram?: Prisma.SortOrder
   otrasRedes?: Prisma.SortOrder
-  adminRed?: Prisma.SortOrder
-  adminLocal?: Prisma.SortOrder
+  usuario?: Prisma.SortOrder
   usuarioAvanzado?: Prisma.SortOrder
-  ftpUneLectura?: Prisma.SortOrder
-  ftpUneModificar?: Prisma.SortOrder
-  ftpUneBorrar?: Prisma.SortOrder
-  ftpEntidadLectura?: Prisma.SortOrder
-  ftpEntidadModificar?: Prisma.SortOrder
-  ftpEntidadBorrar?: Prisma.SortOrder
+  adminLocal?: Prisma.SortOrder
+  adminRed?: Prisma.SortOrder
+  accesoNubeLectura?: Prisma.SortOrder
+  accesoNubeModificar?: Prisma.SortOrder
+  accesoNubeBorrar?: Prisma.SortOrder
+  accesoNubeControlTotal?: Prisma.SortOrder
   tipoCuenta?: Prisma.SortOrder
   fechaExpiracion?: Prisma.SortOrder
   horarioExtralaboral?: Prisma.SortOrder
+  horario24Horas?: Prisma.SortOrder
   extraDesde?: Prisma.SortOrder
   extraHasta?: Prisma.SortOrder
   sabadoDesde?: Prisma.SortOrder
@@ -1587,38 +1566,37 @@ export type AccountRequestMinOrderByAggregateInput = {
   motivosBaja?: Prisma.SortOrder
   fechaBaja?: Prisma.SortOrder
   nombreApellidos?: Prisma.SortOrder
+  telefonoExtension?: Prisma.SortOrder
   cargoOcupa?: Prisma.SortOrder
   departamentoArea?: Prisma.SortOrder
   tipoPersonal?: Prisma.SortOrder
-  cuenta?: Prisma.SortOrder
-  correoLocal?: Prisma.SortOrder
+  identificadorCuentaUsuario?: Prisma.SortOrder
   correoNacional?: Prisma.SortOrder
   correoInternacional?: Prisma.SortOrder
   correoInternet?: Prisma.SortOrder
-  correoInternetFechaTemp?: Prisma.SortOrder
   intranetUNE?: Prisma.SortOrder
   intranetNacional?: Prisma.SortOrder
   internet?: Prisma.SortOrder
-  internetFechaTemp?: Prisma.SortOrder
   mensajeriaCorporativa?: Prisma.SortOrder
-  chatInternet?: Prisma.SortOrder
-  chatInternetFechaTemp?: Prisma.SortOrder
   facebook?: Prisma.SortOrder
   twitter?: Prisma.SortOrder
   youtube?: Prisma.SortOrder
+  whatsapp?: Prisma.SortOrder
+  telegram?: Prisma.SortOrder
+  instagram?: Prisma.SortOrder
   otrasRedes?: Prisma.SortOrder
-  adminRed?: Prisma.SortOrder
-  adminLocal?: Prisma.SortOrder
+  usuario?: Prisma.SortOrder
   usuarioAvanzado?: Prisma.SortOrder
-  ftpUneLectura?: Prisma.SortOrder
-  ftpUneModificar?: Prisma.SortOrder
-  ftpUneBorrar?: Prisma.SortOrder
-  ftpEntidadLectura?: Prisma.SortOrder
-  ftpEntidadModificar?: Prisma.SortOrder
-  ftpEntidadBorrar?: Prisma.SortOrder
+  adminLocal?: Prisma.SortOrder
+  adminRed?: Prisma.SortOrder
+  accesoNubeLectura?: Prisma.SortOrder
+  accesoNubeModificar?: Prisma.SortOrder
+  accesoNubeBorrar?: Prisma.SortOrder
+  accesoNubeControlTotal?: Prisma.SortOrder
   tipoCuenta?: Prisma.SortOrder
   fechaExpiracion?: Prisma.SortOrder
   horarioExtralaboral?: Prisma.SortOrder
+  horario24Horas?: Prisma.SortOrder
   extraDesde?: Prisma.SortOrder
   extraHasta?: Prisma.SortOrder
   sabadoDesde?: Prisma.SortOrder
@@ -1670,38 +1648,37 @@ export type AccountRequestSelect<ExtArgs extends runtime.Types.Extensions.Intern
   motivosBaja?: boolean
   fechaBaja?: boolean
   nombreApellidos?: boolean
+  telefonoExtension?: boolean
   cargoOcupa?: boolean
   departamentoArea?: boolean
   tipoPersonal?: boolean
-  cuenta?: boolean
-  correoLocal?: boolean
+  identificadorCuentaUsuario?: boolean
   correoNacional?: boolean
   correoInternacional?: boolean
   correoInternet?: boolean
-  correoInternetFechaTemp?: boolean
   intranetUNE?: boolean
   intranetNacional?: boolean
   internet?: boolean
-  internetFechaTemp?: boolean
   mensajeriaCorporativa?: boolean
-  chatInternet?: boolean
-  chatInternetFechaTemp?: boolean
   facebook?: boolean
   twitter?: boolean
   youtube?: boolean
+  whatsapp?: boolean
+  telegram?: boolean
+  instagram?: boolean
   otrasRedes?: boolean
-  adminRed?: boolean
-  adminLocal?: boolean
+  usuario?: boolean
   usuarioAvanzado?: boolean
-  ftpUneLectura?: boolean
-  ftpUneModificar?: boolean
-  ftpUneBorrar?: boolean
-  ftpEntidadLectura?: boolean
-  ftpEntidadModificar?: boolean
-  ftpEntidadBorrar?: boolean
+  adminLocal?: boolean
+  adminRed?: boolean
+  accesoNubeLectura?: boolean
+  accesoNubeModificar?: boolean
+  accesoNubeBorrar?: boolean
+  accesoNubeControlTotal?: boolean
   tipoCuenta?: boolean
   fechaExpiracion?: boolean
   horarioExtralaboral?: boolean
+  horario24Horas?: boolean
   extraDesde?: boolean
   extraHasta?: boolean
   sabadoDesde?: boolean
@@ -1739,38 +1716,37 @@ export type AccountRequestSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   motivosBaja?: boolean
   fechaBaja?: boolean
   nombreApellidos?: boolean
+  telefonoExtension?: boolean
   cargoOcupa?: boolean
   departamentoArea?: boolean
   tipoPersonal?: boolean
-  cuenta?: boolean
-  correoLocal?: boolean
+  identificadorCuentaUsuario?: boolean
   correoNacional?: boolean
   correoInternacional?: boolean
   correoInternet?: boolean
-  correoInternetFechaTemp?: boolean
   intranetUNE?: boolean
   intranetNacional?: boolean
   internet?: boolean
-  internetFechaTemp?: boolean
   mensajeriaCorporativa?: boolean
-  chatInternet?: boolean
-  chatInternetFechaTemp?: boolean
   facebook?: boolean
   twitter?: boolean
   youtube?: boolean
+  whatsapp?: boolean
+  telegram?: boolean
+  instagram?: boolean
   otrasRedes?: boolean
-  adminRed?: boolean
-  adminLocal?: boolean
+  usuario?: boolean
   usuarioAvanzado?: boolean
-  ftpUneLectura?: boolean
-  ftpUneModificar?: boolean
-  ftpUneBorrar?: boolean
-  ftpEntidadLectura?: boolean
-  ftpEntidadModificar?: boolean
-  ftpEntidadBorrar?: boolean
+  adminLocal?: boolean
+  adminRed?: boolean
+  accesoNubeLectura?: boolean
+  accesoNubeModificar?: boolean
+  accesoNubeBorrar?: boolean
+  accesoNubeControlTotal?: boolean
   tipoCuenta?: boolean
   fechaExpiracion?: boolean
   horarioExtralaboral?: boolean
+  horario24Horas?: boolean
   extraDesde?: boolean
   extraHasta?: boolean
   sabadoDesde?: boolean
@@ -1808,38 +1784,37 @@ export type AccountRequestSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   motivosBaja?: boolean
   fechaBaja?: boolean
   nombreApellidos?: boolean
+  telefonoExtension?: boolean
   cargoOcupa?: boolean
   departamentoArea?: boolean
   tipoPersonal?: boolean
-  cuenta?: boolean
-  correoLocal?: boolean
+  identificadorCuentaUsuario?: boolean
   correoNacional?: boolean
   correoInternacional?: boolean
   correoInternet?: boolean
-  correoInternetFechaTemp?: boolean
   intranetUNE?: boolean
   intranetNacional?: boolean
   internet?: boolean
-  internetFechaTemp?: boolean
   mensajeriaCorporativa?: boolean
-  chatInternet?: boolean
-  chatInternetFechaTemp?: boolean
   facebook?: boolean
   twitter?: boolean
   youtube?: boolean
+  whatsapp?: boolean
+  telegram?: boolean
+  instagram?: boolean
   otrasRedes?: boolean
-  adminRed?: boolean
-  adminLocal?: boolean
+  usuario?: boolean
   usuarioAvanzado?: boolean
-  ftpUneLectura?: boolean
-  ftpUneModificar?: boolean
-  ftpUneBorrar?: boolean
-  ftpEntidadLectura?: boolean
-  ftpEntidadModificar?: boolean
-  ftpEntidadBorrar?: boolean
+  adminLocal?: boolean
+  adminRed?: boolean
+  accesoNubeLectura?: boolean
+  accesoNubeModificar?: boolean
+  accesoNubeBorrar?: boolean
+  accesoNubeControlTotal?: boolean
   tipoCuenta?: boolean
   fechaExpiracion?: boolean
   horarioExtralaboral?: boolean
+  horario24Horas?: boolean
   extraDesde?: boolean
   extraHasta?: boolean
   sabadoDesde?: boolean
@@ -1877,38 +1852,37 @@ export type AccountRequestSelectScalar = {
   motivosBaja?: boolean
   fechaBaja?: boolean
   nombreApellidos?: boolean
+  telefonoExtension?: boolean
   cargoOcupa?: boolean
   departamentoArea?: boolean
   tipoPersonal?: boolean
-  cuenta?: boolean
-  correoLocal?: boolean
+  identificadorCuentaUsuario?: boolean
   correoNacional?: boolean
   correoInternacional?: boolean
   correoInternet?: boolean
-  correoInternetFechaTemp?: boolean
   intranetUNE?: boolean
   intranetNacional?: boolean
   internet?: boolean
-  internetFechaTemp?: boolean
   mensajeriaCorporativa?: boolean
-  chatInternet?: boolean
-  chatInternetFechaTemp?: boolean
   facebook?: boolean
   twitter?: boolean
   youtube?: boolean
+  whatsapp?: boolean
+  telegram?: boolean
+  instagram?: boolean
   otrasRedes?: boolean
-  adminRed?: boolean
-  adminLocal?: boolean
+  usuario?: boolean
   usuarioAvanzado?: boolean
-  ftpUneLectura?: boolean
-  ftpUneModificar?: boolean
-  ftpUneBorrar?: boolean
-  ftpEntidadLectura?: boolean
-  ftpEntidadModificar?: boolean
-  ftpEntidadBorrar?: boolean
+  adminLocal?: boolean
+  adminRed?: boolean
+  accesoNubeLectura?: boolean
+  accesoNubeModificar?: boolean
+  accesoNubeBorrar?: boolean
+  accesoNubeControlTotal?: boolean
   tipoCuenta?: boolean
   fechaExpiracion?: boolean
   horarioExtralaboral?: boolean
+  horario24Horas?: boolean
   extraDesde?: boolean
   extraHasta?: boolean
   sabadoDesde?: boolean
@@ -1937,7 +1911,7 @@ export type AccountRequestSelectScalar = {
   ejecutadoFecha?: boolean
 }
 
-export type AccountRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "folio" | "tipoSolicitud" | "motivosBaja" | "fechaBaja" | "nombreApellidos" | "cargoOcupa" | "departamentoArea" | "tipoPersonal" | "cuenta" | "correoLocal" | "correoNacional" | "correoInternacional" | "correoInternet" | "correoInternetFechaTemp" | "intranetUNE" | "intranetNacional" | "internet" | "internetFechaTemp" | "mensajeriaCorporativa" | "chatInternet" | "chatInternetFechaTemp" | "facebook" | "twitter" | "youtube" | "otrasRedes" | "adminRed" | "adminLocal" | "usuarioAvanzado" | "ftpUneLectura" | "ftpUneModificar" | "ftpUneBorrar" | "ftpEntidadLectura" | "ftpEntidadModificar" | "ftpEntidadBorrar" | "tipoCuenta" | "fechaExpiracion" | "horarioExtralaboral" | "extraDesde" | "extraHasta" | "sabadoDesde" | "sabadoHasta" | "domingoDesde" | "domingoHasta" | "apnCorreoNacional" | "apnCorreoInternacional" | "apnInternet" | "telefonoCelular" | "pcNombre" | "pcInventario" | "pcAdicionalNombre" | "pcAdicionalInventario" | "softwareAutorizado" | "cuentaUsuario" | "actividadRealiza" | "administradorSistema" | "firmadoPorSolicitado" | "solicitadoFecha" | "firmadoPorRevisado" | "revisadoFecha" | "firmadoPorAprobado" | "aprobadoFecha" | "firmadoPorEjecutado" | "ejecutadoFecha", ExtArgs["result"]["accountRequest"]>
+export type AccountRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "folio" | "tipoSolicitud" | "motivosBaja" | "fechaBaja" | "nombreApellidos" | "telefonoExtension" | "cargoOcupa" | "departamentoArea" | "tipoPersonal" | "identificadorCuentaUsuario" | "correoNacional" | "correoInternacional" | "correoInternet" | "intranetUNE" | "intranetNacional" | "internet" | "mensajeriaCorporativa" | "facebook" | "twitter" | "youtube" | "whatsapp" | "telegram" | "instagram" | "otrasRedes" | "usuario" | "usuarioAvanzado" | "adminLocal" | "adminRed" | "accesoNubeLectura" | "accesoNubeModificar" | "accesoNubeBorrar" | "accesoNubeControlTotal" | "tipoCuenta" | "fechaExpiracion" | "horarioExtralaboral" | "horario24Horas" | "extraDesde" | "extraHasta" | "sabadoDesde" | "sabadoHasta" | "domingoDesde" | "domingoHasta" | "apnCorreoNacional" | "apnCorreoInternacional" | "apnInternet" | "telefonoCelular" | "pcNombre" | "pcInventario" | "pcAdicionalNombre" | "pcAdicionalInventario" | "softwareAutorizado" | "cuentaUsuario" | "actividadRealiza" | "administradorSistema" | "firmadoPorSolicitado" | "solicitadoFecha" | "firmadoPorRevisado" | "revisadoFecha" | "firmadoPorAprobado" | "aprobadoFecha" | "firmadoPorEjecutado" | "ejecutadoFecha", ExtArgs["result"]["accountRequest"]>
 
 export type $AccountRequestPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "AccountRequest"
@@ -1951,38 +1925,37 @@ export type $AccountRequestPayload<ExtArgs extends runtime.Types.Extensions.Inte
     motivosBaja: string | null
     fechaBaja: Date | null
     nombreApellidos: string
+    telefonoExtension: string | null
     cargoOcupa: string
     departamentoArea: string
     tipoPersonal: $Enums.TipoPersonal
-    cuenta: string | null
-    correoLocal: boolean
+    identificadorCuentaUsuario: string | null
     correoNacional: boolean
     correoInternacional: boolean
     correoInternet: boolean
-    correoInternetFechaTemp: Date | null
     intranetUNE: boolean
     intranetNacional: boolean
     internet: boolean
-    internetFechaTemp: Date | null
     mensajeriaCorporativa: boolean
-    chatInternet: boolean
-    chatInternetFechaTemp: Date | null
     facebook: boolean
     twitter: boolean
     youtube: boolean
+    whatsapp: boolean
+    telegram: boolean
+    instagram: boolean
     otrasRedes: string | null
-    adminRed: boolean
-    adminLocal: boolean
+    usuario: boolean
     usuarioAvanzado: boolean
-    ftpUneLectura: boolean
-    ftpUneModificar: boolean
-    ftpUneBorrar: boolean
-    ftpEntidadLectura: boolean
-    ftpEntidadModificar: boolean
-    ftpEntidadBorrar: boolean
+    adminLocal: boolean
+    adminRed: boolean
+    accesoNubeLectura: boolean
+    accesoNubeModificar: boolean
+    accesoNubeBorrar: boolean
+    accesoNubeControlTotal: boolean
     tipoCuenta: $Enums.TipoCuenta
     fechaExpiracion: Date | null
     horarioExtralaboral: boolean
+    horario24Horas: boolean
     extraDesde: string | null
     extraHasta: string | null
     sabadoDesde: string | null
@@ -2440,38 +2413,37 @@ export interface AccountRequestFieldRefs {
   readonly motivosBaja: Prisma.FieldRef<"AccountRequest", 'String'>
   readonly fechaBaja: Prisma.FieldRef<"AccountRequest", 'DateTime'>
   readonly nombreApellidos: Prisma.FieldRef<"AccountRequest", 'String'>
+  readonly telefonoExtension: Prisma.FieldRef<"AccountRequest", 'String'>
   readonly cargoOcupa: Prisma.FieldRef<"AccountRequest", 'String'>
   readonly departamentoArea: Prisma.FieldRef<"AccountRequest", 'String'>
   readonly tipoPersonal: Prisma.FieldRef<"AccountRequest", 'TipoPersonal'>
-  readonly cuenta: Prisma.FieldRef<"AccountRequest", 'String'>
-  readonly correoLocal: Prisma.FieldRef<"AccountRequest", 'Boolean'>
+  readonly identificadorCuentaUsuario: Prisma.FieldRef<"AccountRequest", 'String'>
   readonly correoNacional: Prisma.FieldRef<"AccountRequest", 'Boolean'>
   readonly correoInternacional: Prisma.FieldRef<"AccountRequest", 'Boolean'>
   readonly correoInternet: Prisma.FieldRef<"AccountRequest", 'Boolean'>
-  readonly correoInternetFechaTemp: Prisma.FieldRef<"AccountRequest", 'DateTime'>
   readonly intranetUNE: Prisma.FieldRef<"AccountRequest", 'Boolean'>
   readonly intranetNacional: Prisma.FieldRef<"AccountRequest", 'Boolean'>
   readonly internet: Prisma.FieldRef<"AccountRequest", 'Boolean'>
-  readonly internetFechaTemp: Prisma.FieldRef<"AccountRequest", 'DateTime'>
   readonly mensajeriaCorporativa: Prisma.FieldRef<"AccountRequest", 'Boolean'>
-  readonly chatInternet: Prisma.FieldRef<"AccountRequest", 'Boolean'>
-  readonly chatInternetFechaTemp: Prisma.FieldRef<"AccountRequest", 'DateTime'>
   readonly facebook: Prisma.FieldRef<"AccountRequest", 'Boolean'>
   readonly twitter: Prisma.FieldRef<"AccountRequest", 'Boolean'>
   readonly youtube: Prisma.FieldRef<"AccountRequest", 'Boolean'>
+  readonly whatsapp: Prisma.FieldRef<"AccountRequest", 'Boolean'>
+  readonly telegram: Prisma.FieldRef<"AccountRequest", 'Boolean'>
+  readonly instagram: Prisma.FieldRef<"AccountRequest", 'Boolean'>
   readonly otrasRedes: Prisma.FieldRef<"AccountRequest", 'String'>
-  readonly adminRed: Prisma.FieldRef<"AccountRequest", 'Boolean'>
-  readonly adminLocal: Prisma.FieldRef<"AccountRequest", 'Boolean'>
+  readonly usuario: Prisma.FieldRef<"AccountRequest", 'Boolean'>
   readonly usuarioAvanzado: Prisma.FieldRef<"AccountRequest", 'Boolean'>
-  readonly ftpUneLectura: Prisma.FieldRef<"AccountRequest", 'Boolean'>
-  readonly ftpUneModificar: Prisma.FieldRef<"AccountRequest", 'Boolean'>
-  readonly ftpUneBorrar: Prisma.FieldRef<"AccountRequest", 'Boolean'>
-  readonly ftpEntidadLectura: Prisma.FieldRef<"AccountRequest", 'Boolean'>
-  readonly ftpEntidadModificar: Prisma.FieldRef<"AccountRequest", 'Boolean'>
-  readonly ftpEntidadBorrar: Prisma.FieldRef<"AccountRequest", 'Boolean'>
+  readonly adminLocal: Prisma.FieldRef<"AccountRequest", 'Boolean'>
+  readonly adminRed: Prisma.FieldRef<"AccountRequest", 'Boolean'>
+  readonly accesoNubeLectura: Prisma.FieldRef<"AccountRequest", 'Boolean'>
+  readonly accesoNubeModificar: Prisma.FieldRef<"AccountRequest", 'Boolean'>
+  readonly accesoNubeBorrar: Prisma.FieldRef<"AccountRequest", 'Boolean'>
+  readonly accesoNubeControlTotal: Prisma.FieldRef<"AccountRequest", 'Boolean'>
   readonly tipoCuenta: Prisma.FieldRef<"AccountRequest", 'TipoCuenta'>
   readonly fechaExpiracion: Prisma.FieldRef<"AccountRequest", 'DateTime'>
   readonly horarioExtralaboral: Prisma.FieldRef<"AccountRequest", 'Boolean'>
+  readonly horario24Horas: Prisma.FieldRef<"AccountRequest", 'Boolean'>
   readonly extraDesde: Prisma.FieldRef<"AccountRequest", 'String'>
   readonly extraHasta: Prisma.FieldRef<"AccountRequest", 'String'>
   readonly sabadoDesde: Prisma.FieldRef<"AccountRequest", 'String'>

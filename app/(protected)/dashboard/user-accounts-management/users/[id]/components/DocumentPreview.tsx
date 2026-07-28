@@ -20,7 +20,7 @@ export default function DocumentPreview({ user }: Props) {
       <div
         ref={contentRef}
         data-print-target
-        className="mx-auto w-[210mm] max-w-full bg-white p-[12mm] shadow-lg print:w-auto print:p-0 print:shadow-none"
+        className="mx-auto w-[216mm] max-w-full bg-white p-[8mm] print:h-[255mm] print:w-auto print:p-0 print:shadow-none"
       >
         <UserAccountDocument user={user} />
       </div>

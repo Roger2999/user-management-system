@@ -15,50 +15,46 @@ export async function createUserAccountAction(
     tipoSolicitud: (formData.get("tipoSolicitud") as string) || undefined,
     folio: formData.get("folio") as string,
     nombreApellidos: formData.get("nombreApellidos") as string,
+    telefonoExtension: (formData.get("telefonoExtension") as string) || undefined,
     cargoOcupa: formData.get("cargoOcupa") as string,
     departamentoArea: formData.get("departamentoArea") as string,
     tipoPersonal: (formData.get("tipoPersonal") as string) || undefined,
-    cuenta: formData.get("cuenta") as string,
+    identificadorCuentaUsuario:
+      (formData.get("identificadorCuentaUsuario") as string) || undefined,
 
-    correoLocal: formData.get("correoLocal") === "on",
     correoNacional: formData.get("correoNacional") === "on",
     correoInternacional: formData.get("correoInternacional") === "on",
     correoInternet: formData.get("correoInternet") === "on",
-    correoInternetFechaTemp:
-      (formData.get("correoInternetFechaTemp") as string) || undefined,
 
     intranetUNE: formData.get("intranetUNE") === "on",
     intranetNacional: formData.get("intranetNacional") === "on",
     internet: formData.get("internet") === "on",
-    internetFechaTemp:
-      (formData.get("internetFechaTemp") as string) || undefined,
 
     mensajeriaCorporativa: formData.get("mensajeriaCorporativa") === "on",
-    chatInternet: formData.get("chatInternet") === "on",
-    chatInternetFechaTemp:
-      (formData.get("chatInternetFechaTemp") as string) || undefined,
 
     facebook: formData.get("facebook") === "on",
     twitter: formData.get("twitter") === "on",
     youtube: formData.get("youtube") === "on",
+    whatsapp: formData.get("whatsapp") === "on",
+    telegram: formData.get("telegram") === "on",
+    instagram: formData.get("instagram") === "on",
     otrasRedes: (formData.get("otrasRedes") as string) || undefined,
 
-    adminRed: formData.get("adminRed") === "on",
-    adminLocal: formData.get("adminLocal") === "on",
+    usuario: formData.get("usuario") === "on",
     usuarioAvanzado: formData.get("usuarioAvanzado") === "on",
+    adminLocal: formData.get("adminLocal") === "on",
+    adminRed: formData.get("adminRed") === "on",
 
-    ftpUneLectura: formData.get("ftpUneLectura") === "on",
-    ftpUneModificar: formData.get("ftpUneModificar") === "on",
-    ftpUneBorrar: formData.get("ftpUneBorrar") === "on",
-
-    ftpEntidadLectura: formData.get("ftpEntidadLectura") === "on",
-    ftpEntidadModificar: formData.get("ftpEntidadModificar") === "on",
-    ftpEntidadBorrar: formData.get("ftpEntidadBorrar") === "on",
+    accesoNubeLectura: formData.get("accesoNubeLectura") === "on",
+    accesoNubeModificar: formData.get("accesoNubeModificar") === "on",
+    accesoNubeBorrar: formData.get("accesoNubeBorrar") === "on",
+    accesoNubeControlTotal: formData.get("accesoNubeControlTotal") === "on",
 
     tipoCuenta: (formData.get("tipoCuenta") as string) || undefined,
     fechaExpiracion: (formData.get("fechaExpiracion") as string) || undefined,
 
     horarioExtralaboral: formData.get("horarioExtralaboral") === "on",
+    horario24Horas: formData.get("horario24Horas") === "on",
     extraDesde: (formData.get("extraDesde") as string) || undefined,
     extraHasta: (formData.get("extraHasta") as string) || undefined,
     sabadoDesde: (formData.get("sabadoDesde") as string) || undefined,
@@ -91,16 +87,16 @@ export async function createUserAccountAction(
     tipoSolicitud: fields.tipoSolicitud,
     folio: fields.folio,
     nombreApellidos: fields.nombreApellidos,
+    telefonoExtension: fields.telefonoExtension,
     cargoOcupa: fields.cargoOcupa,
     departamentoArea: fields.departamentoArea,
     tipoPersonal: fields.tipoPersonal,
-    cuenta: fields.cuenta,
-    correoInternetFechaTemp: fields.correoInternetFechaTemp,
-    internetFechaTemp: fields.internetFechaTemp,
-    chatInternetFechaTemp: fields.chatInternetFechaTemp,
+    identificadorCuentaUsuario: fields.identificadorCuentaUsuario,
+    correoInternet: fields.correoInternet,
     otrasRedes: fields.otrasRedes,
     tipoCuenta: fields.tipoCuenta,
     fechaExpiracion: fields.fechaExpiracion,
+    horario24Horas: fields.horario24Horas,
     extraDesde: fields.extraDesde,
     extraHasta: fields.extraHasta,
     sabadoDesde: fields.sabadoDesde,
@@ -138,9 +134,6 @@ export async function createUserAccountAction(
     await prisma.accountRequest.create({
       data: {
         ...data,
-        correoInternetFechaTemp: toDate(data.correoInternetFechaTemp),
-        internetFechaTemp: toDate(data.internetFechaTemp),
-        chatInternetFechaTemp: toDate(data.chatInternetFechaTemp),
         fechaExpiracion: toDate(data.fechaExpiracion),
         fechaBaja: toDate(data.fechaBaja),
         firmadoPorSolicitado: false,
@@ -149,13 +142,6 @@ export async function createUserAccountAction(
         firmadoPorEjecutado: false,
       },
     });
-
-    // return {
-    //   success: true,
-    //   data: { id: response.id },
-    //   dbErrors: null,
-    //   validationErrors: null,
-    // };
   } catch {
     return {
       data: repopulateData,

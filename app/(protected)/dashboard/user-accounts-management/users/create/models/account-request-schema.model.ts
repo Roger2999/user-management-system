@@ -10,52 +10,48 @@ export const AccountRequestSchema = z
 
     // Datos personales
     nombreApellidos: z.string().min(1, "Requerido"),
+    telefonoExtension: z.string().optional(),
     cargoOcupa: z.string().min(1, "Requerido"),
     departamentoArea: z.string().min(1, "Requerido"),
     tipoPersonal: z.enum(
       ["DIRECTIVO", "ESPECIALISTA_PRINCIPAL", "TECNICO", "OTRO"],
       { message: "Requerido" },
     ),
-    cuenta: z.string().min(1, "Requerido"),
+    identificadorCuentaUsuario: z.string().optional(),
 
     // Correo
-    correoLocal: z.boolean().default(false),
     correoNacional: z.boolean().default(false),
     correoInternacional: z.boolean().default(false),
     correoInternet: z.boolean().default(false),
-    correoInternetFechaTemp: z.string().optional(),
 
     // Navegación
     intranetUNE: z.boolean().default(false),
     intranetNacional: z.boolean().default(false),
     internet: z.boolean().default(false),
-    internetFechaTemp: z.string().optional(),
 
     // Mensajería
     mensajeriaCorporativa: z.boolean().default(false),
-    chatInternet: z.boolean().default(false),
-    chatInternetFechaTemp: z.string().optional(),
 
     // Redes sociales
     facebook: z.boolean().default(false),
     twitter: z.boolean().default(false),
     youtube: z.boolean().default(false),
+    whatsapp: z.boolean().default(false),
+    telegram: z.boolean().default(false),
+    instagram: z.boolean().default(false),
     otrasRedes: z.string().optional(),
 
     // Privilegios
-    adminRed: z.boolean().default(false),
-    adminLocal: z.boolean().default(false),
+    usuario: z.boolean().default(false),
     usuarioAvanzado: z.boolean().default(false),
+    adminLocal: z.boolean().default(false),
+    adminRed: z.boolean().default(false),
 
-    // FTP UNE
-    ftpUneLectura: z.boolean().default(false),
-    ftpUneModificar: z.boolean().default(false),
-    ftpUneBorrar: z.boolean().default(false),
-
-    // FTP Entidad
-    ftpEntidadLectura: z.boolean().default(false),
-    ftpEntidadModificar: z.boolean().default(false),
-    ftpEntidadBorrar: z.boolean().default(false),
+    // Acceso Nube UNE
+    accesoNubeLectura: z.boolean().default(false),
+    accesoNubeModificar: z.boolean().default(false),
+    accesoNubeBorrar: z.boolean().default(false),
+    accesoNubeControlTotal: z.boolean().default(false),
 
     // Tipo cuenta
     tipoCuenta: z.enum(["PERMANENTE", "TEMPORAL"], { message: "Requerido" }),
@@ -63,6 +59,7 @@ export const AccountRequestSchema = z
 
     // Horarios
     horarioExtralaboral: z.boolean().default(false),
+    horario24Horas: z.boolean().default(false),
     extraDesde: z.string().optional(),
     extraHasta: z.string().optional(),
     sabadoDesde: z.string().optional(),
@@ -95,29 +92,6 @@ export const AccountRequestSchema = z
     fechaBaja: z.string().optional(),
   })
   .superRefine((data, ctx) => {
-    if (data.correoInternet && !data.correoInternetFechaTemp) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Requerido cuando correo internet está activo",
-        path: ["correoInternetFechaTemp"],
-      });
-    }
-    if (data.internet && !data.internetFechaTemp) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Requerido cuando internet está activo",
-        path: ["internetFechaTemp"],
-      });
-    }
-
-    if (data.chatInternet && !data.chatInternetFechaTemp) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Requerido cuando chat internet está activo",
-        path: ["chatInternetFechaTemp"],
-      });
-    }
-
     if (data.tipoCuenta === "TEMPORAL" && !data.fechaExpiracion) {
       ctx.addIssue({
         code: "custom",

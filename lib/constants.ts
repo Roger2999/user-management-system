@@ -1,4 +1,10 @@
-import { LucideIcon, Settings } from "lucide-react";
+import {
+  LucideIcon,
+  ServerIcon,
+  Settings,
+  ShieldAlertIcon,
+  UsersIcon,
+} from "lucide-react";
 
 export const PUBLIC_ROUTES: {
   name: string;
@@ -37,3 +43,16 @@ export const ACCOUNT_OPTIONS = [
   { value: "PERMANENTE", label: "Permanente" },
   { value: "TEMPORAL", label: "Temporal" },
 ] as const;
+export const DASHBOARD_CARDS: {
+  title: string;
+  description: string;
+  href: string;
+  icon: LucideIcon;
+}[] = [
+  {
+    title: "Gestionar cuentas de usuario",
+    description: "Altas, bajas y firma cuentas de usuario pendientes",
+    href: "/dashboard/user-accounts-management/",
+    icon: UsersIcon,
+  },
+];

@@ -35,11 +35,6 @@ export default function UserAccountForm({
   };
   const [state, formAction, pending] = useActionState(action, initialState);
 
-  const [correoInternet, setCorreoInternet] = useState(
-    !!initialData?.correoInternet,
-  );
-  const [internet, setInternet] = useState(!!initialData?.internet);
-  const [chatInternet, setChatInternet] = useState(!!initialData?.chatInternet);
   const [tipoSolicitud, setTipoSolicitud] = useState(
     initialData?.tipoSolicitud ?? "",
   );
@@ -47,6 +42,11 @@ export default function UserAccountForm({
   const [horarioExtralaboral, setHorarioExtralaboral] = useState(
     !!initialData?.horarioExtralaboral,
   );
+  const [horario24Horas, setHorario24Horas] = useState(
+    !!initialData?.horario24Horas,
+  );
+
+  const disableHorarios = horario24Horas;
 
   return (
     <div className="space-y-6">
@@ -70,7 +70,7 @@ export default function UserAccountForm({
               errors={state.validationErrors?.tipoSolicitud}
               onChange={setTipoSolicitud}
               disabledValues={
-                mode === "create" ? ["BAJA", "ACTUALIZACION"] : []
+                mode === "create" ? ["BAJA", "ACTUALIZACION"] : ["ALTA"]
               }
             />
             {tipoSolicitud === "BAJA" && (
@@ -111,6 +111,12 @@ export default function UserAccountForm({
               errors={state.validationErrors?.nombreApellidos}
             />
             <Field
+              label="Teléfono / Extensión"
+              name="telefonoExtension"
+              defaultValue={state.data?.telefonoExtension}
+              errors={state.validationErrors?.telefonoExtension}
+            />
+            <Field
               label="Cargo que ocupa"
               name="cargoOcupa"
               defaultValue={state.data?.cargoOcupa}
@@ -130,10 +136,10 @@ export default function UserAccountForm({
               errors={state.validationErrors?.tipoPersonal}
             />
             <Field
-              label="Cuenta"
-              name="cuenta"
-              defaultValue={state.data?.cuenta}
-              errors={state.validationErrors?.cuenta}
+              label="Identificador de cuenta de usuario"
+              name="identificadorCuentaUsuario"
+              defaultValue={state.data?.identificadorCuentaUsuario}
+              errors={state.validationErrors?.identificadorCuentaUsuario}
             />
           </CardContent>
         </Card>
@@ -142,13 +148,8 @@ export default function UserAccountForm({
           <CardHeader>
             <CardTitle>Correo electrónico</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <CheckboxField
-                label="Correo Local"
-                name="correoLocal"
-                defaultChecked={!!state.data?.correoLocal}
-              />
+          <CardContent>
+            <div className="grid grid-cols-3 gap-3">
               <CheckboxField
                 label="Correo Nacional"
                 name="correoNacional"
@@ -163,18 +164,8 @@ export default function UserAccountForm({
                 label="Correo Internet"
                 name="correoInternet"
                 defaultChecked={!!state.data?.correoInternet}
-                onChange={setCorreoInternet}
               />
             </div>
-            {correoInternet && (
-              <Field
-                label="Fecha de expiración (Correo Internet)"
-                name="correoInternetFechaTemp"
-                type="date"
-                defaultValue={state.data?.correoInternetFechaTemp}
-                errors={state.validationErrors?.correoInternetFechaTemp}
-              />
-            )}
           </CardContent>
         </Card>
 
@@ -182,8 +173,8 @@ export default function UserAccountForm({
           <CardHeader>
             <CardTitle>Navegación web</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <CardContent>
+            <div className="grid grid-cols-3 gap-3">
               <CheckboxField
                 label="Intranet UNE"
                 name="intranetUNE"
@@ -198,18 +189,8 @@ export default function UserAccountForm({
                 label="Internet"
                 name="internet"
                 defaultChecked={!!state.data?.internet}
-                onChange={setInternet}
               />
             </div>
-            {internet && (
-              <Field
-                label="Fecha de expiración (Internet)"
-                name="internetFechaTemp"
-                type="date"
-                defaultValue={state.data?.internetFechaTemp}
-                errors={state.validationErrors?.internetFechaTemp}
-              />
-            )}
           </CardContent>
         </Card>
 
@@ -217,29 +198,12 @@ export default function UserAccountForm({
           <CardHeader>
             <CardTitle>Mensajería</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <CheckboxField
-                label="Mensajería Corporativa"
-                name="mensajeriaCorporativa"
-                defaultChecked={!!state.data?.mensajeriaCorporativa}
-              />
-              <CheckboxField
-                label="Chat Internet"
-                name="chatInternet"
-                defaultChecked={!!state.data?.chatInternet}
-                onChange={setChatInternet}
-              />
-            </div>
-            {chatInternet && (
-              <Field
-                label="Fecha de expiración (Chat Internet)"
-                name="chatInternetFechaTemp"
-                type="date"
-                defaultValue={state.data?.chatInternetFechaTemp}
-                errors={state.validationErrors?.chatInternetFechaTemp}
-              />
-            )}
+          <CardContent>
+            <CheckboxField
+              label="Mensajería Corporativa"
+              name="mensajeriaCorporativa"
+              defaultChecked={!!state.data?.mensajeriaCorporativa}
+            />
           </CardContent>
         </Card>
 
@@ -265,6 +229,23 @@ export default function UserAccountForm({
                 defaultChecked={!!state.data?.youtube}
               />
             </div>
+            <div className="grid grid-cols-3 gap-3">
+              <CheckboxField
+                label="WhatsApp"
+                name="whatsapp"
+                defaultChecked={!!state.data?.whatsapp}
+              />
+              <CheckboxField
+                label="Telegram"
+                name="telegram"
+                defaultChecked={!!state.data?.telegram}
+              />
+              <CheckboxField
+                label="Instagram"
+                name="instagram"
+                defaultChecked={!!state.data?.instagram}
+              />
+            </div>
             <Field
               label="Otras redes"
               name="otrasRedes"
@@ -279,11 +260,16 @@ export default function UserAccountForm({
             <CardTitle>Privilegios</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <CheckboxField
-                label="Admin Red"
-                name="adminRed"
-                defaultChecked={!!state.data?.adminRed}
+                label="Usuario"
+                name="usuario"
+                defaultChecked={!!state.data?.usuario}
+              />
+              <CheckboxField
+                label="Usuario Avanzado"
+                name="usuarioAvanzado"
+                defaultChecked={!!state.data?.usuarioAvanzado}
               />
               <CheckboxField
                 label="Admin Local"
@@ -291,9 +277,9 @@ export default function UserAccountForm({
                 defaultChecked={!!state.data?.adminLocal}
               />
               <CheckboxField
-                label="Usuario Avanzado"
-                name="usuarioAvanzado"
-                defaultChecked={!!state.data?.usuarioAvanzado}
+                label="Admin Red"
+                name="adminRed"
+                defaultChecked={!!state.data?.adminRed}
               />
             </div>
           </CardContent>
@@ -301,49 +287,29 @@ export default function UserAccountForm({
 
         <Card>
           <CardHeader>
-            <CardTitle>FTP UNE</CardTitle>
+            <CardTitle>Acceso Nube UNE</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <CheckboxField
-                label="Lectura"
-                name="ftpUneLectura"
-                defaultChecked={!!state.data?.ftpUneLectura}
+                label="Solo lectura"
+                name="accesoNubeLectura"
+                defaultChecked={!!state.data?.accesoNubeLectura}
               />
               <CheckboxField
                 label="Modificar"
-                name="ftpUneModificar"
-                defaultChecked={!!state.data?.ftpUneModificar}
+                name="accesoNubeModificar"
+                defaultChecked={!!state.data?.accesoNubeModificar}
               />
               <CheckboxField
                 label="Borrar"
-                name="ftpUneBorrar"
-                defaultChecked={!!state.data?.ftpUneBorrar}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>FTP Entidad</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-3 gap-3">
-              <CheckboxField
-                label="Lectura"
-                name="ftpEntidadLectura"
-                defaultChecked={!!state.data?.ftpEntidadLectura}
+                name="accesoNubeBorrar"
+                defaultChecked={!!state.data?.accesoNubeBorrar}
               />
               <CheckboxField
-                label="Modificar"
-                name="ftpEntidadModificar"
-                defaultChecked={!!state.data?.ftpEntidadModificar}
-              />
-              <CheckboxField
-                label="Borrar"
-                name="ftpEntidadBorrar"
-                defaultChecked={!!state.data?.ftpEntidadBorrar}
+                label="Control total"
+                name="accesoNubeControlTotal"
+                defaultChecked={!!state.data?.accesoNubeControlTotal}
               />
             </div>
           </CardContent>
@@ -379,13 +345,22 @@ export default function UserAccountForm({
             <CardTitle>Horarios</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <CheckboxField
-              label="Horario Extralaboral"
-              name="horarioExtralaboral"
-              defaultChecked={!!state.data?.horarioExtralaboral}
-              onChange={setHorarioExtralaboral}
-            />
-            {horarioExtralaboral && (
+            <div className="grid grid-cols-2 gap-3">
+              <CheckboxField
+                label="Horario Extralaboral"
+                name="horarioExtralaboral"
+                defaultChecked={!!state.data?.horarioExtralaboral}
+                onChange={setHorarioExtralaboral}
+                disabled={disableHorarios}
+              />
+              <CheckboxField
+                label="24 horas"
+                name="horario24Horas"
+                defaultChecked={!!state.data?.horario24Horas}
+                onChange={setHorario24Horas}
+              />
+            </div>
+            {horarioExtralaboral && !disableHorarios && (
               <div className="grid grid-cols-2 gap-4">
                 <Field
                   label="Extra desde"
@@ -403,38 +378,42 @@ export default function UserAccountForm({
                 />
               </div>
             )}
-            <div className="grid grid-cols-2 gap-4">
-              <Field
-                label="Sábado desde"
-                name="sabadoDesde"
-                type="time"
-                defaultValue={state.data?.sabadoDesde}
-                errors={state.validationErrors?.sabadoDesde}
-              />
-              <Field
-                label="Sábado hasta"
-                name="sabadoHasta"
-                type="time"
-                defaultValue={state.data?.sabadoHasta}
-                errors={state.validationErrors?.sabadoHasta}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <Field
-                label="Domingo desde"
-                name="domingoDesde"
-                type="time"
-                defaultValue={state.data?.domingoDesde}
-                errors={state.validationErrors?.domingoDesde}
-              />
-              <Field
-                label="Domingo hasta"
-                name="domingoHasta"
-                type="time"
-                defaultValue={state.data?.domingoHasta}
-                errors={state.validationErrors?.domingoHasta}
-              />
-            </div>
+            {!disableHorarios && (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <Field
+                    label="Sábado desde"
+                    name="sabadoDesde"
+                    type="time"
+                    defaultValue={state.data?.sabadoDesde}
+                    errors={state.validationErrors?.sabadoDesde}
+                  />
+                  <Field
+                    label="Sábado hasta"
+                    name="sabadoHasta"
+                    type="time"
+                    defaultValue={state.data?.sabadoHasta}
+                    errors={state.validationErrors?.sabadoHasta}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <Field
+                    label="Domingo desde"
+                    name="domingoDesde"
+                    type="time"
+                    defaultValue={state.data?.domingoDesde}
+                    errors={state.validationErrors?.domingoDesde}
+                  />
+                  <Field
+                    label="Domingo hasta"
+                    name="domingoHasta"
+                    type="time"
+                    defaultValue={state.data?.domingoHasta}
+                    errors={state.validationErrors?.domingoHasta}
+                  />
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
 

@@ -36,7 +36,7 @@ export default async function RootLayout({
           <header>
             <NavMenu />
           </header>
-          <main className="flex-1 px-5">{children}</main>
+          <main className="flex flex-1 flex-col px-5">{children}</main>
           <footer className="border-border text-muted-foreground border-t py-4 text-center text-sm">
             Sistema de Gestión de Usuarios
           </footer>

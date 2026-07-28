@@ -13,7 +13,7 @@ export const PrintButton = ({ contentRef }: Props) => {
     documentTitle: "Solicitud de cuenta de usuario",
     pageStyle: `
       @page {
-        size: A4;
+        size: letter;
         margin: 12mm;
       }
       @media print {
@@ -34,6 +34,8 @@ export const PrintButton = ({ contentRef }: Props) => {
           left: 0;
           top: 0;
           width: 100%;
+          height: 255mm;
+          overflow: hidden;
         }
       }
     `,

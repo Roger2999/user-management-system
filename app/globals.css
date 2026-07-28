@@ -6,11 +6,15 @@
 
 @theme inline {
   --breakpoint-xs: 30rem;
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
+  --min-height-layout-full: var(--layout-height-full);
+  --min-height-layout-auth: var(--layout-height-auth);
+  --min-height-layout-dashboard: var(--layout-height-dashboard);
+  --min-height-layout-content: var(--layout-height-content);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -54,6 +58,11 @@
 }
 
 :root {
+  --layout-height-full: 100dvh;
+  --layout-height-auth: 80dvh;
+  --layout-height-dashboard: 85dvh;
+  --layout-height-content: 70dvh;
+
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -142,7 +151,7 @@
 }
 
 @page {
-  size: A4;
+  size: letter;
   margin: 12mm;
 }
 
@@ -167,6 +176,8 @@
     left: 0;
     top: 0;
     width: 100%;
+    height: 255mm;
+    overflow: hidden;
     padding: 0 !important;
     margin: 0 !important;
     box-shadow: none !important;

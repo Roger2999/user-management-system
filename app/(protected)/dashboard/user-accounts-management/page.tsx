@@ -38,7 +38,7 @@ export default async function UserAccountsManangmentPage() {
   const counts = await getAccountsCounts();
 
   return (
-    <div className="flex flex-col items-center gap-6">
+    <div className="mb-8 flex flex-col items-center gap-6">
       <header className="w-full max-w-5xl space-y-2">
         <h1 className="text-center text-3xl font-semibold">
           Gestión de cuentas de usuario

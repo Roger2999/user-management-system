@@ -24,7 +24,7 @@ export default function Pagination({
   }
 
   return (
-    <div className="flex items-center justify-between pt-4">
+    <div className="mb-4 flex items-center justify-center gap-4">
       <p className="text-muted-foreground text-sm">
         Pagina {currentPage} de {totalPages}
       </p>
@@ -36,12 +36,12 @@ export default function Pagination({
           asChild={currentPage > 1}
         >
           {currentPage > 1 ? (
-            <Link href={buildUrl(currentPage - 1)}>
+            <Link href={buildUrl(currentPage - 1)} className="flex gap-1">
               <ChevronLeft className="mr-1 size-4" />
               Anterior
             </Link>
           ) : (
-            <span>
+            <span className="flex gap-1">
               <ChevronLeft className="mr-1 size-4" />
               Anterior
             </span>
@@ -54,12 +54,12 @@ export default function Pagination({
           asChild={currentPage < totalPages}
         >
           {currentPage < totalPages ? (
-            <Link href={buildUrl(currentPage + 1)}>
+            <Link href={buildUrl(currentPage + 1)} className="flex gap-4">
               Siguiente
               <ChevronRight className="ml-1 size-4" />
             </Link>
           ) : (
-            <span>
+            <span className="flex gap-1">
               Siguiente
               <ChevronRight className="ml-1 size-4" />
             </span>

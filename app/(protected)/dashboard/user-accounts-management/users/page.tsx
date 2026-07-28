@@ -1,8 +1,8 @@
 import { Suspense } from "react";
 import UsersTable from "./components/users-table";
 import SuccessToast from "./components/success-toast";
-import { Skeleton } from "@/components/ui/skeleton";
 import { getFilterConfig } from "@/lib/filters";
+import TableSkeleton from "./components/table-skeleton";
 
 interface Props {
   searchParams: Promise<{
@@ -12,48 +12,11 @@ interface Props {
   }>;
 }
 
-function TableSkeleton() {
-  return (
-    <div className="rounded-md border">
-      <div className="bg-muted/50 border-b">
-        <div className="flex items-center gap-4 px-4 py-3">
-          <Skeleton className="h-4 w-16" />
-          <Skeleton className="h-4 w-40" />
-          <Skeleton className="h-4 w-24" />
-          <Skeleton className="h-4 w-28" />
-          <Skeleton className="h-4 w-16" />
-          <Skeleton className="h-4 w-20" />
-          <Skeleton className="ml-auto h-4 w-20" />
-        </div>
-      </div>
-      {Array.from({ length: 8 }).map((_, i) => (
-        <div
-          key={i}
-          className="flex items-center gap-4 border-b px-4 py-4 last:border-0"
-        >
-          <Skeleton className="h-4 w-16" />
-          <Skeleton className="h-4 w-40" />
-          <Skeleton className="h-4 w-24" />
-          <Skeleton className="h-4 w-28" />
-          <div className="flex w-16 justify-center">
-            <Skeleton className="h-5 w-5 rounded" />
-          </div>
-          <div className="flex w-20 justify-center">
-            <Skeleton className="h-5 w-5" />
-          </div>
-          <div className="ml-auto">
-            <Skeleton className="h-8 w-20" />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 export default async function UsersPage({ searchParams }: Props) {
   const { filter, page } = await searchParams;
   const filterValue = typeof filter === "string" ? filter : "all";
-  const pageValue = typeof page === "string" ? Math.max(1, Number(page) || 1) : 1;
+  const pageValue =
+    typeof page === "string" ? Math.max(1, Number(page) || 1) : 1;
   const filterConfig = getFilterConfig(filterValue);
 
   const plainSearchParams: Record<string, string> = {};
