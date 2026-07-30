@@ -3,5 +3,5 @@ export default function UsersLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <>{children}</>;
+  return <div className="flex flex-1 flex-col gap-2">{children}</div>;
 }

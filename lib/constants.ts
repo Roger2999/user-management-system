@@ -1,10 +1,4 @@
-import {
-  LucideIcon,
-  ServerIcon,
-  Settings,
-  ShieldAlertIcon,
-  UsersIcon,
-} from "lucide-react";
+import { LucideIcon, Settings, UsersIcon } from "lucide-react";
 
 export const PUBLIC_ROUTES: {
   name: string;

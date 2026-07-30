@@ -3,17 +3,19 @@ import UsersTable from "./components/users-table";
 import SuccessToast from "./components/success-toast";
 import { getFilterConfig } from "@/lib/filters";
 import TableSkeleton from "./components/table-skeleton";
+import SearchBar from "./components/search-bar";
 
 interface Props {
   searchParams: Promise<{
     filter: string | string[] | undefined;
     page: string | string[] | undefined;
     success: string | string[] | undefined;
+    search: string | undefined;
   }>;
 }
 
 export default async function UsersPage({ searchParams }: Props) {
-  const { filter, page } = await searchParams;
+  const { filter, page, search } = await searchParams;
   const filterValue = typeof filter === "string" ? filter : "all";
   const pageValue =
     typeof page === "string" ? Math.max(1, Number(page) || 1) : 1;
@@ -33,11 +35,13 @@ export default async function UsersPage({ searchParams }: Props) {
           ({filterConfig.label ?? filterValue})
         </span>
       </h1>
+      <SearchBar />
       <Suspense fallback={<TableSkeleton />}>
         <UsersTable
           where={filterConfig.where}
           page={pageValue}
           searchParams={plainSearchParams}
+          search={search}
         />
       </Suspense>
     </>

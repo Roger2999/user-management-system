@@ -34,6 +34,7 @@ export default function Pagination({
           size="sm"
           disabled={currentPage <= 1}
           asChild={currentPage > 1}
+          className="text-sm"
         >
           {currentPage > 1 ? (
             <Link href={buildUrl(currentPage - 1)} className="flex gap-1">
@@ -52,6 +53,7 @@ export default function Pagination({
           size="sm"
           disabled={currentPage >= totalPages}
           asChild={currentPage < totalPages}
+          className="text-sm"
         >
           {currentPage < totalPages ? (
             <Link href={buildUrl(currentPage + 1)} className="flex gap-4">

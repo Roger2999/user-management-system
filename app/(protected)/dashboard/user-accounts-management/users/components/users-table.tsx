@@ -20,24 +20,37 @@ export default async function UsersTable({
   where,
   page,
   searchParams,
+  search,
 }: {
   where: Prisma.AccountRequestWhereInput;
   page: number;
   searchParams: Record<string, string>;
+  search: string | undefined;
 }) {
-  const [users, total] = await Promise.all([
-    prisma.accountRequest.findMany({
-      where,
-      skip: (page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
-    }),
-    prisma.accountRequest.count({ where }),
-  ]);
+  const usersFiltrated = await prisma.accountRequest.findMany({
+    where: search
+      ? {
+          ...where,
+          nombreApellidos: { contains: search, mode: "insensitive" },
+        }
+      : where,
+    skip: (page - 1) * PAGE_SIZE,
+    take: PAGE_SIZE,
+  });
 
-  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const totalFiltered = await prisma.accountRequest.count({
+    where: search
+      ? {
+          ...where,
+          nombreApellidos: { contains: search, mode: "insensitive" },
+        }
+      : where,
+  });
+
+  const totalPages = Math.ceil(totalFiltered / PAGE_SIZE);
 
   return (
-    <div className="mt-4 flex w-full flex-1 flex-col items-center justify-between">
+    <div className="flex w-full flex-1 flex-col items-center justify-between">
       <Table>
         <TableHeader>
           <TableRow>
@@ -51,8 +64,8 @@ export default async function UsersTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {users.length > 0 ? (
-            users.map((user) => (
+          {usersFiltrated.length > 0 ? (
+            usersFiltrated.map((user) => (
               <TableRow key={user.id}>
                 <TableCell className="font-medium">{user.folio}</TableCell>
                 <TableCell className="font-medium">

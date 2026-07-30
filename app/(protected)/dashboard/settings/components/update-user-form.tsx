@@ -37,40 +37,6 @@ export default function UpdateUserForm() {
           )}
         </form>
       </div>
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Cambiar nombre de usuario</h2>
-        <form className="space-y-2 rounded-xl border p-6" action={action}>
-          <Field
-            label="Nuevo nombre de usuario"
-            errors={state.validationErrors?.username}
-            type="text"
-            name="username"
-            defaultValue={state.data?.username}
-          />
-          <Button>{pending ? "Enviando..." : "Guardar"}</Button>
-          {state.success && <p className="text-success">{state.message}</p>}
-          {state.dbErrors && (
-            <p className="text-destructive">{state.dbErrors.message}</p>
-          )}
-        </form>
-      </div>
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Cambiar nombre de usuario</h2>
-        <form className="space-y-2 rounded-xl border p-6" action={action}>
-          <Field
-            label="Nuevo nombre de usuario"
-            errors={state.validationErrors?.username}
-            type="text"
-            name="username"
-            defaultValue={state.data?.username}
-          />
-          <Button>{pending ? "Enviando..." : "Guardar"}</Button>
-          {state.success && <p className="text-success">{state.message}</p>}
-          {state.dbErrors && (
-            <p className="text-destructive">{state.dbErrors.message}</p>
-          )}
-        </form>
-      </div>
     </section>
   );
 }
