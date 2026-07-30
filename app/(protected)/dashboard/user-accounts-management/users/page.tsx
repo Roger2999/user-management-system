@@ -29,12 +29,6 @@ export default async function UsersPage({ searchParams }: Props) {
       <Suspense fallback={null}>
         <SuccessToast />
       </Suspense>
-      <h1 className="text-2xl font-semibold">
-        Usuarios{" "}
-        <span className="font-normal">
-          ({filterConfig.label ?? filterValue})
-        </span>
-      </h1>
       <SearchBar />
       <Suspense fallback={<TableSkeleton />}>
         <UsersTable

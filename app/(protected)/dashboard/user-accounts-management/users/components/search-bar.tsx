@@ -31,15 +31,16 @@ export default function SearchBar() {
           Buscar
         </label>
         <Input
+          className="h-12 px-4 placeholder:text-[1.2rem]"
           name="search-bar"
           defaultValue={searchParams.get("search") || undefined}
           onChange={onInputChange}
-          placeholder="Buscar..."
+          placeholder="Buscar . . ."
         />
         {isPending ? (
-          <Spinner className="absolute top-1.5 right-5 size-5" />
+          <Spinner className="absolute top-3 right-5 size-5" />
         ) : (
-          <Search className="absolute top-1.5 right-5 size-5" />
+          <Search className="absolute top-3 right-5 size-5" />
         )}
       </div>
     </div>
