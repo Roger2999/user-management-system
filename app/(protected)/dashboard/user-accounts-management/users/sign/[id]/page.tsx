@@ -1,8 +1,6 @@
 import prisma from "@/lib/prisma";
 import SignForm from "./components/sign-form";
-import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { Skeleton } from "@/components/ui/skeleton";
 import { FileSignature } from "lucide-react";
 interface Props {
   params: Promise<{ id: string }>;
@@ -16,10 +14,10 @@ export default async function SignPage({ params }: Props) {
     notFound();
   }
   if (
-    user?.firmadoPorSolicitado &&
-    user?.firmadoPorRevisado &&
-    user?.firmadoPorAprobado &&
-    user?.firmadoPorEjecutado
+    user.firmadoPorSolicitado &&
+    user.firmadoPorRevisado &&
+    user.firmadoPorAprobado &&
+    user.firmadoPorEjecutado
   )
     return (
       <div className="mt-10 flex w-full flex-col items-center justify-center gap-4">
@@ -28,34 +26,20 @@ export default async function SignPage({ params }: Props) {
       </div>
     );
   return (
-    <div className="flex w-full flex-col items-center justify-center gap-10">
+    <div className="flex w-full flex-col items-center justify-center gap-14">
       <h1 className="text-3xl">
         Firmas pendientes de cuenta:{" "}
         <span className="font-bold">{user.nombreApellidos}</span>{" "}
       </h1>
-      <Suspense
-        fallback={
-          <div className="flex w-full max-w-md flex-col gap-3">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <Skeleton className="h-4 w-4 shrink-0" />
-                <Skeleton className="h-4 w-24" />
-              </div>
-            ))}
-            <Skeleton className="h-10 w-full rounded-md" />
-          </div>
-        }
-      >
-        <SignForm
-          id={id}
-          initial={{
-            requested: user.firmadoPorSolicitado,
-            revised: user.firmadoPorRevisado,
-            approved: user.firmadoPorAprobado,
-            executed: user.firmadoPorEjecutado,
-          }}
-        />
-      </Suspense>
+      <SignForm
+        id={id}
+        initial={{
+          requested: user.firmadoPorSolicitado,
+          revised: user.firmadoPorRevisado,
+          approved: user.firmadoPorAprobado,
+          executed: user.firmadoPorEjecutado,
+        }}
+      />
     </div>
   );
 }

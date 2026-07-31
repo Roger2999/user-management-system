@@ -29,8 +29,7 @@ export const signAction = async (
       dbErrors: null,
     };
   }
-  const { id } = fields;
-  const { requested, revised, approved, executed } = validatedFields.data;
+  const { id, requested, revised, approved, executed } = validatedFields.data;
   try {
     await prisma.accountRequest.update({
       where: { id },
@@ -45,13 +44,14 @@ export const signAction = async (
         ejecutadoFecha: executed ? new Date() : null,
       },
     });
-    revalidatePath("/dashboard/user-accounts-management/users/sign/");
+    revalidatePath(`/dashboard/user-accounts-management/users/sign/${id}`);
     return {
       data: { requested, revised, approved, executed },
       success: true,
       dbErrors: null,
     };
-  } catch {
+  } catch (error) {
+    console.error("Error updating signs:", error);
     return {
       data: { requested, revised, approved, executed },
       success: false,

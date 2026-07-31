@@ -6,6 +6,7 @@ import { useActionState, useEffect } from "react";
 import { signAction } from "../actions/sign-action";
 import { toast } from "sonner";
 import CheckboxField from "@/components/checkbox-field";
+import { CheckCheck } from "lucide-react";
 
 export interface SignValues {
   requested: boolean;
@@ -15,7 +16,7 @@ export interface SignValues {
 }
 
 interface Props {
-  id?: string;
+  id: string;
   initial?: SignValues;
 }
 
@@ -26,10 +27,16 @@ const initialState: SignFormState = {
 };
 
 const FIELDS: { key: keyof SignValues; label: string }[] = [
-  { key: "requested", label: "Solicitado" },
-  { key: "revised", label: "Revisado" },
-  { key: "approved", label: "Aprobado" },
-  { key: "executed", label: "Ejecutado" },
+  { key: "requested", label: "Solicitado (Director que solicita el servicio)" },
+  {
+    key: "revised",
+    label: "Revisado (Especialista o Técnico de Seguridad Informática)",
+  },
+  { key: "approved", label: "Aprobado (Director General o persona designada)" },
+  {
+    key: "executed",
+    label: "Ejecutado (Especialista que configura la cuenta y los servicios)",
+  },
 ];
 
 export default function SignForm({ id, initial }: Props) {
@@ -53,7 +60,7 @@ export default function SignForm({ id, initial }: Props) {
       <input type="hidden" name="id" value={id} />
       {FIELDS.map(({ key, label }) =>
         signs[key] ? (
-          <div key={key} className="flex items-center gap-2 text-sm">
+          <div key={key} className="flex items-center gap-2 text-xl">
             <input type="hidden" name={key} value="on" />
             <input
               type="checkbox"
@@ -62,7 +69,10 @@ export default function SignForm({ id, initial }: Props) {
               readOnly
               className="accent-primary size-6"
             />
-            <span className="">{label} (firmado)</span>
+            <span className="text-success flex gap-4">
+              {label}
+              <CheckCheck className="relative -top-4 right-4 size-6" />
+            </span>
           </div>
         ) : (
           <CheckboxField key={key} label={label} name={key} />

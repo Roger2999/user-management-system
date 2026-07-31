@@ -1,6 +1,7 @@
 import z from "zod";
 
 export const SignFormSchema = z.object({
+  id: z.string().min(1),
   requested: z.boolean().default(false),
   revised: z.boolean().default(false),
   approved: z.boolean().default(false),

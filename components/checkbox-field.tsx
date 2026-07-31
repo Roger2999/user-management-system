@@ -14,7 +14,7 @@ export default function CheckboxField({
   disabled,
 }: Props) {
   return (
-    <label className="flex cursor-pointer items-center gap-2 text-sm">
+    <label className="flex cursor-pointer items-center gap-2 text-xl">
       <input
         type="checkbox"
         name={name}
