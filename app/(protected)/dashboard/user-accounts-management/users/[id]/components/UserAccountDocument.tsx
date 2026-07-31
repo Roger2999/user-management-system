@@ -128,7 +128,7 @@ function DataFieldTwoCol({
 
 function SignatureBox({ title, cargo }: { title: string; cargo?: string }) {
   return (
-    <div className="flex flex-1 flex-col border border-t-0 border-black">
+    <div className="flex h-12 flex-col border border-t-0 border-black">
       <div className="border-b border-black px-1 py-0.5 text-[7.5px] font-bold">
         {title}
       </div>
@@ -286,7 +286,7 @@ export default function UserAccountDocument({ user }: Props) {
 
       {/* REDES SOCIALES */}
       <ServiceSection title="REDES SOCIALES">
-        <div className="flex flex-wrap gap-x-3">
+        <div className="flex flex-wrap gap-2">
           <Check label="Facebook" checked={user.facebook} />
           <Check label="Twitter" checked={user.twitter} />
           <Check label="YouTube" checked={user.youtube} />
@@ -340,7 +340,7 @@ export default function UserAccountDocument({ user }: Props) {
           <Check label="Temporal" checked={user.tipoCuenta === "TEMPORAL"} />
           <span className="ml-1 text-[7px]">
             Fecha de expiración{" "}
-            <span className="border-b border-black">
+            <span className="">
               {formatDate(user.fechaExpiracion) || "___/___/202_"}
             </span>
           </span>
@@ -364,13 +364,13 @@ export default function UserAccountDocument({ user }: Props) {
           />
           {!user.horario24Horas && (
             <span>
-              de{" "}
+              de
               <span className="border-b border-black">
-                {user.extraDesde || "_____"}
+                {user.extraDesde || ""}
               </span>{" "}
               hrs. a{" "}
               <span className="border-b border-black">
-                {user.extraHasta || "_____"}
+                {user.extraHasta || ""}
               </span>{" "}
               hrs.
             </span>
@@ -384,22 +384,22 @@ export default function UserAccountDocument({ user }: Props) {
           <span>
             Sábado de{" "}
             <span className="border-b border-black">
-              {user.sabadoDesde || "_____"}
+              {user.sabadoDesde || ""}
             </span>{" "}
             hrs. a{" "}
             <span className="border-b border-black">
-              {user.sabadoHasta || "_____"}
+              {user.sabadoHasta || ""}
             </span>{" "}
             hrs.
           </span>
           <span className="ml-2">
             Domingo de{" "}
             <span className="border-b border-black">
-              {user.domingoDesde || "_____"}
+              {user.domingoDesde || ""}
             </span>{" "}
             hrs. a{" "}
             <span className="border-b border-black">
-              {user.domingoHasta || "_____"}
+              {user.domingoHasta || ""}
             </span>{" "}
             hrs.
           </span>
@@ -423,9 +423,7 @@ export default function UserAccountDocument({ user }: Props) {
           />
           <Check label="Internet" checked={user.apnInternet} />
           <Label>Número celular:</Label>
-          <span className="ml-1 border-b border-black">
-            {user.telefonoCelular || ""}
-          </span>
+          <span className="ml-1">{user.telefonoCelular || ""}</span>
         </Cell>
       </Row>
 
@@ -462,7 +460,7 @@ export default function UserAccountDocument({ user }: Props) {
       </Row>
 
       {/* SECCIÓN 3: CUADROS DE FIRMAS */}
-      <div className="mt-0.5 flex flex-1 flex-col">
+      <div className="mt-0.5 flex flex-col">
         <SignatureBox title="SOLICITADO POR EL DIRECTOR QUE SOLICITA EL SERVICIO. (Este responde por los servicios solicitados)" />
         <SignatureBox title="REVISADO POR:" />
         <SignatureBox title="APROBADO POR (Director que autoriza el servicio o persona designada por Resolución del Director General de la Entidad)" />
