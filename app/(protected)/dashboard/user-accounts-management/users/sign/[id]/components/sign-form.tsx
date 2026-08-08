@@ -60,7 +60,7 @@ export default function SignForm({ id, initial }: Props) {
       <input type="hidden" name="id" value={id} />
       {FIELDS.map(({ key, label }) =>
         signs[key] ? (
-          <div key={key} className="flex items-center gap-2 text-xl">
+          <div key={key} className="flex items-center gap-2">
             <input type="hidden" name={key} value="on" />
             <input
               type="checkbox"
