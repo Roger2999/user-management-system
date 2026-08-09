@@ -2,6 +2,10 @@
 
 import z from "zod";
 import { AccountRequestSchema } from "../models/account-request-schema.model";
+import {
+  findDuplicateFields,
+  uniqueFieldMessage,
+} from "../models/unique-account-request";
 import prisma from "@/lib/prisma";
 import { CreateUserAccountState } from "@/lib/types";
 import { revalidatePath } from "next/cache";
@@ -123,6 +127,19 @@ export async function createUserAccountAction(
       success: false,
       dbErrors: null,
       validationErrors: z.flattenError(validatedFields.error).fieldErrors,
+    };
+  }
+
+  const duplicatedFields = await findDuplicateFields(validatedFields.data);
+
+  if (duplicatedFields.length > 0) {
+    return {
+      data: repopulateData,
+      success: false,
+      dbErrors: null,
+      validationErrors: Object.fromEntries(
+        duplicatedFields.map((field) => [field, [uniqueFieldMessage(field)]]),
+      ),
     };
   }
 

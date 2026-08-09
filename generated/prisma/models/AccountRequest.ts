@@ -707,21 +707,26 @@ export type AccountRequestOrderByWithRelationInput = {
 
 export type AccountRequestWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  folio?: string
+  telefonoExtension?: string
+  identificadorCuentaUsuario?: string
+  telefonoCelular?: string
+  pcNombre?: string
+  pcInventario?: string
+  pcAdicionalNombre?: string
+  pcAdicionalInventario?: string
   AND?: Prisma.AccountRequestWhereInput | Prisma.AccountRequestWhereInput[]
   OR?: Prisma.AccountRequestWhereInput[]
   NOT?: Prisma.AccountRequestWhereInput | Prisma.AccountRequestWhereInput[]
   createdAt?: Prisma.DateTimeFilter<"AccountRequest"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"AccountRequest"> | Date | string
-  folio?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
   tipoSolicitud?: Prisma.EnumTipoSolicitudFilter<"AccountRequest"> | $Enums.TipoSolicitud
   motivosBaja?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
   fechaBaja?: Prisma.DateTimeNullableFilter<"AccountRequest"> | Date | string | null
   nombreApellidos?: Prisma.StringFilter<"AccountRequest"> | string
-  telefonoExtension?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
   cargoOcupa?: Prisma.StringFilter<"AccountRequest"> | string
   departamentoArea?: Prisma.StringFilter<"AccountRequest"> | string
   tipoPersonal?: Prisma.EnumTipoPersonalFilter<"AccountRequest"> | $Enums.TipoPersonal
-  identificadorCuentaUsuario?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
   correoNacional?: Prisma.BoolFilter<"AccountRequest"> | boolean
   correoInternacional?: Prisma.BoolFilter<"AccountRequest"> | boolean
   correoInternet?: Prisma.BoolFilter<"AccountRequest"> | boolean
@@ -757,11 +762,6 @@ export type AccountRequestWhereUniqueInput = Prisma.AtLeast<{
   apnCorreoNacional?: Prisma.BoolFilter<"AccountRequest"> | boolean
   apnCorreoInternacional?: Prisma.BoolFilter<"AccountRequest"> | boolean
   apnInternet?: Prisma.BoolFilter<"AccountRequest"> | boolean
-  telefonoCelular?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
-  pcNombre?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
-  pcInventario?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
-  pcAdicionalNombre?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
-  pcAdicionalInventario?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
   softwareAutorizado?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
   firmadoPorSolicitado?: Prisma.BoolFilter<"AccountRequest"> | boolean
   solicitadoFecha?: Prisma.DateTimeNullableFilter<"AccountRequest"> | Date | string | null
@@ -771,7 +771,7 @@ export type AccountRequestWhereUniqueInput = Prisma.AtLeast<{
   aprobadoFecha?: Prisma.DateTimeNullableFilter<"AccountRequest"> | Date | string | null
   firmadoPorEjecutado?: Prisma.BoolFilter<"AccountRequest"> | boolean
   ejecutadoFecha?: Prisma.DateTimeNullableFilter<"AccountRequest"> | Date | string | null
-}, "id">
+}, "id" | "folio" | "telefonoExtension" | "identificadorCuentaUsuario" | "telefonoCelular" | "pcNombre" | "pcInventario" | "pcAdicionalNombre" | "pcAdicionalInventario">
 
 export type AccountRequestOrderByWithAggregationInput = {
   id?: Prisma.SortOrder

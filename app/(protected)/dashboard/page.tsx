@@ -17,10 +17,10 @@ export default async function Dashboard() {
           Bienvenido de vuelta, {username ?? "usuario"}
         </h2>
       </header>
-      <section className="xs:grid-cols-2 grid w-full max-w-5xl gap-10 md:grid-cols-3">
+      <section className="grid w-full max-w-md gap-10">
         {DASHBOARD_CARDS.map((card) => (
           <Link href={card.href} key={card.title}>
-            <Card className="hover:bg-card-hover min-h-56 justify-evenly gap-0 p-2 text-center">
+            <Card className="hover:bg-card-hover gap-4 py-8 text-center">
               <CardHeader>
                 {<card.icon className="text-brand mx-auto my-1 size-6" />}
                 <CardTitle className="text-xl font-bold">

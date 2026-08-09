@@ -2,6 +2,10 @@
 
 import z from "zod";
 import { AccountRequestSchema } from "../../../create/models/account-request-schema.model";
+import {
+  findDuplicateFields,
+  uniqueFieldMessage,
+} from "../../../create/models/unique-account-request";
 import prisma from "@/lib/prisma";
 import { CreateUserAccountState } from "@/lib/types";
 import { revalidatePath } from "next/cache";
@@ -130,6 +134,22 @@ export async function updateAccountRequestAction(
     };
   }
 
+  const duplicatedFields = await findDuplicateFields(
+    validatedFields.data,
+    id,
+  );
+
+  if (duplicatedFields.length > 0) {
+    return {
+      data: repopulateData,
+      success: false,
+      dbErrors: null,
+      validationErrors: Object.fromEntries(
+        duplicatedFields.map((field) => [field, [uniqueFieldMessage(field)]]),
+      ),
+    };
+  }
+
   const toDate = (value: string | undefined) =>
     value ? new Date(value) : null;
 
@@ -155,6 +175,6 @@ export async function updateAccountRequestAction(
     };
   }
 
-  revalidatePath("/dashboard/user-accounts-management/");
-  redirect("/dashboard/user-accounts-management/?success=updated");
+  revalidatePath("/dashboard/user-accounts-management/users/");
+  redirect("/dashboard/user-accounts-management/users?success=updated");
 }

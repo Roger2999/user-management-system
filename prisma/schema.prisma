@@ -4,12 +4,14 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider        = "prisma-client"
+  output          = "../generated/prisma"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider   = "postgresql"
+  extensions = [citext]
 }
 
 model User {
@@ -100,7 +102,7 @@ model AccountRequest {
   updatedAt DateTime @updatedAt
 
   // Encabezado
-  folio         String?
+  folio         String?   @unique @db.Citext
   tipoSolicitud TipoSolicitud
 
   // Baja
@@ -109,11 +111,11 @@ model AccountRequest {
 
   // Datos personales
   nombreApellidos   String
-  telefonoExtension String?
+  telefonoExtension String? @unique @db.Citext
   cargoOcupa        String
   departamentoArea  String
   tipoPersonal      TipoPersonal
-  identificadorCuentaUsuario String?
+  identificadorCuentaUsuario String? @unique @db.Citext
 
   // Correo electrónico
   correoNacional      Boolean @default(false)
@@ -167,13 +169,13 @@ model AccountRequest {
   apnCorreoNacional      Boolean @default(false)
   apnCorreoInternacional Boolean @default(false)
   apnInternet            Boolean @default(false)
-  telefonoCelular        String?
+  telefonoCelular        String? @unique @db.Citext
 
   // PC autorizado
-  pcNombre               String?
-  pcInventario           String?
-  pcAdicionalNombre      String?
-  pcAdicionalInventario  String?
+  pcNombre              String? @unique @db.Citext
+  pcInventario          String? @unique @db.Citext
+  pcAdicionalNombre     String? @unique @db.Citext
+  pcAdicionalInventario String? @unique @db.Citext
 
   // Software
   softwareAutorizado String?

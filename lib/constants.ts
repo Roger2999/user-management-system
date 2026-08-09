@@ -45,7 +45,7 @@ export const DASHBOARD_CARDS: {
 }[] = [
   {
     title: "Gestionar cuentas de usuario",
-    description: "Altas, bajas y firma cuentas de usuario pendientes",
+    description: "Registra, firma, actualiza y da de baja cuentas de usuario",
     href: "/dashboard/user-accounts-management/",
     icon: UsersIcon,
   },

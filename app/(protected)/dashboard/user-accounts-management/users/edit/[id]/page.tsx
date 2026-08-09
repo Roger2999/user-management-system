@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import prisma from "@/lib/prisma";
-import EditUserAccountForm from "../../create/components/user-account-form";
+import EditUserAccountForm from "../../components/user-account-form";
 import { updateAccountRequestAction } from "./actions/update-account-request-action";
 import type { CreateUserAccountState } from "@/lib/types";
 

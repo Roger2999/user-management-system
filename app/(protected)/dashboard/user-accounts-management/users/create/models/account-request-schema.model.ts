@@ -6,7 +6,10 @@ export const AccountRequestSchema = z
     tipoSolicitud: z.enum(["ALTA", "ACTUALIZACION", "BAJA"], {
       message: "Requerido",
     }),
-    folio: z.string().min(1, "Requerido"),
+    folio: z
+      .string()
+      .min(1, "Requerido")
+      .regex(/^[A-Z]+-[A-Z]+-\d+$/, "Formato inválido. Ejemplo: EE-CAR-016"),
 
     // Datos personales
     nombreApellidos: z.string().min(1, "Requerido"),

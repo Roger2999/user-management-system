@@ -6,7 +6,7 @@ import SelectField from "@/components/select-field";
 import CheckboxField from "@/components/checkbox-field";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { createUserAccountAction } from "../actions/create-user-account-action";
+import { createUserAccountAction } from "../create/actions/create-user-account-action";
 import type { CreateUserAccountState } from "@/lib/types";
 import {
   ACCOUNT_OPTIONS,
@@ -66,7 +66,10 @@ export default function UserAccountForm({
               label="Tipo de solicitud"
               name="tipoSolicitud"
               options={REQUEST_OPTIONS}
-              defaultValue={state.data?.tipoSolicitud}
+              defaultValue={
+                state.data?.tipoSolicitud ??
+                (mode === "create" ? "ALTA" : undefined)
+              }
               errors={state.validationErrors?.tipoSolicitud}
               onChange={setTipoSolicitud}
               disabledValues={
