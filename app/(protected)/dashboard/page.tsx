@@ -8,8 +8,8 @@ export default async function Dashboard() {
   const username = session?.user.name;
 
   return (
-    <div className="flex flex-col items-center space-y-8">
-      <header className="w-full space-y-6">
+    <div className="flex flex-col items-center space-y-10">
+      <header className="w-full space-y-4">
         <h1 className="text-center text-3xl font-semibold">
           Sistema para la gestion usuarios
         </h1>
