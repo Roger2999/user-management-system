@@ -12,7 +12,12 @@ export const PRIVATE_ROUTES: {
   id: string;
   Icon: LucideIcon;
 }[] = [
-  { name: "Settings", href: "/dashboard/settings", id: "1", Icon: Settings },
+  {
+    name: "Configuración",
+    href: "/dashboard/settings",
+    id: "1",
+    Icon: Settings,
+  },
 ];
 export const THEMES = [
   { name: "light", label: "Claro" },

@@ -14,7 +14,7 @@ export default function LinkButton({
   href = "/",
   ...props
 }: Props) {
-  const baseStyles = "text-md p-1 rounded-md transition-colors";
+  const baseStyles = "text-md p-1 transition-colors";
   const pathname = usePathname();
   const isActive = pathname === href;
   return (

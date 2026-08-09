@@ -36,9 +36,7 @@ export default async function NavMenuDesktop() {
             ))
           : PUBLIC_ROUTES.map((route) => (
               <li key={route.id}>
-                <LinkButton type="link" href={route.href}>
-                  {route.name}
-                </LinkButton>
+                <LinkButton href={route.href}>{route.name}</LinkButton>
               </li>
             ))}
       </ul>

@@ -81,15 +81,25 @@ export default function NavMenuMobile({ session }: Props) {
           {session
             ? PRIVATE_ROUTES.map((route, index: number) => (
                 <li key={index}>
-                  <LinkButton href={route.href} onClick={closeMenu}>
+                  <LinkButton
+                    href={route.href}
+                    onClick={closeMenu}
+                    className="flex w-fit gap-2"
+                  >
                     {route.name}
+                    {route.Icon && <route.Icon />}
                   </LinkButton>
                 </li>
               ))
             : PUBLIC_ROUTES.map((route, index: number) => (
                 <li key={index}>
-                  <LinkButton type="link" href={route.href} onClick={closeMenu}>
+                  <LinkButton
+                    className="flex gap-2"
+                    href={route.href}
+                    onClick={closeMenu}
+                  >
                     {route.name}
+                    {route.Icon && <route.Icon />}
                   </LinkButton>
                 </li>
               ))}
