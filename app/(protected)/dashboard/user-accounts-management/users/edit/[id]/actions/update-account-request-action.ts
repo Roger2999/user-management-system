@@ -17,7 +17,8 @@ export async function updateAccountRequestAction(
     tipoSolicitud: (formData.get("tipoSolicitud") as string) || undefined,
     folio: formData.get("folio") as string,
     nombreApellidos: formData.get("nombreApellidos") as string,
-    telefonoExtension: (formData.get("telefonoExtension") as string) || undefined,
+    telefonoExtension:
+      (formData.get("telefonoExtension") as string) || undefined,
     cargoOcupa: formData.get("cargoOcupa") as string,
     departamentoArea: formData.get("departamentoArea") as string,
     tipoPersonal: (formData.get("tipoPersonal") as string) || undefined,
@@ -78,9 +79,9 @@ export async function updateAccountRequestAction(
 
     softwareAutorizado:
       (formData.get("softwareAutorizado") as string) || undefined,
-    cuentaUsuario: formData.get("cuentaUsuario") as string,
-    actividadRealiza: (formData.get("actividadRealiza") as string) || undefined,
-    administradorSistema: formData.get("administradorSistema") === "on",
+    // cuentaUsuario: formData.get("cuentaUsuario") as string,
+    // actividadRealiza: (formData.get("actividadRealiza") as string) || undefined,
+    // administradorSistema: formData.get("administradorSistema") === "on",
 
     motivosBaja: (formData.get("motivosBaja") as string) || undefined,
     fechaBaja: (formData.get("fechaBaja") as string) || undefined,
@@ -113,7 +114,7 @@ export async function updateAccountRequestAction(
     pcAdicionalNombre: fields.pcAdicionalNombre,
     pcAdicionalInventario: fields.pcAdicionalInventario,
     softwareAutorizado: fields.softwareAutorizado,
-    cuentaUsuario: fields.cuentaUsuario,
+    //cuentaUsuario: fields.cuentaUsuario,
     motivosBaja: fields.motivosBaja,
     fechaBaja: fields.fechaBaja,
   };
@@ -147,7 +148,9 @@ export async function updateAccountRequestAction(
     return {
       data: repopulateData,
       success: false,
-      dbErrors: { message: "Error al procesar la solicitud. Intenta de nuevo." },
+      dbErrors: {
+        message: "Error al procesar la solicitud. Intenta de nuevo.",
+      },
       validationErrors: null,
     };
   }

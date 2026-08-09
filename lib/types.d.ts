@@ -125,9 +125,9 @@ export type CreateUserAccountState = {
     pcAdicionalNombre?: string;
     pcAdicionalInventario?: string;
     softwareAutorizado?: string;
-    cuentaUsuario?: string;
-    actividadRealiza?: string;
-    administradorSistema?: boolean;
+    // cuentaUsuario?: string;
+    // actividadRealiza?: string;
+    // administradorSistema?: boolean;
     motivosBaja?: string;
     fechaBaja?: string;
   };

@@ -83,9 +83,9 @@ export const AccountRequestSchema = z
     softwareAutorizado: z.string().optional(),
 
     // Cuenta usuario
-    cuentaUsuario: z.string().min(1, "Requerido"),
-    actividadRealiza: z.string().optional(),
-    administradorSistema: z.boolean().default(false),
+    // cuentaUsuario: z.string().min(1, "Requerido"),
+    // actividadRealiza: z.string().optional(),
+    // administradorSistema: z.boolean().default(false),
 
     // Baja
     motivosBaja: z.string().optional(),

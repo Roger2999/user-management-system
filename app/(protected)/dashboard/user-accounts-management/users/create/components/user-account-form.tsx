@@ -49,13 +49,13 @@ export default function UserAccountForm({
   const disableHorarios = horario24Horas;
 
   return (
-    <div className="space-y-6">
+    <div className="xs:px-8 space-y-6 sm:px-20">
       <h1 className="text-xl font-semibold">
         {mode === "edit"
           ? "Editar solicitud de cuenta"
           : "Crear solicitud de cuenta"}
       </h1>
-      <form action={formAction} className="space-y-6">
+      <form action={formAction} className="grid gap-6 lg:grid-cols-2">
         {mode === "edit" && id && <input type="hidden" name="id" value={id} />}
         <Card>
           <CardHeader>
@@ -498,7 +498,7 @@ export default function UserAccountForm({
           </CardContent>
         </Card>
 
-        <Card>
+        {/* <Card>
           <CardHeader>
             <CardTitle>Cuenta de usuario</CardTitle>
           </CardHeader>
@@ -523,14 +523,17 @@ export default function UserAccountForm({
               />
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
         {state.dbErrors && (
           <p className="text-destructive text-center text-sm">
             {state.dbErrors.message}
           </p>
         )}
 
-        <Button className="w-full" disabled={pending} size="lg">
+        <Button
+          className="bg-success min-h-14 w-full text-xl font-bold lg:col-span-2"
+          disabled={pending}
+        >
           {pending
             ? "Guardando..."
             : mode === "edit"

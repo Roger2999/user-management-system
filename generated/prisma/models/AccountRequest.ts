@@ -79,9 +79,6 @@ export type AccountRequestMinAggregateOutputType = {
   pcAdicionalNombre: string | null
   pcAdicionalInventario: string | null
   softwareAutorizado: string | null
-  cuentaUsuario: string | null
-  actividadRealiza: string | null
-  administradorSistema: boolean | null
   firmadoPorSolicitado: boolean | null
   solicitadoFecha: Date | null
   firmadoPorRevisado: boolean | null
@@ -147,9 +144,6 @@ export type AccountRequestMaxAggregateOutputType = {
   pcAdicionalNombre: string | null
   pcAdicionalInventario: string | null
   softwareAutorizado: string | null
-  cuentaUsuario: string | null
-  actividadRealiza: string | null
-  administradorSistema: boolean | null
   firmadoPorSolicitado: boolean | null
   solicitadoFecha: Date | null
   firmadoPorRevisado: boolean | null
@@ -215,9 +209,6 @@ export type AccountRequestCountAggregateOutputType = {
   pcAdicionalNombre: number
   pcAdicionalInventario: number
   softwareAutorizado: number
-  cuentaUsuario: number
-  actividadRealiza: number
-  administradorSistema: number
   firmadoPorSolicitado: number
   solicitadoFecha: number
   firmadoPorRevisado: number
@@ -285,9 +276,6 @@ export type AccountRequestMinAggregateInputType = {
   pcAdicionalNombre?: true
   pcAdicionalInventario?: true
   softwareAutorizado?: true
-  cuentaUsuario?: true
-  actividadRealiza?: true
-  administradorSistema?: true
   firmadoPorSolicitado?: true
   solicitadoFecha?: true
   firmadoPorRevisado?: true
@@ -353,9 +341,6 @@ export type AccountRequestMaxAggregateInputType = {
   pcAdicionalNombre?: true
   pcAdicionalInventario?: true
   softwareAutorizado?: true
-  cuentaUsuario?: true
-  actividadRealiza?: true
-  administradorSistema?: true
   firmadoPorSolicitado?: true
   solicitadoFecha?: true
   firmadoPorRevisado?: true
@@ -421,9 +406,6 @@ export type AccountRequestCountAggregateInputType = {
   pcAdicionalNombre?: true
   pcAdicionalInventario?: true
   softwareAutorizado?: true
-  cuentaUsuario?: true
-  actividadRealiza?: true
-  administradorSistema?: true
   firmadoPorSolicitado?: true
   solicitadoFecha?: true
   firmadoPorRevisado?: true
@@ -562,9 +544,6 @@ export type AccountRequestGroupByOutputType = {
   pcAdicionalNombre: string | null
   pcAdicionalInventario: string | null
   softwareAutorizado: string | null
-  cuentaUsuario: string | null
-  actividadRealiza: string | null
-  administradorSistema: boolean
   firmadoPorSolicitado: boolean
   solicitadoFecha: Date | null
   firmadoPorRevisado: boolean
@@ -651,9 +630,6 @@ export type AccountRequestWhereInput = {
   pcAdicionalNombre?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
   pcAdicionalInventario?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
   softwareAutorizado?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
-  cuentaUsuario?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
-  actividadRealiza?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
-  administradorSistema?: Prisma.BoolFilter<"AccountRequest"> | boolean
   firmadoPorSolicitado?: Prisma.BoolFilter<"AccountRequest"> | boolean
   solicitadoFecha?: Prisma.DateTimeNullableFilter<"AccountRequest"> | Date | string | null
   firmadoPorRevisado?: Prisma.BoolFilter<"AccountRequest"> | boolean
@@ -719,9 +695,6 @@ export type AccountRequestOrderByWithRelationInput = {
   pcAdicionalNombre?: Prisma.SortOrderInput | Prisma.SortOrder
   pcAdicionalInventario?: Prisma.SortOrderInput | Prisma.SortOrder
   softwareAutorizado?: Prisma.SortOrderInput | Prisma.SortOrder
-  cuentaUsuario?: Prisma.SortOrderInput | Prisma.SortOrder
-  actividadRealiza?: Prisma.SortOrderInput | Prisma.SortOrder
-  administradorSistema?: Prisma.SortOrder
   firmadoPorSolicitado?: Prisma.SortOrder
   solicitadoFecha?: Prisma.SortOrderInput | Prisma.SortOrder
   firmadoPorRevisado?: Prisma.SortOrder
@@ -790,9 +763,6 @@ export type AccountRequestWhereUniqueInput = Prisma.AtLeast<{
   pcAdicionalNombre?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
   pcAdicionalInventario?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
   softwareAutorizado?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
-  cuentaUsuario?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
-  actividadRealiza?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
-  administradorSistema?: Prisma.BoolFilter<"AccountRequest"> | boolean
   firmadoPorSolicitado?: Prisma.BoolFilter<"AccountRequest"> | boolean
   solicitadoFecha?: Prisma.DateTimeNullableFilter<"AccountRequest"> | Date | string | null
   firmadoPorRevisado?: Prisma.BoolFilter<"AccountRequest"> | boolean
@@ -858,9 +828,6 @@ export type AccountRequestOrderByWithAggregationInput = {
   pcAdicionalNombre?: Prisma.SortOrderInput | Prisma.SortOrder
   pcAdicionalInventario?: Prisma.SortOrderInput | Prisma.SortOrder
   softwareAutorizado?: Prisma.SortOrderInput | Prisma.SortOrder
-  cuentaUsuario?: Prisma.SortOrderInput | Prisma.SortOrder
-  actividadRealiza?: Prisma.SortOrderInput | Prisma.SortOrder
-  administradorSistema?: Prisma.SortOrder
   firmadoPorSolicitado?: Prisma.SortOrder
   solicitadoFecha?: Prisma.SortOrderInput | Prisma.SortOrder
   firmadoPorRevisado?: Prisma.SortOrder
@@ -932,9 +899,6 @@ export type AccountRequestScalarWhereWithAggregatesInput = {
   pcAdicionalNombre?: Prisma.StringNullableWithAggregatesFilter<"AccountRequest"> | string | null
   pcAdicionalInventario?: Prisma.StringNullableWithAggregatesFilter<"AccountRequest"> | string | null
   softwareAutorizado?: Prisma.StringNullableWithAggregatesFilter<"AccountRequest"> | string | null
-  cuentaUsuario?: Prisma.StringNullableWithAggregatesFilter<"AccountRequest"> | string | null
-  actividadRealiza?: Prisma.StringNullableWithAggregatesFilter<"AccountRequest"> | string | null
-  administradorSistema?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
   firmadoPorSolicitado?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
   solicitadoFecha?: Prisma.DateTimeNullableWithAggregatesFilter<"AccountRequest"> | Date | string | null
   firmadoPorRevisado?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
@@ -1000,9 +964,6 @@ export type AccountRequestCreateInput = {
   pcAdicionalNombre?: string | null
   pcAdicionalInventario?: string | null
   softwareAutorizado?: string | null
-  cuentaUsuario?: string | null
-  actividadRealiza?: string | null
-  administradorSistema?: boolean
   firmadoPorSolicitado?: boolean
   solicitadoFecha?: Date | string | null
   firmadoPorRevisado?: boolean
@@ -1068,9 +1029,6 @@ export type AccountRequestUncheckedCreateInput = {
   pcAdicionalNombre?: string | null
   pcAdicionalInventario?: string | null
   softwareAutorizado?: string | null
-  cuentaUsuario?: string | null
-  actividadRealiza?: string | null
-  administradorSistema?: boolean
   firmadoPorSolicitado?: boolean
   solicitadoFecha?: Date | string | null
   firmadoPorRevisado?: boolean
@@ -1136,9 +1094,6 @@ export type AccountRequestUpdateInput = {
   pcAdicionalNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   pcAdicionalInventario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   softwareAutorizado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  cuentaUsuario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  actividadRealiza?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  administradorSistema?: Prisma.BoolFieldUpdateOperationsInput | boolean
   firmadoPorSolicitado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   solicitadoFecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   firmadoPorRevisado?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1204,9 +1159,6 @@ export type AccountRequestUncheckedUpdateInput = {
   pcAdicionalNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   pcAdicionalInventario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   softwareAutorizado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  cuentaUsuario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  actividadRealiza?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  administradorSistema?: Prisma.BoolFieldUpdateOperationsInput | boolean
   firmadoPorSolicitado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   solicitadoFecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   firmadoPorRevisado?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1272,9 +1224,6 @@ export type AccountRequestCreateManyInput = {
   pcAdicionalNombre?: string | null
   pcAdicionalInventario?: string | null
   softwareAutorizado?: string | null
-  cuentaUsuario?: string | null
-  actividadRealiza?: string | null
-  administradorSistema?: boolean
   firmadoPorSolicitado?: boolean
   solicitadoFecha?: Date | string | null
   firmadoPorRevisado?: boolean
@@ -1340,9 +1289,6 @@ export type AccountRequestUpdateManyMutationInput = {
   pcAdicionalNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   pcAdicionalInventario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   softwareAutorizado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  cuentaUsuario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  actividadRealiza?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  administradorSistema?: Prisma.BoolFieldUpdateOperationsInput | boolean
   firmadoPorSolicitado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   solicitadoFecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   firmadoPorRevisado?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1408,9 +1354,6 @@ export type AccountRequestUncheckedUpdateManyInput = {
   pcAdicionalNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   pcAdicionalInventario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   softwareAutorizado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  cuentaUsuario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  actividadRealiza?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  administradorSistema?: Prisma.BoolFieldUpdateOperationsInput | boolean
   firmadoPorSolicitado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   solicitadoFecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   firmadoPorRevisado?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1476,9 +1419,6 @@ export type AccountRequestCountOrderByAggregateInput = {
   pcAdicionalNombre?: Prisma.SortOrder
   pcAdicionalInventario?: Prisma.SortOrder
   softwareAutorizado?: Prisma.SortOrder
-  cuentaUsuario?: Prisma.SortOrder
-  actividadRealiza?: Prisma.SortOrder
-  administradorSistema?: Prisma.SortOrder
   firmadoPorSolicitado?: Prisma.SortOrder
   solicitadoFecha?: Prisma.SortOrder
   firmadoPorRevisado?: Prisma.SortOrder
@@ -1544,9 +1484,6 @@ export type AccountRequestMaxOrderByAggregateInput = {
   pcAdicionalNombre?: Prisma.SortOrder
   pcAdicionalInventario?: Prisma.SortOrder
   softwareAutorizado?: Prisma.SortOrder
-  cuentaUsuario?: Prisma.SortOrder
-  actividadRealiza?: Prisma.SortOrder
-  administradorSistema?: Prisma.SortOrder
   firmadoPorSolicitado?: Prisma.SortOrder
   solicitadoFecha?: Prisma.SortOrder
   firmadoPorRevisado?: Prisma.SortOrder
@@ -1612,9 +1549,6 @@ export type AccountRequestMinOrderByAggregateInput = {
   pcAdicionalNombre?: Prisma.SortOrder
   pcAdicionalInventario?: Prisma.SortOrder
   softwareAutorizado?: Prisma.SortOrder
-  cuentaUsuario?: Prisma.SortOrder
-  actividadRealiza?: Prisma.SortOrder
-  administradorSistema?: Prisma.SortOrder
   firmadoPorSolicitado?: Prisma.SortOrder
   solicitadoFecha?: Prisma.SortOrder
   firmadoPorRevisado?: Prisma.SortOrder
@@ -1694,9 +1628,6 @@ export type AccountRequestSelect<ExtArgs extends runtime.Types.Extensions.Intern
   pcAdicionalNombre?: boolean
   pcAdicionalInventario?: boolean
   softwareAutorizado?: boolean
-  cuentaUsuario?: boolean
-  actividadRealiza?: boolean
-  administradorSistema?: boolean
   firmadoPorSolicitado?: boolean
   solicitadoFecha?: boolean
   firmadoPorRevisado?: boolean
@@ -1762,9 +1693,6 @@ export type AccountRequestSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   pcAdicionalNombre?: boolean
   pcAdicionalInventario?: boolean
   softwareAutorizado?: boolean
-  cuentaUsuario?: boolean
-  actividadRealiza?: boolean
-  administradorSistema?: boolean
   firmadoPorSolicitado?: boolean
   solicitadoFecha?: boolean
   firmadoPorRevisado?: boolean
@@ -1830,9 +1758,6 @@ export type AccountRequestSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   pcAdicionalNombre?: boolean
   pcAdicionalInventario?: boolean
   softwareAutorizado?: boolean
-  cuentaUsuario?: boolean
-  actividadRealiza?: boolean
-  administradorSistema?: boolean
   firmadoPorSolicitado?: boolean
   solicitadoFecha?: boolean
   firmadoPorRevisado?: boolean
@@ -1898,9 +1823,6 @@ export type AccountRequestSelectScalar = {
   pcAdicionalNombre?: boolean
   pcAdicionalInventario?: boolean
   softwareAutorizado?: boolean
-  cuentaUsuario?: boolean
-  actividadRealiza?: boolean
-  administradorSistema?: boolean
   firmadoPorSolicitado?: boolean
   solicitadoFecha?: boolean
   firmadoPorRevisado?: boolean
@@ -1911,7 +1833,7 @@ export type AccountRequestSelectScalar = {
   ejecutadoFecha?: boolean
 }
 
-export type AccountRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "folio" | "tipoSolicitud" | "motivosBaja" | "fechaBaja" | "nombreApellidos" | "telefonoExtension" | "cargoOcupa" | "departamentoArea" | "tipoPersonal" | "identificadorCuentaUsuario" | "correoNacional" | "correoInternacional" | "correoInternet" | "intranetUNE" | "intranetNacional" | "internet" | "mensajeriaCorporativa" | "facebook" | "twitter" | "youtube" | "whatsapp" | "telegram" | "instagram" | "otrasRedes" | "usuario" | "usuarioAvanzado" | "adminLocal" | "adminRed" | "accesoNubeLectura" | "accesoNubeModificar" | "accesoNubeBorrar" | "accesoNubeControlTotal" | "tipoCuenta" | "fechaExpiracion" | "horarioExtralaboral" | "horario24Horas" | "extraDesde" | "extraHasta" | "sabadoDesde" | "sabadoHasta" | "domingoDesde" | "domingoHasta" | "apnCorreoNacional" | "apnCorreoInternacional" | "apnInternet" | "telefonoCelular" | "pcNombre" | "pcInventario" | "pcAdicionalNombre" | "pcAdicionalInventario" | "softwareAutorizado" | "cuentaUsuario" | "actividadRealiza" | "administradorSistema" | "firmadoPorSolicitado" | "solicitadoFecha" | "firmadoPorRevisado" | "revisadoFecha" | "firmadoPorAprobado" | "aprobadoFecha" | "firmadoPorEjecutado" | "ejecutadoFecha", ExtArgs["result"]["accountRequest"]>
+export type AccountRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "folio" | "tipoSolicitud" | "motivosBaja" | "fechaBaja" | "nombreApellidos" | "telefonoExtension" | "cargoOcupa" | "departamentoArea" | "tipoPersonal" | "identificadorCuentaUsuario" | "correoNacional" | "correoInternacional" | "correoInternet" | "intranetUNE" | "intranetNacional" | "internet" | "mensajeriaCorporativa" | "facebook" | "twitter" | "youtube" | "whatsapp" | "telegram" | "instagram" | "otrasRedes" | "usuario" | "usuarioAvanzado" | "adminLocal" | "adminRed" | "accesoNubeLectura" | "accesoNubeModificar" | "accesoNubeBorrar" | "accesoNubeControlTotal" | "tipoCuenta" | "fechaExpiracion" | "horarioExtralaboral" | "horario24Horas" | "extraDesde" | "extraHasta" | "sabadoDesde" | "sabadoHasta" | "domingoDesde" | "domingoHasta" | "apnCorreoNacional" | "apnCorreoInternacional" | "apnInternet" | "telefonoCelular" | "pcNombre" | "pcInventario" | "pcAdicionalNombre" | "pcAdicionalInventario" | "softwareAutorizado" | "firmadoPorSolicitado" | "solicitadoFecha" | "firmadoPorRevisado" | "revisadoFecha" | "firmadoPorAprobado" | "aprobadoFecha" | "firmadoPorEjecutado" | "ejecutadoFecha", ExtArgs["result"]["accountRequest"]>
 
 export type $AccountRequestPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "AccountRequest"
@@ -1971,9 +1893,6 @@ export type $AccountRequestPayload<ExtArgs extends runtime.Types.Extensions.Inte
     pcAdicionalNombre: string | null
     pcAdicionalInventario: string | null
     softwareAutorizado: string | null
-    cuentaUsuario: string | null
-    actividadRealiza: string | null
-    administradorSistema: boolean
     firmadoPorSolicitado: boolean
     solicitadoFecha: Date | null
     firmadoPorRevisado: boolean
@@ -2459,9 +2378,6 @@ export interface AccountRequestFieldRefs {
   readonly pcAdicionalNombre: Prisma.FieldRef<"AccountRequest", 'String'>
   readonly pcAdicionalInventario: Prisma.FieldRef<"AccountRequest", 'String'>
   readonly softwareAutorizado: Prisma.FieldRef<"AccountRequest", 'String'>
-  readonly cuentaUsuario: Prisma.FieldRef<"AccountRequest", 'String'>
-  readonly actividadRealiza: Prisma.FieldRef<"AccountRequest", 'String'>
-  readonly administradorSistema: Prisma.FieldRef<"AccountRequest", 'Boolean'>
   readonly firmadoPorSolicitado: Prisma.FieldRef<"AccountRequest", 'Boolean'>
   readonly solicitadoFecha: Prisma.FieldRef<"AccountRequest", 'DateTime'>
   readonly firmadoPorRevisado: Prisma.FieldRef<"AccountRequest", 'Boolean'>

@@ -179,9 +179,9 @@ model AccountRequest {
   softwareAutorizado String?
 
   // Cuenta de usuario
-  cuentaUsuario        String?
-  actividadRealiza     String?
-  administradorSistema Boolean @default(false)
+  //cuentaUsuario        String?
+  //actividadRealiza     String?
+  //administradorSistema Boolean @default(false)
 
   // Firmas — Solicitado
   firmadoPorSolicitado Boolean @default(false)

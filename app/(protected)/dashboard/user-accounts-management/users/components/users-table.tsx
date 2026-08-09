@@ -72,7 +72,7 @@ export default async function UsersTable({
                   {user.nombreApellidos}
                 </TableCell>
                 <TableCell className="font-medium">
-                  {user.cuentaUsuario}
+                  {user.identificadorCuentaUsuario}
                 </TableCell>
                 <TableCell className="font-medium">
                   {user.telefonoExtension}
