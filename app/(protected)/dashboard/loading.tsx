@@ -2,27 +2,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Loading() {
   return (
-    <div className="flex flex-col items-center space-y-8 py-10">
-      <div className="flex w-full justify-end">
-        <Skeleton className="h-8 w-72" />
-      </div>
+    <div className="flex flex-col items-center space-y-10">
+      <header className="w-full space-y-4">
+        <Skeleton className="mx-auto h-9 w-80" />
+        <Skeleton className="mx-auto h-7 w-72" />
+      </header>
 
-      <section className="w-full space-y-4">
-        <Skeleton className="h-7 w-32" />
-        <Skeleton className="h-32 w-full rounded-xl" />
-        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-32 rounded-xl" />
-          ))}
-        </div>
-      </section>
-
-      <section className="w-full space-y-4">
-        <Skeleton className="h-7 w-40" />
-        <div className="grid gap-6 sm:grid-cols-2">
-          {Array.from({ length: 2 }).map((_, i) => (
-            <Skeleton key={i} className="h-40 rounded-xl" />
-          ))}
+      <section className="grid w-full max-w-md gap-10">
+        <div className="bg-card ring-foreground/10 flex flex-col items-center gap-4 overflow-hidden rounded-xl py-8 text-center ring-1">
+          <Skeleton className="my-1 size-6 rounded-md" />
+          <Skeleton className="h-6 w-56" />
+          <Skeleton className="h-4 w-72" />
         </div>
       </section>
     </div>
