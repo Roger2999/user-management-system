@@ -44,7 +44,7 @@ export default async function UserAccountsManangmentPage() {
           Gestión de cuentas de usuario
         </h1>
         <LinkButton
-          className="px-6 py-2 text-center"
+          className="rounded-md px-6 py-2 text-center"
           type="success"
           href="/dashboard/user-accounts-management/users/create/"
         >

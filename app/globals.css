@@ -152,7 +152,7 @@
 
 @page {
   size: letter;
-  margin: 12mm;
+  margin: 0;
 }
 
 @media print {
@@ -176,10 +176,7 @@
     left: 0;
     top: 0;
     width: 100%;
-    height: 255mm;
-    overflow: hidden;
-    padding: 0 !important;
-    margin: 0 !important;
-    box-shadow: none !important;
+    padding: 7mm 7.5mm !important;
+    background: #fff;
   }
 }

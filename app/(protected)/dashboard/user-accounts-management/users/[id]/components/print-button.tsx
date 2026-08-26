@@ -11,34 +11,7 @@ export const PrintButton = ({ contentRef }: Props) => {
   const handlePrint = useReactToPrint({
     contentRef,
     documentTitle: "Solicitud de cuenta de usuario",
-    pageStyle: `
-      @page {
-        size: letter;
-        margin: 12mm;
-      }
-      @media print {
-        body {
-          background: #fff !important;
-          margin: 0 !important;
-          padding: 0 !important;
-        }
-        body * {
-          visibility: hidden;
-        }
-        [data-print-target],
-        [data-print-target] * {
-          visibility: visible !important;
-        }
-        [data-print-target] {
-          position: absolute;
-          left: 0;
-          top: 0;
-          width: 100%;
-          height: 255mm;
-          overflow: hidden;
-        }
-      }
-    `,
+    copyShadowRoots: true,
   });
 
   return (
