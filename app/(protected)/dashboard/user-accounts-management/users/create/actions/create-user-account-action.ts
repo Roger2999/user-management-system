@@ -24,8 +24,9 @@ export async function createUserAccountAction(
     cargoOcupa: formData.get("cargoOcupa") as string,
     departamentoArea: formData.get("departamentoArea") as string,
     tipoPersonal: (formData.get("tipoPersonal") as string) || undefined,
-    identificadorCuentaUsuario:
-      (formData.get("identificadorCuentaUsuario") as string) || undefined,
+    identificadorCuentaUsuario: formData.get(
+      "identificadorCuentaUsuario",
+    ) as string,
 
     correoNacional: formData.get("correoNacional") === "on",
     correoInternacional: formData.get("correoInternacional") === "on",
@@ -72,8 +73,8 @@ export async function createUserAccountAction(
     apnInternet: formData.get("apnInternet") === "on",
     telefonoCelular: (formData.get("telefonoCelular") as string) || undefined,
 
-    pcNombre: (formData.get("pcNombre") as string) || undefined,
-    pcInventario: (formData.get("pcInventario") as string) || undefined,
+    pcNombre: formData.get("pcNombre") as string,
+    pcInventario: formData.get("pcInventario") as string,
     pcAdicionalNombre:
       (formData.get("pcAdicionalNombre") as string) || undefined,
     pcAdicionalInventario:

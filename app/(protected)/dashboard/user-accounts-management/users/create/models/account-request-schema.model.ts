@@ -20,7 +20,7 @@ export const AccountRequestSchema = z
       ["DIRECTIVO", "ESPECIALISTA_PRINCIPAL", "TECNICO", "OTRO"],
       { message: "Requerido" },
     ),
-    identificadorCuentaUsuario: z.string().optional(),
+    identificadorCuentaUsuario: z.string().min(1, "Requerido"),
 
     // Correo
     correoNacional: z.boolean().default(false),
@@ -77,8 +77,8 @@ export const AccountRequestSchema = z
     telefonoCelular: z.string().optional(),
 
     // PC
-    pcNombre: z.string().optional(),
-    pcInventario: z.string().optional(),
+    pcNombre: z.string().min(1, "Requerido"),
+    pcInventario: z.string().min(1, "Requerido"),
     pcAdicionalNombre: z.string().optional(),
     pcAdicionalInventario: z.string().optional(),
 
@@ -106,15 +106,15 @@ export const AccountRequestSchema = z
     if (data.horarioExtralaboral) {
       if (!data.extraDesde) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
           message: "Requerido cuando horario extralaboral está activo",
           path: ["extraDesde"],
         });
       }
       if (!data.extraHasta) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Requerido cuando horario extralaboral está activo",
+          code: "custom",
+          message: "Requerido cuando horario extrlaboral está activo",
           path: ["extraHasta"],
         });
       }
