@@ -1,7 +1,7 @@
 import z from "zod";
 
 export const SigninFormSchema = z.object({
-  email: z.email("Correo inválido").min(1, "Campo obligatorio"),
+  username: z.string().min(1, "Campo obligatorio"),
   password: z
     .string()
     .min(8, "Mínimo de 8 caracteres")

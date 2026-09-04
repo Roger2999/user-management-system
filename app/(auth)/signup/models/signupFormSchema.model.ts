@@ -2,11 +2,11 @@ import z from "zod";
 
 export const SignupFormSchema = z
   .object({
+    email: z.email("Correo inválido").min(1, "Campo obligatorio"),
     username: z
       .string()
       .min(3, "Mínimo de 3 caracteres")
       .max(20, "Máximo de 20 caracteres"),
-    email: z.email("Correo inválido").min(1, "Campo obligatorio"),
     password: z
       .string()
       .min(8, "Mínimo de 8 caracteres")

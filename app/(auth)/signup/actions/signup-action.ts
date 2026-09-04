@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { SignupFormState } from "@/lib/types";
 import { SignupFormSchema } from "../models/signupFormSchema.model";
+import prisma from "@/lib/prisma";
 
 export const signupAction = async (
   prevState: SignupFormState,
@@ -26,16 +27,41 @@ export const signupAction = async (
       validationErrors: z.flattenError(validatedFields.error).fieldErrors,
     };
   }
+
   const { email, password, username } = validatedFields.data;
+  const [existingUsername, existingEmail] = await Promise.all([
+    prisma.user.findFirst({
+      where: { username },
+    }),
+    prisma.user.findFirst({
+      where: { email },
+    }),
+  ]);
+  const validationErrors: SignupFormState["validationErrors"] = {};
+  if (existingUsername) {
+    validationErrors.username = ["Este nombre de usuario ya existe"];
+  }
+  if (existingEmail) {
+    validationErrors.email = ["Este email ya existe"];
+  }
+  if (existingUsername || existingEmail) {
+    return {
+      data: { username, email },
+      success: false,
+      dbErrors: null,
+      validationErrors,
+    };
+  }
+
   try {
     await auth.api.signUpEmail({
-      body: { email, password, name: username, rememberMe: true },
+      body: { email, password, name: username, username, rememberMe: true },
       headers: await headers(),
     });
-    await auth.api.sendVerificationEmail({
-      body: { email },
-      headers: await headers(),
-    });
+    // await auth.api.sendVerificationEmail({
+    //   body: { email },
+    //   headers: await headers(),
+    // });
   } catch {
     return {
       data: { email, username },
@@ -44,5 +70,6 @@ export const signupAction = async (
       validationErrors: null,
     };
   }
-  redirect(`/verify-email-address?email=${encodeURIComponent(email)}`);
+  //redirect(`/verify-email-address?email=${encodeURIComponent(email)}`);
+  redirect("/dashboard/");
 };

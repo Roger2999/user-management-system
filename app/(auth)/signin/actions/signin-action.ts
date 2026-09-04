@@ -12,27 +12,27 @@ export const signinAction = async (
   formData: FormData,
 ): Promise<SigninFormState> => {
   const fields = {
-    email: formData.get("email") as string,
+    username: formData.get("username") as string,
     password: formData.get("password") as string,
   };
   const validatedFields = SigninFormSchema.safeParse(fields);
   if (!validatedFields.success) {
     return {
-      data: { email: fields.email },
+      data: { username: fields.username },
       success: false,
       dbErrors: null,
       validationErrors: z.flattenError(validatedFields.error).fieldErrors,
     };
   }
-  const { email, password } = validatedFields.data;
+  const { username, password } = validatedFields.data;
   try {
-    await auth.api.signInEmail({
-      body: { email, password, rememberMe: true },
+    await auth.api.signInUsername({
+      body: { username, password, rememberMe: true },
       headers: await headers(),
     });
   } catch {
     return {
-      data: { email },
+      data: { username },
       success: false,
       dbErrors: { message: "Credenciales incorrectas. Intenta de nuevo." },
       validationErrors: null,

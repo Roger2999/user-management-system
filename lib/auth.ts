@@ -1,9 +1,9 @@
+import prisma from "@/lib/prisma";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
-import prisma from "@/lib/prisma";
+import { username } from "better-auth/plugins";
 import { resend } from "./resend";
-import { EmailTemplate } from "@/components/email-template";
 export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: "postgresql" }),
   rateLimit: {
@@ -14,6 +14,7 @@ export const auth = betterAuth({
       "/api/auth/sign-in/email": { window: 60, max: 10 },
       "/api/auth/sign-up/email": { window: 60, max: 5 },
       "/api/auth/forget-password": { window: 60, max: 3 },
+      "/api/auth/sign-in/username": { window: 60, max: 10 },
     },
     storage: "memory",
   },
@@ -27,7 +28,7 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: true,
+    // requireEmailVerification: true,
     autoSignIn: true,
     maxPasswordLength: 128,
     minPasswordLength: 8,
@@ -50,19 +51,19 @@ export const auth = betterAuth({
     },
   },
 
-  emailVerification: {
-    sendOnSignUp: true,
-    autoSignInAfterVerification: true,
-    sendVerificationEmail: async ({ user, url }) => {
-      await resend.emails.send({
-        from: "onboarding@resend.dev",
-        to: user.email,
-        subject: "Verifica tu email",
-        react: EmailTemplate({ name: user.name, url }),
-      });
-    },
-  },
+  // emailVerification: {
+  //   sendOnSignUp: true,
+  //   autoSignInAfterVerification: true,
+  //   sendVerificationEmail: async ({ user, url }) => {
+  //     await resend.emails.send({
+  //       from: "onboarding@resend.dev",
+  //       to: user.email,
+  //       subject: "Verifica tu email",
+  //       react: EmailTemplate({ name: user.name, url }),
+  //     });
+  //   },
+  // },
 
   trustedOrigins: ["http://localhost:3000", "https://sigel-eemtz.vercel.app"],
-  plugins: [nextCookies()],
+  plugins: [nextCookies(), username()],
 });

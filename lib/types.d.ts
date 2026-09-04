@@ -20,11 +20,11 @@ export type SignupFormState = {
 };
 
 export type SigninFormState = {
-  data?: { email: string };
+  data?: { username: string };
   success?: boolean;
   dbErrors?: DbError;
   validationErrors?: {
-    email?: string[];
+    username?: string[];
     password?: string[];
   } | null;
 };

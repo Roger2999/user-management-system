@@ -21,10 +21,10 @@ export default function SigninForm() {
       className="w-sm max-w-full space-y-2 rounded-xl border p-10"
     >
       <Field
-        defaultValue={state.data?.email}
-        label="Correo electrónico"
-        name="email"
-        errors={state.validationErrors?.email}
+        defaultValue={state.data?.username}
+        label="Nombre de usuario"
+        name="username"
+        errors={state.validationErrors?.username}
       />
       <Field
         label="Contraseña"
