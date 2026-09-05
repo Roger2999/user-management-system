@@ -6,6 +6,7 @@ import {
   ArrowBigDownDash,
   ArrowBigUpDash,
   SunMoon,
+  LucideWaves,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 
@@ -30,8 +31,12 @@ export function ThemeModeToggle() {
       <DropdownMenuTrigger className="border-border/50 flex w-fit cursor-pointer items-center justify-center gap-3 rounded-2xl border px-4 py-1">
         {theme === "light" ? (
           <Sun className="h-[1.2rem] w-[1.2rem]" />
-        ) : (
+        ) : theme === "dark" ? (
           <Moon className="h-[1.2rem] w-[1.2rem]" />
+        ) : theme === "system" ? (
+          <SunMoon className="h-[1.2rem] w-[1.2rem]" />
+        ) : (
+          <LucideWaves className="h-[1.2rem] w-[1.2rem]" />
         )}
 
         {isOpen ? <ArrowBigUpDash /> : <ArrowBigDownDash />}
@@ -50,8 +55,10 @@ export function ThemeModeToggle() {
               <Sun className="h-[1.2rem] w-[1.2rem]" />
             ) : theme.name === "dark" ? (
               <Moon className="h-[1.2rem] w-[1.2rem]" />
-            ) : (
+            ) : theme.name === "system" ? (
               <SunMoon className="h-[1.2rem] w-[1.2rem]" />
+            ) : (
+              <LucideWaves className="h-[1.2rem] w-[1.2rem]" />
             )}
           </DropdownMenuItem>
         ))}

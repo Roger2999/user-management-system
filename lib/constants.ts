@@ -22,6 +22,7 @@ export const PRIVATE_ROUTES: {
 export const THEMES = [
   { name: "light", label: "Claro" },
   { name: "dark", label: "Oscuro" },
+  { name: "ocean", label: "Océano" },
   { name: "system", label: "Sistema" },
 ];
 

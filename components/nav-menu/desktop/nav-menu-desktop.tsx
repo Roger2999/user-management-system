@@ -11,7 +11,7 @@ import Image from "next/image";
 export default async function NavMenuDesktop() {
   const session = await getSession();
   return (
-    <nav className="border-b-border/90 bg-sidebar flex h-16 w-full items-center justify-between border-b px-5">
+    <nav className="border-b-border/90 bg-sidebar/50 flex h-16 w-full items-center justify-between border-b px-5">
       <Link href={"/dashboard"}>
         <Image
           src={"/une-logo.png"}

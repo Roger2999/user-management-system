@@ -29,6 +29,8 @@ export const signupAction = async (
   }
 
   const { email, password, username } = validatedFields.data;
+
+  //validar si ya existe email y username en la db
   const [existingUsername, existingEmail] = await Promise.all([
     prisma.user.findFirst({
       where: { username },
@@ -37,6 +39,7 @@ export const signupAction = async (
       where: { email },
     }),
   ]);
+
   const validationErrors: SignupFormState["validationErrors"] = {};
   if (existingUsername) {
     validationErrors.username = ["Este nombre de usuario ya existe"];
