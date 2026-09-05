@@ -38,10 +38,10 @@ export const auth = betterAuth({
         to: data.user.email,
         subject: "Restablecer contraseña",
         html: `
-          <h2>Recupera tu contraseña</h2>
-          <p>Haz clic en el enlace para restablecer tu contraseña:</p>
-          <a href="${data.url}">Restablecer contraseña</a>
-          <p>El enlace expira en 1 hora.</p>
+          <h2 style="font-family: Arial, Helvetica, sans-serif; color: #0f172a; font-size: 20px; margin: 0 0 16px;">Recupera tu contraseña</h2>
+          <p style="font-family: Arial, Helvetica, sans-serif; color: #334155; font-size: 14px; margin: 0 0 16px;">Haz clic en el enlace para restablecer tu contraseña:</p>
+          <a href="${data.url}" style="display: inline-block; font-family: Arial, Helvetica, sans-serif; background: #0f172a; color: #ffffff; border-radius: 6px; padding: 10px 18px; font-size: 14px; text-decoration: none;">Restablecer contraseña</a>
+          <p style="font-family: Arial, Helvetica, sans-serif; color: #64748b; font-size: 12px; margin: 16px 0 0;">El enlace expira en 1 hora.</p>
         `,
         text: `Haz clic en el enlace para restablecer tu contraseña: ${data.url}`,
       });
@@ -50,19 +50,6 @@ export const auth = betterAuth({
       }
     },
   },
-
-  // emailVerification: {
-  //   sendOnSignUp: true,
-  //   autoSignInAfterVerification: true,
-  //   sendVerificationEmail: async ({ user, url }) => {
-  //     await resend.emails.send({
-  //       from: "onboarding@resend.dev",
-  //       to: user.email,
-  //       subject: "Verifica tu email",
-  //       react: EmailTemplate({ name: user.name, url }),
-  //     });
-  //   },
-  // },
 
   trustedOrigins: ["http://localhost:3000", "https://sigel-eemtz.vercel.app"],
   //username()-plugin de better-auth para autenticacion a traves del username-password
