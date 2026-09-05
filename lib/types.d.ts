@@ -73,6 +73,17 @@ export type UpdateUserState = {
   } | null;
 };
 
+export type ChangePasswordState = {
+  message?: string;
+  success?: boolean;
+  dbErrors?: DbError;
+  validationErrors?: {
+    currentPassword?: string[];
+    newPassword?: string[];
+    confirmNewPassword?: string[];
+  } | null;
+};
+
 export type CreateUserAccountState = {
   data?: {
     id?: string;
