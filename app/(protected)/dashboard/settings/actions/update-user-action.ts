@@ -14,26 +14,31 @@ export const UpdateUserAction = async (
 ): Promise<UpdateUserState> => {
   const fields = {
     username: formData.get("username") as string,
+    displayName: formData.get("displayName") as string,
   };
   const validatedFields = UpdateUserSchema.safeParse(fields);
   if (!validatedFields.success) {
     return {
-      data: { username: fields.username },
+      data: { username: fields.username, displayName: fields.displayName },
       success: false,
       dbErrors: null,
       validationErrors: z.flattenError(validatedFields.error).fieldErrors,
     };
   }
-  const { username } = validatedFields.data;
+  const { username, displayName } = validatedFields.data;
   try {
     await auth.api.updateUser({
-      body: { name: username },
+      body: {
+        username,
+        ...(displayName?.trim() ? { displayUsername: displayName.trim() } : {}),
+      },
       headers: await headers(),
     });
     revalidatePath("/dashboard");
+    revalidatePath("/dashboard/settings");
     return {
       success: true,
-      data: { username: fields.username },
+      data: { username, displayName },
       dbErrors: null,
       validationErrors: null,
       message: "Usuario actualizado con éxito",
@@ -41,7 +46,7 @@ export const UpdateUserAction = async (
   } catch (error) {
     if (error instanceof APIError) {
       return {
-        data: { username },
+        data: { username, displayName },
         success: false,
         dbErrors: {
           name: error.name,
@@ -52,7 +57,7 @@ export const UpdateUserAction = async (
       };
     }
     return {
-      data: { username },
+      data: { username, displayName },
       success: false,
       dbErrors: { message: "Error inesperado" },
       validationErrors: null,

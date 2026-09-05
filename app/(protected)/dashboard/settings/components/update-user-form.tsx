@@ -6,7 +6,11 @@ import { Button } from "@/components/ui/button";
 import { UpdateUserState } from "@/lib/types";
 import { UpdateUserAction } from "../actions/update-user-action";
 
-export default function UpdateUserForm() {
+type Props = {
+  initialUser: { username: string; displayName: string };
+};
+
+export default function UpdateUserForm({ initialUser }: Props) {
   const initialState: UpdateUserState = {
     data: undefined,
     success: false,
@@ -19,24 +23,34 @@ export default function UpdateUserForm() {
     initialState,
   );
   return (
-    <section className="xs:grid-cols-2 grid w-7xl max-w-full grid-cols-1 gap-10 md:grid-cols-3">
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Cambiar nombre de usuario</h2>
-        <form className="bg-form w-md max-w-full space-y-2 rounded-xl border p-10" action={action}>
-          <Field
-            label="Nuevo nombre de usuario"
-            errors={state.validationErrors?.username}
-            type="text"
-            name="username"
-            defaultValue={state.data?.username}
-          />
-          <Button>{pending ? "Enviando..." : "Guardar"}</Button>
-          {state.success && <p className="text-success">{state.message}</p>}
-          {state.dbErrors && (
-            <p className="text-destructive">{state.dbErrors.message}</p>
-          )}
-        </form>
-      </div>
-    </section>
+    <div className="h-full space-y-4">
+      <h2 className="text-xl font-semibold">Datos de la cuenta</h2>
+      <form
+        className="flex h-full flex-col space-y-2 rounded-xl border p-6"
+        action={action}
+      >
+        <Field
+          label="Nombre de usuario (login)"
+          errors={state.validationErrors?.username}
+          type="text"
+          name="username"
+          defaultValue={state.data?.username ?? initialUser.username}
+        />
+        <Field
+          label="Nombre para mostrar"
+          errors={state.validationErrors?.displayName}
+          type="text"
+          name="displayName"
+          defaultValue={state.data?.displayName ?? initialUser.displayName}
+        />
+        <Button className="mt-auto">
+          {pending ? "Enviando..." : "Guardar"}
+        </Button>
+        {state.success && <p className="text-success">{state.message}</p>}
+        {state.dbErrors && (
+          <p className="text-destructive">{state.dbErrors.message}</p>
+        )}
+      </form>
+    </div>
   );
 }
