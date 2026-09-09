@@ -29,9 +29,12 @@ export default function DropdownMenuTable({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={name ? `Acciones para ${name}` : "Acciones de la fila"}
+          >
             <MoreHorizontalIcon className="size-8" />
-            <span className="sr-only">Abrir menú</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent

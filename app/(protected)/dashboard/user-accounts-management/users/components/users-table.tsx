@@ -90,6 +90,7 @@ export default async function UsersTable({
                 <TableCell className="flex justify-center">
                   <Link
                     href={`/dashboard/user-accounts-management/users/${user.id}`}
+                    aria-label={`Ver solicitud de ${user.nombreApellidos}`}
                   >
                     <EyeIcon className="hover:text-brand size-8" />
                   </Link>
@@ -102,8 +103,8 @@ export default async function UsersTable({
           ) : (
             <TableRow>
               <TableCell
-                className="text-destructive p-4 text-center text-xl"
-                colSpan={10}
+                className="text-muted-foreground p-4 text-center text-xl"
+                colSpan={7}
               >
                 No hay cuentas de usuario
               </TableCell>

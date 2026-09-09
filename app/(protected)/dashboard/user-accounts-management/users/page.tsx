@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import LinkButton from "@/components/link-button";
 import UsersTable from "./components/users-table";
 import SuccessToast from "./components/success-toast";
 import { getFilterConfig } from "@/lib/filters";
@@ -26,6 +27,16 @@ export default async function UsersPage({ searchParams }: Props) {
 
   return (
     <>
+      <header className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="text-3xl font-semibold">Cuentas de usuario</h1>
+        <LinkButton
+          className="rounded-md px-6 py-3 text-center"
+          type="success"
+          href="/dashboard/user-accounts-management/users/create/"
+        >
+          Crear cuenta
+        </LinkButton>
+      </header>
       <Suspense fallback={null}>
         <SuccessToast />
       </Suspense>

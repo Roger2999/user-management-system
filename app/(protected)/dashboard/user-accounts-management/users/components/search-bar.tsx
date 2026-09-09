@@ -31,6 +31,7 @@ export default function SearchBar() {
           Buscar
         </label>
         <Input
+          id="search-bar"
           className="h-12 px-4 placeholder:text-[1.2rem]"
           name="search-bar"
           defaultValue={searchParams.get("search") || undefined}

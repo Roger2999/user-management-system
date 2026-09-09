@@ -26,7 +26,7 @@ export default function Pagination({
   return (
     <div className="mb-4 flex items-center justify-center gap-4">
       <p className="text-muted-foreground text-sm">
-        Pagina {currentPage} de {totalPages}
+        Página {currentPage} de {totalPages}
       </p>
       <div className="flex gap-2">
         <Button
