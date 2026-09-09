@@ -27,10 +27,6 @@ interface DashboardSection {
 
 const sections: DashboardSection[] = [
   {
-    title: "Resumen general",
-    cards: [{ value: "all", label: "Total de cuentas", icon: Users }],
-  },
-  {
     title: "Estado de cuentas",
     cards: [
       {
@@ -71,7 +67,6 @@ const sections: DashboardSection[] = [
 ];
 
 function sectionGridClassName(cardCount: number): string | undefined {
-  if (cardCount === 1) return undefined;
   if (cardCount === 2) return "grid gap-6 sm:grid-cols-2";
   return "grid gap-6 sm:grid-cols-2 lg:grid-cols-3";
 }
@@ -87,24 +82,42 @@ function StatCardLink({ card, count }: { card: DashboardStatCard; count: number 
   );
 }
 
+function TotalAccountsLink({ count }: { count: number }) {
+  return (
+    <Link
+      className="text-brand bg-brand/5 inline-flex items-center gap-2 rounded-full border border-brand/20 px-4 py-1.5 text-sm font-medium transition-colors hover:bg-brand/10"
+      href="/dashboard/user-accounts-management/users?filter=all"
+      title="Ver todas las cuentas"
+    >
+      <Users className="size-4" />
+      {count}
+    </Link>
+  );
+}
+
 export default async function UserAccountsManagementPage() {
   const counts = await getAccountsCounts();
+  const total = counts["all"] ?? 0;
 
   return (
-    <div className="mb-8 flex flex-col items-center gap-6">
-      <header className="w-full max-w-5xl space-y-6">
-        <h1 className="text-center text-3xl font-semibold">
-          Gestión de cuentas de usuario
-        </h1>
+    <div className="mb-8 flex flex-col gap-8">
+      <header className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="text-3xl font-semibold">
+            Gestión de cuentas de usuario
+          </h1>
+          <TotalAccountsLink count={total} />
+        </div>
         <LinkButton
-          className="rounded-md px-6 py-2 text-center"
+          className="rounded-md px-6 py-3 text-center"
           type="success"
           href="/dashboard/user-accounts-management/users/create/"
         >
           Crear cuenta
         </LinkButton>
       </header>
-      <article className="w-full max-w-5xl space-y-10">
+
+      <article className="space-y-10">
         {sections.map((section) => (
           <section key={section.title} className="w-full space-y-4">
             <h2 className="text-lg font-semibold">{section.title}</h2>

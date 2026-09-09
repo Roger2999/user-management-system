@@ -14,22 +14,16 @@ function CardSkeleton() {
 
 export default function Loading() {
   return (
-    <div className="mb-8 flex flex-col items-center gap-6">
-      <header className="w-full max-w-5xl space-y-6">
-        <Skeleton className="mx-auto h-9 w-80" />
-        <div className="flex justify-center">
-          <Skeleton className="h-10 w-40 rounded-lg" />
+    <div className="mb-8 flex flex-col gap-8">
+      <header className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <Skeleton className="h-9 w-80" />
+          <Skeleton className="h-7 w-16 rounded-full" />
         </div>
+        <Skeleton className="h-10 w-40 rounded-lg" />
       </header>
 
-      <article className="w-full max-w-5xl space-y-10">
-        <section className="w-full space-y-4">
-          <Skeleton className="h-6 w-44" />
-          <div className="grid gap-6">
-            <CardSkeleton />
-          </div>
-        </section>
-
+      <article className="space-y-10">
         <section className="w-full space-y-4">
           <Skeleton className="h-6 w-40" />
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
