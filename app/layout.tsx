@@ -32,7 +32,7 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <body className="flex min-h-full flex-col">
-        <ThemeProvider>
+        <ThemeProvider defaultTheme="ocean">
           <header>
             <NavMenu />
           </header>
