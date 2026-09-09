@@ -1,13 +1,10 @@
-import { filtersByAccountType, filtersByRequestType } from "@/lib/filters";
 import { getAccountsCounts } from "../services/getAccountsCount.service";
 import StatsCard from "../components/stats-card";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
 import {
   Users,
   UserPlus,
   RefreshCw,
-  Pencil,
   UserMinus,
   BadgeCheck,
   Clock,
@@ -16,25 +13,81 @@ import {
 } from "lucide-react";
 import LinkButton from "@/components/link-button";
 
-const requestTypeIcons: Record<
-  string,
-  React.ComponentType<{ className?: string }>
-> = {
-  alta: UserPlus,
-  actualizacion: RefreshCw,
-  Modificacion: Pencil,
-  bajaEntidad: UserMinus,
-};
+interface DashboardStatCard {
+  value: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  tone?: "default" | "destructive" | "amber";
+}
 
-const accountTypeIcons: Record<
-  string,
-  React.ComponentType<{ className?: string }>
-> = {
-  permanente: BadgeCheck,
-  temporal: Clock,
-};
+interface DashboardSection {
+  title: string;
+  cards: DashboardStatCard[];
+}
 
-export default async function UserAccountsManangmentPage() {
+const sections: DashboardSection[] = [
+  {
+    title: "Resumen general",
+    cards: [{ value: "all", label: "Total de cuentas", icon: Users }],
+  },
+  {
+    title: "Estado de cuentas",
+    cards: [
+      {
+        value: "pendientesFirma",
+        label: "Pendientes de firma",
+        icon: PenLine,
+        tone: "destructive",
+      },
+      {
+        value: "expired",
+        label: "Cuentas expiradas",
+        icon: AlarmClock,
+        tone: "destructive",
+      },
+      {
+        value: "expiredIn7",
+        label: "Por expirar (≤7 días)",
+        icon: Clock,
+        tone: "amber",
+      },
+    ],
+  },
+  {
+    title: "Por tipo de solicitud",
+    cards: [
+      { value: "alta", label: "Alta", icon: UserPlus },
+      { value: "actualizacion", label: "Actualización", icon: RefreshCw },
+      { value: "bajaEntidad", label: "Baja", icon: UserMinus },
+    ],
+  },
+  {
+    title: "Por tipo de cuenta",
+    cards: [
+      { value: "permanente", label: "Cuentas permanentes", icon: BadgeCheck },
+      { value: "temporal", label: "Cuentas temporales", icon: Clock },
+    ],
+  },
+];
+
+function sectionGridClassName(cardCount: number): string | undefined {
+  if (cardCount === 1) return undefined;
+  if (cardCount === 2) return "grid gap-6 sm:grid-cols-2";
+  return "grid gap-6 sm:grid-cols-2 lg:grid-cols-3";
+}
+
+function StatCardLink({ card, count }: { card: DashboardStatCard; count: number }) {
+  return (
+    <Link
+      className="transition-all duration-100 ease-in hover:scale-105"
+      href={`/dashboard/user-accounts-management/users?filter=${encodeURIComponent(card.value)}`}
+    >
+      <StatsCard title={card.label} statData={count} icon={card.icon} tone={card.tone} />
+    </Link>
+  );
+}
+
+export default async function UserAccountsManagementPage() {
   const counts = await getAccountsCounts();
 
   return (
@@ -52,98 +105,20 @@ export default async function UserAccountsManangmentPage() {
         </LinkButton>
       </header>
       <article className="w-full max-w-5xl space-y-10">
-        <section className="flex w-full flex-col gap-4">
-          <h2 className="text-lg font-semibold">Resumen general</h2>
-          <Link
-            href={`/dashboard/user-accounts-management/users?filter=${encodeURIComponent("all")}`}
-            className="transition-all duration-100 ease-in hover:scale-[1.02]"
-          >
-            <StatsCard
-              title="Total de cuentas"
-              statData={counts.allUsersCount}
-              icon={Users}
-            />
-          </Link>
-        </section>
-
-        <section className="w-full space-y-4">
-          <h2 className="text-lg font-semibold">Estado de cuentas</h2>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            <Link
-              className="transition-all duration-100 ease-in hover:scale-105"
-              href={`/dashboard/user-accounts-management/users?filter=${encodeURIComponent("pendientesFirma")}`}
-            >
-              <StatsCard
-                title="Pendientes de firma"
-                statData={counts.usersPendingSignatureCount[0]}
-                icon={PenLine}
-                className={cn("bg-destructive/20")}
-              />
-            </Link>
-            <Link
-              className="transition-all duration-100 ease-in hover:scale-105"
-              href={`/dashboard/user-accounts-management/users?filter=${encodeURIComponent("expired")}`}
-            >
-              <StatsCard
-                title="Cuentas expiradas"
-                statData={counts.expiredAccounts}
-                icon={AlarmClock}
-                className={cn(
-                  counts.expiredAccounts > 0 && "bg-destructive/20",
-                )}
-              />
-            </Link>
-            <Link
-              className="transition-all duration-100 ease-in hover:scale-105"
-              href={`/dashboard/user-accounts-management/users?filter=${encodeURIComponent("expiredIn7")}`}
-            >
-              <StatsCard
-                title="Por expirar (≤7 días)"
-                statData={counts.expiring7Count}
-                icon={Clock}
-                className={cn(counts.expiring7Count > 0 && "bg-amber-500/20")}
-              />
-            </Link>
-          </div>
-        </section>
-
-        <section className="w-full space-y-4">
-          <h2 className="text-lg font-semibold">Por tipo de solicitud</h2>
-          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
-            {filtersByRequestType.map((filter, i) => (
-              <Link
-                key={filter.value}
-                className="transition-all duration-100 ease-in hover:scale-105"
-                href={`/dashboard/user-accounts-management/users?filter=${encodeURIComponent(filter.value)}`}
-              >
-                <StatsCard
-                  title={filter.label}
-                  statData={counts.usersRequestTypeCount[i]}
-                  icon={requestTypeIcons[filter.value]}
+        {sections.map((section) => (
+          <section key={section.title} className="w-full space-y-4">
+            <h2 className="text-lg font-semibold">{section.title}</h2>
+            <div className={sectionGridClassName(section.cards.length)}>
+              {section.cards.map((card) => (
+                <StatCardLink
+                  key={card.value}
+                  card={card}
+                  count={counts[card.value] ?? 0}
                 />
-              </Link>
-            ))}
-          </div>
-        </section>
-
-        <section className="w-full space-y-4">
-          <h2 className="text-lg font-semibold">Por tipo de cuenta</h2>
-          <div className="grid gap-6 sm:grid-cols-2">
-            {filtersByAccountType.map((filter, i) => (
-              <Link
-                key={filter.value}
-                className="transition-all duration-100 ease-in hover:scale-105"
-                href={`/dashboard/user-accounts-management/users?filter=${encodeURIComponent(filter.value)}`}
-              >
-                <StatsCard
-                  title={filter.label}
-                  statData={counts.usersAccountTypeCount[i]}
-                  icon={accountTypeIcons[filter.value]}
-                />
-              </Link>
-            ))}
-          </div>
-        </section>
+              ))}
+            </div>
+          </section>
+        ))}
       </article>
     </div>
   );

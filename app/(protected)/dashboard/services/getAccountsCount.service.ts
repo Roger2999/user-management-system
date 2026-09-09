@@ -8,55 +8,28 @@ import {
   getExpiringIn7DaysFilter,
   getExpiringIn1DayFilter,
 } from "@/lib/filters";
+import type { FilterConfig } from "@/lib/filters";
 
-export interface AccountsCounts {
-  allUsersCount: number;
-  usersRequestTypeCount: number[];
-  usersAccountTypeCount: number[];
-  usersPendingSignatureCount: number[];
-  expiredAccounts: number;
-  expiring7Count: number;
-  expiring1Count: number;
-}
+export async function getAccountsCounts(): Promise<Record<string, number>> {
+  const expiredFilter = getExpiredFilter();
+  const expiringIn7DaysFilter = getExpiringIn7DaysFilter();
+  const expiringIn1DayFilter = getExpiringIn1DayFilter();
 
-export async function getAccountsCounts(): Promise<AccountsCounts> {
-  const [
-    allUsersCount,
-    usersRequestTypeCount,
-    usersAccountTypeCount,
-    usersPendingSignatureCount,
-    expiredAccounts,
-    expiring7Count,
-    expiring1Count,
-  ] = await Promise.all([
-    prisma.accountRequest.count({ where: filtersByAllUsers[0].where }),
-    Promise.all(
-      filtersByRequestType.map((f) =>
-        prisma.accountRequest.count({ where: f.where }),
-      ),
-    ),
-    Promise.all(
-      filtersByAccountType.map((f) =>
-        prisma.accountRequest.count({ where: f.where }),
-      ),
-    ),
-    Promise.all(
-      pendingSignatureFilter.map((f) =>
-        prisma.accountRequest.count({ where: f.where }),
-      ),
-    ),
-    prisma.accountRequest.count({ where: getExpiredFilter().where }),
-    prisma.accountRequest.count({ where: getExpiringIn7DaysFilter().where }),
-    prisma.accountRequest.count({ where: getExpiringIn1DayFilter().where }),
-  ]);
+  const entries: FilterConfig[] = [
+    ...filtersByAllUsers,
+    ...pendingSignatureFilter,
+    expiredFilter,
+    expiringIn7DaysFilter,
+    expiringIn1DayFilter,
+    ...filtersByRequestType,
+    ...filtersByAccountType,
+  ];
 
-  return {
-    allUsersCount,
-    usersRequestTypeCount,
-    usersAccountTypeCount,
-    usersPendingSignatureCount,
-    expiredAccounts,
-    expiring7Count,
-    expiring1Count,
-  };
+  const counts = await Promise.all(
+    entries.map((entry) => prisma.accountRequest.count({ where: entry.where })),
+  );
+
+  return Object.fromEntries(
+    entries.map((entry, index) => [entry.value, counts[index]]),
+  );
 }

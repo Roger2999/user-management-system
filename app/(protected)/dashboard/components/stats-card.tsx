@@ -12,18 +12,33 @@ interface Props extends React.ComponentProps<"div"> {
   title?: string;
   statData?: number;
   icon?: React.ComponentType<{ className?: string }>;
+  tone?: "default" | "destructive" | "amber";
 }
+
+const toneClasses: Record<NonNullable<Props["tone"]>, string | undefined> = {
+  default: undefined,
+  destructive: "bg-destructive/20",
+  amber: "bg-amber-500/20",
+};
+
 export default function StatsCard({
   className,
   title = "Título",
   statData = 0,
   icon: Icon,
+  tone = "default",
   ...props
 }: Props) {
+  const toneClass = statData > 0 ? toneClasses[tone] : undefined;
+
   return (
     <Card
       {...props}
-      className={cn("hover:bg-card-hover p-6 transition-colors", className)}
+      className={cn(
+        "hover:bg-card-hover p-6 transition-colors",
+        toneClass,
+        className,
+      )}
     >
       <CardHeader>
         <CardTitle className="text-muted-foreground text-center text-base font-medium">
