@@ -22,7 +22,9 @@ export default function DocumentPreview({ user }: Props) {
         data-print-target
         className="mx-auto w-[216mm] max-w-full bg-white p-[8mm] print:w-auto print:shadow-none"
       >
-        <UserAccountDocument user={user} />
+        <div className="overflow-x-auto print:overflow-visible">
+          <UserAccountDocument user={user} />
+        </div>
       </div>
     </div>
   );
