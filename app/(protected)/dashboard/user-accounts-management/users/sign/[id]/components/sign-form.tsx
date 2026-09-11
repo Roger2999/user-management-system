@@ -48,11 +48,28 @@ export default function SignForm({ id, initial }: Props) {
     }
   }, [state]);
 
-  const signs: SignValues = {
-    requested: state.data?.requested ?? initial?.requested ?? false,
-    revised: state.data?.revised ?? initial?.revised ?? false,
-    approved: state.data?.approved ?? initial?.approved ?? false,
-    executed: state.data?.executed ?? initial?.executed ?? false,
+  // Ante un error de negocio (inmutabilidad u orden), el servidor no
+  // persistió los cambios: reconciliar contra el estado real de la DB.
+  const signs: SignValues = state.dbErrors
+    ? {
+        requested: initial?.requested ?? false,
+        revised: initial?.revised ?? false,
+        approved: initial?.approved ?? false,
+        executed: initial?.executed ?? false,
+      }
+    : {
+        requested: state.data?.requested ?? initial?.requested ?? false,
+        revised: state.data?.revised ?? initial?.revised ?? false,
+        approved: state.data?.approved ?? initial?.approved ?? false,
+        executed: state.data?.executed ?? initial?.executed ?? false,
+      };
+
+  // Una etapa solo se puede firmar si la anterior ya está firmada.
+  const canSign: SignValues = {
+    requested: !signs.requested,
+    revised: !signs.revised && signs.requested,
+    approved: !signs.approved && signs.revised,
+    executed: !signs.executed && signs.approved,
   };
 
   return (
@@ -75,7 +92,12 @@ export default function SignForm({ id, initial }: Props) {
             </span>
           </div>
         ) : (
-          <CheckboxField key={key} label={label} name={key} />
+          <CheckboxField
+            key={key}
+            label={label}
+            name={key}
+            disabled={!canSign[key]}
+          />
         ),
       )}
 
