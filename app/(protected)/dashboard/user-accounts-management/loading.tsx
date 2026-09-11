@@ -18,9 +18,9 @@ export default function Loading() {
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-3">
           <Skeleton className="h-9 w-80" />
-          <Skeleton className="h-7 w-16 rounded-full" />
+          <Skeleton className="h-8 w-16 rounded-full" />
         </div>
-        <Skeleton className="h-10 w-40 rounded-lg" />
+        <Skeleton className="h-10 w-40 rounded-md" />
       </header>
 
       <article className="space-y-10">
