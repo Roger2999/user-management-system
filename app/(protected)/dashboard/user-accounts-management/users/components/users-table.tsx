@@ -87,7 +87,8 @@ export default async function UsersTable({
             <TableHead>Folio</TableHead>
             <TableHead>Nombre y Apellidos</TableHead>
             <TableHead>Usuario</TableHead>
-            <TableHead>Teléfono</TableHead>
+            <TableHead>Departamento/Área</TableHead>
+            <TableHead className="text-center">Fecha</TableHead>
             <TableHead className="text-center">Estado</TableHead>
             <TableHead className="text-center">Vista previa</TableHead>
             <TableHead className="text-right">Acciones</TableHead>
@@ -107,7 +108,10 @@ export default async function UsersTable({
                     {user.identificadorCuentaUsuario}
                   </TableCell>
                   <TableCell className="font-medium">
-                    {user.telefonoExtension}
+                    {user.departamentoArea}
+                  </TableCell>
+                  <TableCell className="text-center whitespace-nowrap">
+                    {user.createdAt.toLocaleDateString("es-CU")}
                   </TableCell>
                   <TableCell>
                     <div className="flex justify-center">
@@ -139,7 +143,7 @@ export default async function UsersTable({
             <TableRow>
               <TableCell
                 className="text-muted-foreground p-4 text-center text-base"
-                colSpan={7}
+                colSpan={8}
               >
                 No hay cuentas de usuario
               </TableCell>
