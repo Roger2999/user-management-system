@@ -34,7 +34,7 @@ export default function DropdownMenuTable({
             size="icon"
             aria-label={name ? `Acciones para ${name}` : "Acciones de la fila"}
           >
-            <MoreHorizontalIcon className="size-8" />
+            <MoreHorizontalIcon className="size-5" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent

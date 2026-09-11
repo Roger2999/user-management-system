@@ -2,7 +2,7 @@ import { Prisma } from "@/generated/prisma/client";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
 
-import { EyeIcon, BadgeCheck, XSquare } from "lucide-react";
+import { EyeIcon } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -15,6 +15,36 @@ import DropdownMenuTable from "./dropdown-menu-table";
 import Pagination from "./pagination";
 
 const PAGE_SIZE = 10;
+
+function getSignatureStage(user: {
+  firmadoPorSolicitado: boolean;
+  firmadoPorRevisado: boolean;
+  firmadoPorAprobado: boolean;
+  firmadoPorEjecutado: boolean;
+}): { label: string; className: string } {
+  if (user.firmadoPorEjecutado) {
+    return { label: "Ejecutado", className: "bg-success/15 text-success" };
+  }
+  if (user.firmadoPorAprobado) {
+    return {
+      label: "Aprobado",
+      className: "bg-amber-500/15 text-amber-700 dark:text-amber-300",
+    };
+  }
+  if (user.firmadoPorRevisado) {
+    return {
+      label: "Revisado",
+      className: "bg-violet-500/15 text-violet-700 dark:text-violet-300",
+    };
+  }
+  if (user.firmadoPorSolicitado) {
+    return {
+      label: "Solicitado",
+      className: "bg-sky-500/15 text-sky-700 dark:text-sky-300",
+    };
+  }
+  return { label: "Pendiente", className: "bg-muted text-muted-foreground" };
+}
 
 export default async function UsersTable({
   where,
@@ -58,52 +88,57 @@ export default async function UsersTable({
             <TableHead>Nombre y Apellidos</TableHead>
             <TableHead>Usuario</TableHead>
             <TableHead>Teléfono</TableHead>
-            <TableHead className="text-center">Firmado</TableHead>
+            <TableHead className="text-center">Estado</TableHead>
             <TableHead className="text-center">Vista previa</TableHead>
             <TableHead className="text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {usersFiltrated.length > 0 ? (
-            usersFiltrated.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell className="font-medium">{user.folio}</TableCell>
-                <TableCell className="font-medium">
-                  {user.nombreApellidos}
-                </TableCell>
-                <TableCell className="font-medium">
-                  {user.identificadorCuentaUsuario}
-                </TableCell>
-                <TableCell className="font-medium">
-                  {user.telefonoExtension}
-                </TableCell>
-                <TableCell>
-                  {user.firmadoPorSolicitado &&
-                  user.firmadoPorRevisado &&
-                  user.firmadoPorAprobado &&
-                  user.firmadoPorEjecutado ? (
-                    <BadgeCheck className="text-success m-auto size-6" />
-                  ) : (
-                    <XSquare className="text-destructive m-auto size-6" />
-                  )}
-                </TableCell>
-                <TableCell className="flex justify-center">
-                  <Link
-                    href={`/dashboard/user-accounts-management/users/${user.id}`}
-                    aria-label={`Ver solicitud de ${user.nombreApellidos}`}
-                  >
-                    <EyeIcon className="hover:text-brand size-8" />
-                  </Link>
-                </TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenuTable id={user.id} name={user.nombreApellidos} />
-                </TableCell>
-              </TableRow>
-            ))
+            usersFiltrated.map((user) => {
+              const stage = getSignatureStage(user);
+              return (
+                <TableRow key={user.id}>
+                  <TableCell className="font-medium">{user.folio}</TableCell>
+                  <TableCell className="font-medium">
+                    {user.nombreApellidos}
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {user.identificadorCuentaUsuario}
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {user.telefonoExtension}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex justify-center">
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${stage.className}`}
+                      >
+                        {stage.label}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Link
+                      href={`/dashboard/user-accounts-management/users/${user.id}`}
+                      aria-label={`Ver solicitud de ${user.nombreApellidos}`}
+                    >
+                      <EyeIcon className="hover:text-brand mx-auto size-5" />
+                    </Link>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenuTable
+                      id={user.id}
+                      name={user.nombreApellidos}
+                    />
+                  </TableCell>
+                </TableRow>
+              );
+            })
           ) : (
             <TableRow>
               <TableCell
-                className="text-muted-foreground p-4 text-center text-xl"
+                className="text-muted-foreground p-4 text-center text-base"
                 colSpan={7}
               >
                 No hay cuentas de usuario
