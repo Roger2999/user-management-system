@@ -1,12 +1,11 @@
 "use client";
 
 import { useRef } from "react";
-import type { AccountRequest } from "@/generated/prisma/client";
-import UserAccountDocument from "./UserAccountDocument";
+import UserAccountDocument, { UserWithSignatures } from "./UserAccountDocument";
 import { PrintButton } from "./print-button";
 
 interface Props {
-  user: AccountRequest;
+  user: UserWithSignatures;
 }
 
 export default function DocumentPreview({ user }: Props) {

@@ -85,11 +85,6 @@ export const AccountRequestSchema = z
     // Software
     softwareAutorizado: z.string().optional(),
 
-    // Cuenta usuario
-    // cuentaUsuario: z.string().min(1, "Requerido"),
-    // actividadRealiza: z.string().optional(),
-    // administradorSistema: z.boolean().default(false),
-
     // Baja
     motivosBaja: z.string().optional(),
     fechaBaja: z.string().optional(),
@@ -116,6 +111,46 @@ export const AccountRequestSchema = z
           code: "custom",
           message: "Requerido cuando horario extrlaboral está activo",
           path: ["extraHasta"],
+        });
+      }
+    }
+
+    if (data.tipoSolicitud === "BAJA") {
+      if (!data.motivosBaja) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Requerido para solicitudes de baja",
+          path: ["motivosBaja"],
+        });
+      }
+      if (!data.fechaBaja) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Requerido para solicitudes de baja",
+          path: ["fechaBaja"],
+        });
+      }
+    }
+
+    const timeRanges = [
+      { desde: data.extraDesde, hasta: data.extraHasta, field: "extraHasta" },
+      {
+        desde: data.sabadoDesde,
+        hasta: data.sabadoHasta,
+        field: "sabadoHasta",
+      },
+      {
+        desde: data.domingoDesde,
+        hasta: data.domingoHasta,
+        field: "domingoHasta",
+      },
+    ] as const;
+    for (const { desde, hasta, field } of timeRanges) {
+      if (desde && hasta && desde >= hasta) {
+        ctx.addIssue({
+          code: "custom",
+          message: "La hora final debe ser posterior a la hora inicial",
+          path: [field],
         });
       }
     }

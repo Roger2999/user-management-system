@@ -388,7 +388,8 @@ export const ModelName = {
   Session: 'Session',
   Account: 'Account',
   Verification: 'Verification',
-  AccountRequest: 'AccountRequest'
+  AccountRequest: 'AccountRequest',
+  AccountRequestSignature: 'AccountRequestSignature'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -404,7 +405,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "accountRequest"
+    modelProps: "user" | "session" | "account" | "verification" | "accountRequest" | "accountRequestSignature"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -778,6 +779,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AccountRequestSignature: {
+      payload: Prisma.$AccountRequestSignaturePayload<ExtArgs>
+      fields: Prisma.AccountRequestSignatureFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AccountRequestSignatureFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountRequestSignaturePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AccountRequestSignatureFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountRequestSignaturePayload>
+        }
+        findFirst: {
+          args: Prisma.AccountRequestSignatureFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountRequestSignaturePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AccountRequestSignatureFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountRequestSignaturePayload>
+        }
+        findMany: {
+          args: Prisma.AccountRequestSignatureFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountRequestSignaturePayload>[]
+        }
+        create: {
+          args: Prisma.AccountRequestSignatureCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountRequestSignaturePayload>
+        }
+        createMany: {
+          args: Prisma.AccountRequestSignatureCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AccountRequestSignatureCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountRequestSignaturePayload>[]
+        }
+        delete: {
+          args: Prisma.AccountRequestSignatureDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountRequestSignaturePayload>
+        }
+        update: {
+          args: Prisma.AccountRequestSignatureUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountRequestSignaturePayload>
+        }
+        deleteMany: {
+          args: Prisma.AccountRequestSignatureDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AccountRequestSignatureUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AccountRequestSignatureUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountRequestSignaturePayload>[]
+        }
+        upsert: {
+          args: Prisma.AccountRequestSignatureUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AccountRequestSignaturePayload>
+        }
+        aggregate: {
+          args: Prisma.AccountRequestSignatureAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAccountRequestSignature>
+        }
+        groupBy: {
+          args: Prisma.AccountRequestSignatureGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AccountRequestSignatureGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AccountRequestSignatureCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AccountRequestSignatureCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -931,18 +1006,22 @@ export const AccountRequestScalarFieldEnum = {
   pcInventario: 'pcInventario',
   pcAdicionalNombre: 'pcAdicionalNombre',
   pcAdicionalInventario: 'pcAdicionalInventario',
-  softwareAutorizado: 'softwareAutorizado',
-  firmadoPorSolicitado: 'firmadoPorSolicitado',
-  solicitadoFecha: 'solicitadoFecha',
-  firmadoPorRevisado: 'firmadoPorRevisado',
-  revisadoFecha: 'revisadoFecha',
-  firmadoPorAprobado: 'firmadoPorAprobado',
-  aprobadoFecha: 'aprobadoFecha',
-  firmadoPorEjecutado: 'firmadoPorEjecutado',
-  ejecutadoFecha: 'ejecutadoFecha'
+  softwareAutorizado: 'softwareAutorizado'
 } as const
 
 export type AccountRequestScalarFieldEnum = (typeof AccountRequestScalarFieldEnum)[keyof typeof AccountRequestScalarFieldEnum]
+
+
+export const AccountRequestSignatureScalarFieldEnum = {
+  id: 'id',
+  accountRequestId: 'accountRequestId',
+  stage: 'stage',
+  nombre: 'nombre',
+  cargo: 'cargo',
+  fecha: 'fecha'
+} as const
+
+export type AccountRequestSignatureScalarFieldEnum = (typeof AccountRequestSignatureScalarFieldEnum)[keyof typeof AccountRequestSignatureScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1049,6 +1128,20 @@ export type EnumTipoCuentaFieldRefInput<$PrismaModel> = FieldRefInputType<$Prism
  * Reference to a field of type 'TipoCuenta[]'
  */
 export type ListEnumTipoCuentaFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TipoCuenta[]'>
+    
+
+
+/**
+ * Reference to a field of type 'AccountRequestStage'
+ */
+export type EnumAccountRequestStageFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AccountRequestStage'>
+    
+
+
+/**
+ * Reference to a field of type 'AccountRequestStage[]'
+ */
+export type ListEnumAccountRequestStageFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AccountRequestStage[]'>
     
 
 
@@ -1180,6 +1273,7 @@ export type GlobalOmitConfig = {
   account?: Prisma.AccountOmit
   verification?: Prisma.VerificationOmit
   accountRequest?: Prisma.AccountRequestOmit
+  accountRequestSignature?: Prisma.AccountRequestSignatureOmit
 }
 
 /* Types for Logging */

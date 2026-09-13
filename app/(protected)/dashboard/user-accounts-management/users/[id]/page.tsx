@@ -10,6 +10,7 @@ export default async function UserDetailsPage({
   const { id } = await params;
   const user = await prisma.accountRequest.findUnique({
     where: { id },
+    include: { signatures: true },
   });
 
   if (!user) notFound();

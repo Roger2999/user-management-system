@@ -137,9 +137,6 @@ export type CreateUserAccountState = {
     pcAdicionalNombre?: string;
     pcAdicionalInventario?: string;
     softwareAutorizado?: string;
-    // cuentaUsuario?: string;
-    // actividadRealiza?: string;
-    // administradorSistema?: boolean;
     motivosBaja?: string;
     fechaBaja?: string;
   };
@@ -150,12 +147,21 @@ export type CreateUserAccountState = {
 export type SignFormState = {
   data?: {
     requested?: boolean;
+    requestedNombre?: string;
+    requestedCargo?: string;
     revised?: boolean;
+    revisedNombre?: string;
+    revisedCargo?: string;
     approved?: boolean;
+    approvedNombre?: string;
+    approvedCargo?: string;
     executed?: boolean;
+    executedNombre?: string;
+    executedCargo?: string;
   } | null;
   success?: boolean;
   dbErrors?: DbError;
+  validationErrors?: Record<string, string[] | undefined>;
 };
 
 export type DeleteUserAccountState = {

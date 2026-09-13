@@ -1,15 +1,49 @@
 import "dotenv/config";
 import prisma from "@/lib/prisma";
+import { Prisma } from "@/generated/prisma/client";
 import {
   TipoSolicitud,
   TipoCuenta,
   TipoPersonal,
+  AccountRequestStage,
 } from "@/generated/prisma/enums";
+
+// Firmantes ficticios coherentes por etapa del flujo.
+const SIGNERS: Record<
+  AccountRequestStage,
+  { nombre: string; cargo: string }
+> = {
+  [AccountRequestStage.requested]: {
+    nombre: "José Ramírez",
+    cargo: "Director de Informática",
+  },
+  [AccountRequestStage.revised]: {
+    nombre: "María Gómez",
+    cargo: "Especialista de Seguridad Informática",
+  },
+  [AccountRequestStage.approved]: {
+    nombre: "Ana Rodríguez",
+    cargo: "Directora General",
+  },
+  [AccountRequestStage.executed]: {
+    nombre: "Carlos Díaz",
+    cargo: "Especialista de Sistemas",
+  },
+};
+
+// Convierte un mapa etapa -> fecha en el input anidado de `signatures.create`
+// con el nombre y cargo del firmante ficticio de cada etapa.
+const sign = (dates: Partial<Record<AccountRequestStage, Date>>) => {
+  const create = (Object.entries(dates) as [AccountRequestStage, Date][]).map(
+    ([stage, fecha]) => ({ stage, ...SIGNERS[stage], fecha }),
+  );
+  return { create };
+};
 
 async function main() {
   await prisma.accountRequest.deleteMany();
 
-  const data = [
+  const data: Prisma.AccountRequestCreateInput[] = [
     // 1. Juan Pérez - ALTA, PERMANENTE, TECNICO - Acceso completo
     {
       folio: "FOL-2026-001",
@@ -51,10 +85,12 @@ async function main() {
       pcNombre: "PC-JPEREZ-001",
       pcInventario: "INV-001",
       softwareAutorizado: "Visual Studio Code, Docker, PostgreSQL, Node.js",
-      solicitadoFecha: new Date("2026-06-01"),
-      revisadoFecha: new Date("2026-06-03"),
-      aprobadoFecha: new Date("2026-06-05"),
-      ejecutadoFecha: new Date("2026-06-06"),
+      signatures: sign({
+        requested: new Date("2026-06-01"),
+        revised: new Date("2026-06-03"),
+        approved: new Date("2026-06-05"),
+        executed: new Date("2026-06-06"),
+      }),
     },
     // 2. María López - ALTA, PERMANENTE, DIRECTIVO - Solo correo e intranet básicos
     {
@@ -75,10 +111,12 @@ async function main() {
       pcInventario: "INV-002",
       softwareAutorizado: "Office 365, Nómina SQL",
       telefonoCelular: "555-111-2222",
-      solicitadoFecha: new Date("2026-06-02"),
-      revisadoFecha: new Date("2026-06-04"),
-      aprobadoFecha: new Date("2026-06-06"),
-      ejecutadoFecha: new Date("2026-06-07"),
+      signatures: sign({
+        requested: new Date("2026-06-02"),
+        revised: new Date("2026-06-04"),
+        approved: new Date("2026-06-06"),
+        executed: new Date("2026-06-07"),
+      }),
     },
     // 3. Roberto Sánchez - ALTA, PERMANENTE, OTRO
     {
@@ -98,10 +136,12 @@ async function main() {
       pcInventario: "INV-003",
       softwareAutorizado: "Office 365, SAP",
       telefonoCelular: "555-222-3333",
-      solicitadoFecha: new Date("2026-06-03"),
-      revisadoFecha: new Date("2026-06-05"),
-      aprobadoFecha: new Date("2026-06-07"),
-      ejecutadoFecha: new Date("2026-06-08"),
+      signatures: sign({
+        requested: new Date("2026-06-03"),
+        revised: new Date("2026-06-05"),
+        approved: new Date("2026-06-07"),
+        executed: new Date("2026-06-08"),
+      }),
     },
     // 4. Laura García - ALTA, TEMPORAL, ESPECIALISTA_PRINCIPAL - Con expiración
     {
@@ -128,10 +168,12 @@ async function main() {
       pcInventario: "INV-004",
       softwareAutorizado: "VMware, Ansible, Terraform",
       telefonoCelular: "555-333-4444",
-      solicitadoFecha: new Date("2026-06-05"),
-      revisadoFecha: new Date("2026-06-07"),
-      aprobadoFecha: new Date("2026-06-09"),
-      ejecutadoFecha: new Date("2026-06-10"),
+      signatures: sign({
+        requested: new Date("2026-06-05"),
+        revised: new Date("2026-06-07"),
+        approved: new Date("2026-06-09"),
+        executed: new Date("2026-06-10"),
+      }),
     },
     // 5. Diego Fernández - ALTA, TEMPORAL, TECNICO - Horario extralaboral
     {
@@ -160,10 +202,12 @@ async function main() {
       pcNombre: "PC-DFERNANDEZ-001",
       pcInventario: "INV-005",
       softwareAutorizado: "Wireshark, Putty, Cisco CLI",
-      solicitadoFecha: new Date("2026-06-06"),
-      revisadoFecha: new Date("2026-06-08"),
-      aprobadoFecha: new Date("2026-06-10"),
-      ejecutadoFecha: new Date("2026-06-11"),
+      signatures: sign({
+        requested: new Date("2026-06-06"),
+        revised: new Date("2026-06-08"),
+        approved: new Date("2026-06-10"),
+        executed: new Date("2026-06-11"),
+      }),
     },
     // 6. Ana Martínez - ACTUALIZACION, PERMANENTE, DIRECTIVO - Se le agregan permisos
     {
@@ -187,10 +231,12 @@ async function main() {
       pcAdicionalInventario: "INV-006B",
       softwareAutorizado: "Office 365, SAP FI, Power BI",
       telefonoCelular: "555-444-5555",
-      solicitadoFecha: new Date("2026-06-08"),
-      revisadoFecha: new Date("2026-06-10"),
-      aprobadoFecha: new Date("2026-06-12"),
-      ejecutadoFecha: new Date("2026-06-13"),
+      signatures: sign({
+        requested: new Date("2026-06-08"),
+        revised: new Date("2026-06-10"),
+        approved: new Date("2026-06-12"),
+        executed: new Date("2026-06-13"),
+      }),
     },
     // 7. Carlos Ruiz - ACTUALIZACION, TEMPORAL, TECNICO - Cambio de área
     {
@@ -214,10 +260,12 @@ async function main() {
       pcNombre: "PC-CRUIZ-001",
       pcInventario: "INV-007",
       softwareAutorizado: "Postman, Git, VS Code, DBeaver",
-      solicitadoFecha: new Date("2026-06-10"),
-      revisadoFecha: new Date("2026-06-12"),
-      aprobadoFecha: new Date("2026-06-14"),
-      ejecutadoFecha: new Date("2026-06-15"),
+      signatures: sign({
+        requested: new Date("2026-06-10"),
+        revised: new Date("2026-06-12"),
+        approved: new Date("2026-06-14"),
+        executed: new Date("2026-06-15"),
+      }),
     },
     // 8. Sofía Torres - ACTUALIZACION, PERMANENTE, ESPECIALISTA_PRINCIPAL
     {
@@ -240,10 +288,12 @@ async function main() {
       pcInventario: "INV-008",
       softwareAutorizado: "Office 365, LexisNexis, Dropbox",
       telefonoCelular: "555-555-6666",
-      solicitadoFecha: new Date("2026-06-12"),
-      revisadoFecha: new Date("2026-06-14"),
-      aprobadoFecha: new Date("2026-06-16"),
-      ejecutadoFecha: new Date("2026-06-17"),
+      signatures: sign({
+        requested: new Date("2026-06-12"),
+        revised: new Date("2026-06-14"),
+        approved: new Date("2026-06-16"),
+        executed: new Date("2026-06-17"),
+      }),
     },
     // 9. Pedro Ramírez - ACTUALIZACION, TEMPORAL, TECNICO - Cambio de horario
     {
@@ -270,10 +320,12 @@ async function main() {
       pcInventario: "INV-009",
       softwareAutorizado: "Autocad, SolidWorks",
       telefonoCelular: "555-666-7777",
-      solicitadoFecha: new Date("2026-06-14"),
-      revisadoFecha: new Date("2026-06-16"),
-      aprobadoFecha: new Date("2026-06-18"),
-      ejecutadoFecha: new Date("2026-06-19"),
+      signatures: sign({
+        requested: new Date("2026-06-14"),
+        revised: new Date("2026-06-16"),
+        approved: new Date("2026-06-18"),
+        executed: new Date("2026-06-19"),
+      }),
     },
     // 10. Elena Díaz - Baja
     {
@@ -297,10 +349,12 @@ async function main() {
       telefonoCelular: "555-777-8888",
       motivosBaja: "Cambio a otra institución",
       fechaBaja: new Date("2026-06-20"),
-      solicitadoFecha: new Date("2026-01-10"),
-      revisadoFecha: new Date("2026-01-12"),
-      aprobadoFecha: new Date("2026-01-14"),
-      ejecutadoFecha: new Date("2026-01-15"),
+      signatures: sign({
+        requested: new Date("2026-01-10"),
+        revised: new Date("2026-01-12"),
+        approved: new Date("2026-01-14"),
+        executed: new Date("2026-01-15"),
+      }),
     },
     // 11. Pendiente Juan - ALTA, TEMPORAL - Solo solicitado
     {
@@ -321,7 +375,9 @@ async function main() {
       pcInventario: "INV-011",
       softwareAutorizado: "VS Code, Node.js, MySQL",
       telefonoCelular: "555-888-9999",
-      solicitadoFecha: new Date("2026-06-22"),
+      signatures: sign({
+        requested: new Date("2026-06-22"),
+      }),
     },
     // 12. Pendiente María - ACTUALIZACION, PERMANENTE - Solicitado y revisado
     {
@@ -342,8 +398,10 @@ async function main() {
       pcInventario: "INV-012",
       softwareAutorizado: "Office 365, BUK HR",
       telefonoCelular: "555-999-0000",
-      solicitadoFecha: new Date("2026-06-23"),
-      revisadoFecha: new Date("2026-06-25"),
+      signatures: sign({
+        requested: new Date("2026-06-23"),
+        revised: new Date("2026-06-25"),
+      }),
     },
     // 13. Pendiente Carlos - ACTUALIZACION, PERMANENTE - Solicitado, revisado y aprobado
     {
@@ -364,13 +422,17 @@ async function main() {
       pcInventario: "INV-013",
       softwareAutorizado: "Linux, Bash, Python, Docker",
       telefonoCelular: "555-000-1111",
-      solicitadoFecha: new Date("2026-06-24"),
-      revisadoFecha: new Date("2026-06-26"),
-      aprobadoFecha: new Date("2026-06-27"),
+      signatures: sign({
+        requested: new Date("2026-06-24"),
+        revised: new Date("2026-06-26"),
+        approved: new Date("2026-06-27"),
+      }),
     },
   ];
 
-  await prisma.accountRequest.createMany({ data });
+  for (const record of data) {
+    await prisma.accountRequest.create({ data: record });
+  }
   console.log(`Creadas ${data.length} solicitudes de prueba`);
 }
 

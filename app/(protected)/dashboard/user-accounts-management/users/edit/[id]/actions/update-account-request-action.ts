@@ -19,7 +19,7 @@ export async function updateAccountRequestAction(
 
   const fields = {
     tipoSolicitud: (formData.get("tipoSolicitud") as string) || undefined,
-    folio: formData.get("folio") as string,
+    folio: (formData.get("folio") as string)?.trim().toUpperCase() ?? "",
     nombreApellidos: formData.get("nombreApellidos") as string,
     telefonoExtension:
       (formData.get("telefonoExtension") as string) || undefined,
@@ -83,9 +83,6 @@ export async function updateAccountRequestAction(
 
     softwareAutorizado:
       (formData.get("softwareAutorizado") as string) || undefined,
-    // cuentaUsuario: formData.get("cuentaUsuario") as string,
-    // actividadRealiza: (formData.get("actividadRealiza") as string) || undefined,
-    // administradorSistema: formData.get("administradorSistema") === "on",
 
     motivosBaja: (formData.get("motivosBaja") as string) || undefined,
     fechaBaja: (formData.get("fechaBaja") as string) || undefined,
@@ -101,10 +98,39 @@ export async function updateAccountRequestAction(
     departamentoArea: fields.departamentoArea,
     tipoPersonal: fields.tipoPersonal,
     identificadorCuentaUsuario: fields.identificadorCuentaUsuario,
+
+    correoNacional: fields.correoNacional,
+    correoInternacional: fields.correoInternacional,
     correoInternet: fields.correoInternet,
+
+    intranetUNE: fields.intranetUNE,
+    intranetNacional: fields.intranetNacional,
+    internet: fields.internet,
+
+    mensajeriaCorporativa: fields.mensajeriaCorporativa,
+
+    facebook: fields.facebook,
+    twitter: fields.twitter,
+    youtube: fields.youtube,
+    whatsapp: fields.whatsapp,
+    telegram: fields.telegram,
+    instagram: fields.instagram,
     otrasRedes: fields.otrasRedes,
+
+    usuario: fields.usuario,
+    usuarioAvanzado: fields.usuarioAvanzado,
+    adminLocal: fields.adminLocal,
+    adminRed: fields.adminRed,
+
+    accesoNubeLectura: fields.accesoNubeLectura,
+    accesoNubeModificar: fields.accesoNubeModificar,
+    accesoNubeBorrar: fields.accesoNubeBorrar,
+    accesoNubeControlTotal: fields.accesoNubeControlTotal,
+
     tipoCuenta: fields.tipoCuenta,
     fechaExpiracion: fields.fechaExpiracion,
+
+    horarioExtralaboral: fields.horarioExtralaboral,
     horario24Horas: fields.horario24Horas,
     extraDesde: fields.extraDesde,
     extraHasta: fields.extraHasta,
@@ -112,13 +138,18 @@ export async function updateAccountRequestAction(
     sabadoHasta: fields.sabadoHasta,
     domingoDesde: fields.domingoDesde,
     domingoHasta: fields.domingoHasta,
+
+    apnCorreoNacional: fields.apnCorreoNacional,
+    apnCorreoInternacional: fields.apnCorreoInternacional,
+    apnInternet: fields.apnInternet,
     telefonoCelular: fields.telefonoCelular,
+
     pcNombre: fields.pcNombre,
     pcInventario: fields.pcInventario,
     pcAdicionalNombre: fields.pcAdicionalNombre,
     pcAdicionalInventario: fields.pcAdicionalInventario,
+
     softwareAutorizado: fields.softwareAutorizado,
-    //cuentaUsuario: fields.cuentaUsuario,
     motivosBaja: fields.motivosBaja,
     fechaBaja: fields.fechaBaja,
   };
@@ -164,7 +195,11 @@ export async function updateAccountRequestAction(
         fechaBaja: toDate(data.fechaBaja),
       },
     });
-  } catch {
+  } catch (error) {
+    console.error(
+      "updateAccountRequestAction: error al actualizar la solicitud",
+      error,
+    );
     return {
       data: repopulateData,
       success: false,

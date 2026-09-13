@@ -42,3 +42,8 @@ export type Verification = Prisma.VerificationModel
  * 
  */
 export type AccountRequest = Prisma.AccountRequestModel
+/**
+ * Model AccountRequestSignature
+ * 
+ */
+export type AccountRequestSignature = Prisma.AccountRequestSignatureModel

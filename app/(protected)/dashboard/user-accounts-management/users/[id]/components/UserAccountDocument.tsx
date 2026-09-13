@@ -1,4 +1,7 @@
-import type { AccountRequest } from "@/generated/prisma/client";
+import type {
+  AccountRequest,
+  AccountRequestSignature,
+} from "@/generated/prisma/client";
 import { HeaderSection } from "./document/sections/header-section";
 import { GestionSection } from "./document/sections/gestion-section";
 import { ServicesSection } from "./document/sections/services-section";
@@ -9,8 +12,12 @@ import { PcSection } from "./document/sections/pc-section";
 import { SignaturesSection } from "./document/sections/signatures-section";
 import { BajaSection } from "./document/sections/baja-section";
 
+export type UserWithSignatures = AccountRequest & {
+  signatures: AccountRequestSignature[];
+};
+
 interface Props {
-  user: AccountRequest;
+  user: UserWithSignatures;
 }
 
 export default function UserAccountDocument({ user }: Props) {

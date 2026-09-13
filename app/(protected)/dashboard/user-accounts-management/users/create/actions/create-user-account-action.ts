@@ -17,16 +17,15 @@ export async function createUserAccountAction(
 ): Promise<CreateUserAccountState> {
   const fields = {
     tipoSolicitud: (formData.get("tipoSolicitud") as string) || undefined,
-    folio: formData.get("folio") as string,
+    folio: (formData.get("folio") as string)?.trim().toUpperCase() ?? "",
     nombreApellidos: formData.get("nombreApellidos") as string,
     telefonoExtension:
       (formData.get("telefonoExtension") as string) || undefined,
     cargoOcupa: formData.get("cargoOcupa") as string,
     departamentoArea: formData.get("departamentoArea") as string,
     tipoPersonal: (formData.get("tipoPersonal") as string) || undefined,
-    identificadorCuentaUsuario: formData.get(
-      "identificadorCuentaUsuario",
-    ) as string,
+    identificadorCuentaUsuario:
+      (formData.get("identificadorCuentaUsuario") as string) || undefined,
 
     correoNacional: formData.get("correoNacional") === "on",
     correoInternacional: formData.get("correoInternacional") === "on",
@@ -82,9 +81,6 @@ export async function createUserAccountAction(
 
     softwareAutorizado:
       (formData.get("softwareAutorizado") as string) || undefined,
-    //cuentaUsuario: formData.get("cuentaUsuario") as string,
-    //actividadRealiza: (formData.get("actividadRealiza") as string) || undefined,
-    //  administradorSistema: formData.get("administradorSistema") === "on",
     motivosBaja: (formData.get("motivosBaja") as string) || undefined,
     fechaBaja: (formData.get("fechaBaja") as string) || undefined,
   };
@@ -98,10 +94,39 @@ export async function createUserAccountAction(
     departamentoArea: fields.departamentoArea,
     tipoPersonal: fields.tipoPersonal,
     identificadorCuentaUsuario: fields.identificadorCuentaUsuario,
+
+    correoNacional: fields.correoNacional,
+    correoInternacional: fields.correoInternacional,
     correoInternet: fields.correoInternet,
+
+    intranetUNE: fields.intranetUNE,
+    intranetNacional: fields.intranetNacional,
+    internet: fields.internet,
+
+    mensajeriaCorporativa: fields.mensajeriaCorporativa,
+
+    facebook: fields.facebook,
+    twitter: fields.twitter,
+    youtube: fields.youtube,
+    whatsapp: fields.whatsapp,
+    telegram: fields.telegram,
+    instagram: fields.instagram,
     otrasRedes: fields.otrasRedes,
+
+    usuario: fields.usuario,
+    usuarioAvanzado: fields.usuarioAvanzado,
+    adminLocal: fields.adminLocal,
+    adminRed: fields.adminRed,
+
+    accesoNubeLectura: fields.accesoNubeLectura,
+    accesoNubeModificar: fields.accesoNubeModificar,
+    accesoNubeBorrar: fields.accesoNubeBorrar,
+    accesoNubeControlTotal: fields.accesoNubeControlTotal,
+
     tipoCuenta: fields.tipoCuenta,
     fechaExpiracion: fields.fechaExpiracion,
+
+    horarioExtralaboral: fields.horarioExtralaboral,
     horario24Horas: fields.horario24Horas,
     extraDesde: fields.extraDesde,
     extraHasta: fields.extraHasta,
@@ -109,13 +134,18 @@ export async function createUserAccountAction(
     sabadoHasta: fields.sabadoHasta,
     domingoDesde: fields.domingoDesde,
     domingoHasta: fields.domingoHasta,
+
+    apnCorreoNacional: fields.apnCorreoNacional,
+    apnCorreoInternacional: fields.apnCorreoInternacional,
+    apnInternet: fields.apnInternet,
     telefonoCelular: fields.telefonoCelular,
+
     pcNombre: fields.pcNombre,
     pcInventario: fields.pcInventario,
     pcAdicionalNombre: fields.pcAdicionalNombre,
     pcAdicionalInventario: fields.pcAdicionalInventario,
+
     softwareAutorizado: fields.softwareAutorizado,
-    // cuentaUsuario: fields.cuentaUsuario,
     motivosBaja: fields.motivosBaja,
     fechaBaja: fields.fechaBaja,
   };
@@ -155,13 +185,13 @@ export async function createUserAccountAction(
         ...data,
         fechaExpiracion: toDate(data.fechaExpiracion),
         fechaBaja: toDate(data.fechaBaja),
-        firmadoPorSolicitado: false,
-        firmadoPorRevisado: false,
-        firmadoPorAprobado: false,
-        firmadoPorEjecutado: false,
       },
     });
-  } catch {
+  } catch (error) {
+    console.error(
+      "createUserAccountAction: error al crear la solicitud",
+      error,
+    );
     return {
       data: repopulateData,
       success: false,

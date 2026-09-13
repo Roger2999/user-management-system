@@ -98,6 +98,13 @@ enum TipoCuenta {
   TEMPORAL
 }
 
+enum AccountRequestStage {
+  requested
+  revised
+  approved
+  executed
+}
+
 model AccountRequest {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
@@ -187,27 +194,19 @@ model AccountRequest {
   //actividadRealiza     String?
   //administradorSistema Boolean @default(false)
 
-  // Firmas — Solicitado
-  firmadoPorSolicitado Boolean @default(false)
-  solicitadoFecha      DateTime?
-  //solicitadoNombre   String?
-  //solicitadoCargo    String?
+  // Firmas
+  signatures AccountRequestSignature[]
+}
 
-  // Firmas — Revisado
-  firmadoPorRevisado Boolean @default(false)
-  revisadoFecha      DateTime?
-  //revisadoNombre    String?
-  //revisadoCargo     String?
+model AccountRequestSignature {
+  id               String              @id @default(cuid())
+  accountRequestId String
+  accountRequest   AccountRequest      @relation(fields: [accountRequestId], references: [id], onDelete: Cascade)
+  stage            AccountRequestStage
+  nombre           String
+  cargo            String
+  fecha            DateTime            @default(now())
 
-  // Firmas — Aprobado
-  firmadoPorAprobado Boolean @default(false)
-  aprobadoFecha      DateTime?
-  //aprobadoNombre    String?
-  //aprobadoCargo     String?
-
-  // Firmas — Ejecutado
-  firmadoPorEjecutado Boolean @default(false)
-  ejecutadoFecha      DateTime?
-  //ejecutadoNombre    String?
-  //ejecutadoCargo     String?
+  @@unique([accountRequestId, stage])
+  @@index([accountRequestId])
 }

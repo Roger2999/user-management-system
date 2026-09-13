@@ -1,4 +1,6 @@
 import { Prisma } from "@/generated/prisma/client";
+import type { AccountRequestSignature } from "@/generated/prisma/client";
+import { AccountRequestStage } from "@/generated/prisma/enums";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
 
@@ -16,28 +18,27 @@ import Pagination from "./pagination";
 
 const PAGE_SIZE = 10;
 
-function getSignatureStage(user: {
-  firmadoPorSolicitado: boolean;
-  firmadoPorRevisado: boolean;
-  firmadoPorAprobado: boolean;
-  firmadoPorEjecutado: boolean;
-}): { label: string; className: string } {
-  if (user.firmadoPorEjecutado) {
+function getSignatureStage(signatures: AccountRequestSignature[]): {
+  label: string;
+  className: string;
+} {
+  const stages = new Set(signatures.map((sig) => sig.stage));
+  if (stages.has(AccountRequestStage.executed)) {
     return { label: "Ejecutado", className: "bg-success/15 text-success" };
   }
-  if (user.firmadoPorAprobado) {
+  if (stages.has(AccountRequestStage.approved)) {
     return {
       label: "Aprobado",
       className: "bg-amber-500/15 text-amber-700 dark:text-amber-300",
     };
   }
-  if (user.firmadoPorRevisado) {
+  if (stages.has(AccountRequestStage.revised)) {
     return {
       label: "Revisado",
       className: "bg-violet-500/15 text-violet-700 dark:text-violet-300",
     };
   }
-  if (user.firmadoPorSolicitado) {
+  if (stages.has(AccountRequestStage.requested)) {
     return {
       label: "Solicitado",
       className: "bg-sky-500/15 text-sky-700 dark:text-sky-300",
@@ -64,6 +65,7 @@ export default async function UsersTable({
           nombreApellidos: { contains: search, mode: "insensitive" },
         }
       : where,
+    include: { signatures: true },
     skip: (page - 1) * PAGE_SIZE,
     take: PAGE_SIZE,
   });
@@ -97,7 +99,7 @@ export default async function UsersTable({
         <TableBody>
           {usersFiltrated.length > 0 ? (
             usersFiltrated.map((user) => {
-              const stage = getSignatureStage(user);
+              const stage = getSignatureStage(user.signatures);
               return (
                 <TableRow key={user.id}>
                   <TableCell className="font-medium">{user.folio}</TableCell>

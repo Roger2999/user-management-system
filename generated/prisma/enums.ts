@@ -34,3 +34,13 @@ export const TipoCuenta = {
 } as const
 
 export type TipoCuenta = (typeof TipoCuenta)[keyof typeof TipoCuenta]
+
+
+export const AccountRequestStage = {
+  requested: 'requested',
+  revised: 'revised',
+  approved: 'approved',
+  executed: 'executed'
+} as const
+
+export type AccountRequestStage = (typeof AccountRequestStage)[keyof typeof AccountRequestStage]

@@ -7,12 +7,16 @@ export function SignatureBlock({
   labelsH = 9.7,
   signH = 21.2,
   fechaValue,
+  nombreValue,
+  cargoValue,
 }: {
   title: string;
   cargo?: string;
   labelsH?: number;
   signH?: number;
   fechaValue?: Date | null;
+  nombreValue?: string;
+  cargoValue?: string;
 }) {
   return (
     <>
@@ -36,8 +40,10 @@ export function SignatureBlock({
         </Cell>
       </Row>
       <Row h={signH}>
-        <Cell w="w-[26.4%]" />
-        <Cell w="w-[26.3%]" />
+        <Cell w="w-[26.4%]">{nombreValue ? <span>{nombreValue}</span> : null}</Cell>
+        <Cell w="w-[26.3%]">
+          {cargoValue ? <span>{cargoValue}</span> : null}
+        </Cell>
         <Cell w="w-[14.6%]" className="items-end justify-end pb-[2pt]">
           <span className="whitespace-nowrap">
             {formatDate(fechaValue) || DATE_PH}

@@ -1,3 +1,6 @@
+"use client";
+
+import { useId } from "react";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
@@ -20,14 +23,20 @@ export default function SelectField({
   onChange,
   disabledValues,
 }: Props) {
+  const inputId = useId();
+  const errorsId = `${inputId}-errors`;
+  const hasErrors = !!errors?.length;
+
   return (
     <div className="min-h-21 space-y-2">
-      <Label htmlFor={name}>{label}</Label>
+      <Label htmlFor={inputId}>{label}</Label>
       <select
-        id={name}
+        id={inputId}
         name={name}
         defaultValue={defaultValue}
         onChange={(e) => onChange?.(e.target.value)}
+        aria-invalid={hasErrors}
+        aria-describedby={hasErrors ? errorsId : undefined}
         className={cn(
           "border-input focus-visible:border-ring focus-visible:ring-ring/50 dark:bg-input/30 h-8 w-full min-w-0 rounded-lg border bg-transparent px-2.5 py-1 text-base transition-colors outline-none focus-visible:ring-3 disabled:pointer-events-none disabled:cursor-not-allowed md:text-sm",
           errors && "border-destructive",
@@ -44,13 +53,15 @@ export default function SelectField({
           </option>
         ))}
       </select>
-      <ul>
-        {errors?.map((e, i) => (
-          <li className="text-destructive text-sm" key={i}>
-            {e}
-          </li>
-        ))}
-      </ul>
+      {hasErrors && (
+        <ul id={errorsId}>
+          {errors.map((e, i) => (
+            <li className="text-destructive text-sm" key={i}>
+              {e}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

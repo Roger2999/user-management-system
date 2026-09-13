@@ -55,7 +55,8 @@ export const ModelName = {
   Session: 'Session',
   Account: 'Account',
   Verification: 'Verification',
-  AccountRequest: 'AccountRequest'
+  AccountRequest: 'AccountRequest',
+  AccountRequestSignature: 'AccountRequestSignature'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -188,18 +189,22 @@ export const AccountRequestScalarFieldEnum = {
   pcInventario: 'pcInventario',
   pcAdicionalNombre: 'pcAdicionalNombre',
   pcAdicionalInventario: 'pcAdicionalInventario',
-  softwareAutorizado: 'softwareAutorizado',
-  firmadoPorSolicitado: 'firmadoPorSolicitado',
-  solicitadoFecha: 'solicitadoFecha',
-  firmadoPorRevisado: 'firmadoPorRevisado',
-  revisadoFecha: 'revisadoFecha',
-  firmadoPorAprobado: 'firmadoPorAprobado',
-  aprobadoFecha: 'aprobadoFecha',
-  firmadoPorEjecutado: 'firmadoPorEjecutado',
-  ejecutadoFecha: 'ejecutadoFecha'
+  softwareAutorizado: 'softwareAutorizado'
 } as const
 
 export type AccountRequestScalarFieldEnum = (typeof AccountRequestScalarFieldEnum)[keyof typeof AccountRequestScalarFieldEnum]
+
+
+export const AccountRequestSignatureScalarFieldEnum = {
+  id: 'id',
+  accountRequestId: 'accountRequestId',
+  stage: 'stage',
+  nombre: 'nombre',
+  cargo: 'cargo',
+  fecha: 'fecha'
+} as const
+
+export type AccountRequestSignatureScalarFieldEnum = (typeof AccountRequestSignatureScalarFieldEnum)[keyof typeof AccountRequestSignatureScalarFieldEnum]
 
 
 export const SortOrder = {

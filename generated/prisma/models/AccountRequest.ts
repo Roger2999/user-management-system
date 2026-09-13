@@ -79,14 +79,6 @@ export type AccountRequestMinAggregateOutputType = {
   pcAdicionalNombre: string | null
   pcAdicionalInventario: string | null
   softwareAutorizado: string | null
-  firmadoPorSolicitado: boolean | null
-  solicitadoFecha: Date | null
-  firmadoPorRevisado: boolean | null
-  revisadoFecha: Date | null
-  firmadoPorAprobado: boolean | null
-  aprobadoFecha: Date | null
-  firmadoPorEjecutado: boolean | null
-  ejecutadoFecha: Date | null
 }
 
 export type AccountRequestMaxAggregateOutputType = {
@@ -144,14 +136,6 @@ export type AccountRequestMaxAggregateOutputType = {
   pcAdicionalNombre: string | null
   pcAdicionalInventario: string | null
   softwareAutorizado: string | null
-  firmadoPorSolicitado: boolean | null
-  solicitadoFecha: Date | null
-  firmadoPorRevisado: boolean | null
-  revisadoFecha: Date | null
-  firmadoPorAprobado: boolean | null
-  aprobadoFecha: Date | null
-  firmadoPorEjecutado: boolean | null
-  ejecutadoFecha: Date | null
 }
 
 export type AccountRequestCountAggregateOutputType = {
@@ -209,14 +193,6 @@ export type AccountRequestCountAggregateOutputType = {
   pcAdicionalNombre: number
   pcAdicionalInventario: number
   softwareAutorizado: number
-  firmadoPorSolicitado: number
-  solicitadoFecha: number
-  firmadoPorRevisado: number
-  revisadoFecha: number
-  firmadoPorAprobado: number
-  aprobadoFecha: number
-  firmadoPorEjecutado: number
-  ejecutadoFecha: number
   _all: number
 }
 
@@ -276,14 +252,6 @@ export type AccountRequestMinAggregateInputType = {
   pcAdicionalNombre?: true
   pcAdicionalInventario?: true
   softwareAutorizado?: true
-  firmadoPorSolicitado?: true
-  solicitadoFecha?: true
-  firmadoPorRevisado?: true
-  revisadoFecha?: true
-  firmadoPorAprobado?: true
-  aprobadoFecha?: true
-  firmadoPorEjecutado?: true
-  ejecutadoFecha?: true
 }
 
 export type AccountRequestMaxAggregateInputType = {
@@ -341,14 +309,6 @@ export type AccountRequestMaxAggregateInputType = {
   pcAdicionalNombre?: true
   pcAdicionalInventario?: true
   softwareAutorizado?: true
-  firmadoPorSolicitado?: true
-  solicitadoFecha?: true
-  firmadoPorRevisado?: true
-  revisadoFecha?: true
-  firmadoPorAprobado?: true
-  aprobadoFecha?: true
-  firmadoPorEjecutado?: true
-  ejecutadoFecha?: true
 }
 
 export type AccountRequestCountAggregateInputType = {
@@ -406,14 +366,6 @@ export type AccountRequestCountAggregateInputType = {
   pcAdicionalNombre?: true
   pcAdicionalInventario?: true
   softwareAutorizado?: true
-  firmadoPorSolicitado?: true
-  solicitadoFecha?: true
-  firmadoPorRevisado?: true
-  revisadoFecha?: true
-  firmadoPorAprobado?: true
-  aprobadoFecha?: true
-  firmadoPorEjecutado?: true
-  ejecutadoFecha?: true
   _all?: true
 }
 
@@ -544,14 +496,6 @@ export type AccountRequestGroupByOutputType = {
   pcAdicionalNombre: string | null
   pcAdicionalInventario: string | null
   softwareAutorizado: string | null
-  firmadoPorSolicitado: boolean
-  solicitadoFecha: Date | null
-  firmadoPorRevisado: boolean
-  revisadoFecha: Date | null
-  firmadoPorAprobado: boolean
-  aprobadoFecha: Date | null
-  firmadoPorEjecutado: boolean
-  ejecutadoFecha: Date | null
   _count: AccountRequestCountAggregateOutputType | null
   _min: AccountRequestMinAggregateOutputType | null
   _max: AccountRequestMaxAggregateOutputType | null
@@ -630,14 +574,7 @@ export type AccountRequestWhereInput = {
   pcAdicionalNombre?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
   pcAdicionalInventario?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
   softwareAutorizado?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
-  firmadoPorSolicitado?: Prisma.BoolFilter<"AccountRequest"> | boolean
-  solicitadoFecha?: Prisma.DateTimeNullableFilter<"AccountRequest"> | Date | string | null
-  firmadoPorRevisado?: Prisma.BoolFilter<"AccountRequest"> | boolean
-  revisadoFecha?: Prisma.DateTimeNullableFilter<"AccountRequest"> | Date | string | null
-  firmadoPorAprobado?: Prisma.BoolFilter<"AccountRequest"> | boolean
-  aprobadoFecha?: Prisma.DateTimeNullableFilter<"AccountRequest"> | Date | string | null
-  firmadoPorEjecutado?: Prisma.BoolFilter<"AccountRequest"> | boolean
-  ejecutadoFecha?: Prisma.DateTimeNullableFilter<"AccountRequest"> | Date | string | null
+  signatures?: Prisma.AccountRequestSignatureListRelationFilter
 }
 
 export type AccountRequestOrderByWithRelationInput = {
@@ -695,14 +632,7 @@ export type AccountRequestOrderByWithRelationInput = {
   pcAdicionalNombre?: Prisma.SortOrderInput | Prisma.SortOrder
   pcAdicionalInventario?: Prisma.SortOrderInput | Prisma.SortOrder
   softwareAutorizado?: Prisma.SortOrderInput | Prisma.SortOrder
-  firmadoPorSolicitado?: Prisma.SortOrder
-  solicitadoFecha?: Prisma.SortOrderInput | Prisma.SortOrder
-  firmadoPorRevisado?: Prisma.SortOrder
-  revisadoFecha?: Prisma.SortOrderInput | Prisma.SortOrder
-  firmadoPorAprobado?: Prisma.SortOrder
-  aprobadoFecha?: Prisma.SortOrderInput | Prisma.SortOrder
-  firmadoPorEjecutado?: Prisma.SortOrder
-  ejecutadoFecha?: Prisma.SortOrderInput | Prisma.SortOrder
+  signatures?: Prisma.AccountRequestSignatureOrderByRelationAggregateInput
 }
 
 export type AccountRequestWhereUniqueInput = Prisma.AtLeast<{
@@ -763,14 +693,7 @@ export type AccountRequestWhereUniqueInput = Prisma.AtLeast<{
   apnCorreoInternacional?: Prisma.BoolFilter<"AccountRequest"> | boolean
   apnInternet?: Prisma.BoolFilter<"AccountRequest"> | boolean
   softwareAutorizado?: Prisma.StringNullableFilter<"AccountRequest"> | string | null
-  firmadoPorSolicitado?: Prisma.BoolFilter<"AccountRequest"> | boolean
-  solicitadoFecha?: Prisma.DateTimeNullableFilter<"AccountRequest"> | Date | string | null
-  firmadoPorRevisado?: Prisma.BoolFilter<"AccountRequest"> | boolean
-  revisadoFecha?: Prisma.DateTimeNullableFilter<"AccountRequest"> | Date | string | null
-  firmadoPorAprobado?: Prisma.BoolFilter<"AccountRequest"> | boolean
-  aprobadoFecha?: Prisma.DateTimeNullableFilter<"AccountRequest"> | Date | string | null
-  firmadoPorEjecutado?: Prisma.BoolFilter<"AccountRequest"> | boolean
-  ejecutadoFecha?: Prisma.DateTimeNullableFilter<"AccountRequest"> | Date | string | null
+  signatures?: Prisma.AccountRequestSignatureListRelationFilter
 }, "id" | "folio" | "telefonoExtension" | "identificadorCuentaUsuario" | "telefonoCelular" | "pcNombre" | "pcInventario" | "pcAdicionalNombre" | "pcAdicionalInventario">
 
 export type AccountRequestOrderByWithAggregationInput = {
@@ -828,14 +751,6 @@ export type AccountRequestOrderByWithAggregationInput = {
   pcAdicionalNombre?: Prisma.SortOrderInput | Prisma.SortOrder
   pcAdicionalInventario?: Prisma.SortOrderInput | Prisma.SortOrder
   softwareAutorizado?: Prisma.SortOrderInput | Prisma.SortOrder
-  firmadoPorSolicitado?: Prisma.SortOrder
-  solicitadoFecha?: Prisma.SortOrderInput | Prisma.SortOrder
-  firmadoPorRevisado?: Prisma.SortOrder
-  revisadoFecha?: Prisma.SortOrderInput | Prisma.SortOrder
-  firmadoPorAprobado?: Prisma.SortOrder
-  aprobadoFecha?: Prisma.SortOrderInput | Prisma.SortOrder
-  firmadoPorEjecutado?: Prisma.SortOrder
-  ejecutadoFecha?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.AccountRequestCountOrderByAggregateInput
   _max?: Prisma.AccountRequestMaxOrderByAggregateInput
   _min?: Prisma.AccountRequestMinOrderByAggregateInput
@@ -899,14 +814,6 @@ export type AccountRequestScalarWhereWithAggregatesInput = {
   pcAdicionalNombre?: Prisma.StringNullableWithAggregatesFilter<"AccountRequest"> | string | null
   pcAdicionalInventario?: Prisma.StringNullableWithAggregatesFilter<"AccountRequest"> | string | null
   softwareAutorizado?: Prisma.StringNullableWithAggregatesFilter<"AccountRequest"> | string | null
-  firmadoPorSolicitado?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
-  solicitadoFecha?: Prisma.DateTimeNullableWithAggregatesFilter<"AccountRequest"> | Date | string | null
-  firmadoPorRevisado?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
-  revisadoFecha?: Prisma.DateTimeNullableWithAggregatesFilter<"AccountRequest"> | Date | string | null
-  firmadoPorAprobado?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
-  aprobadoFecha?: Prisma.DateTimeNullableWithAggregatesFilter<"AccountRequest"> | Date | string | null
-  firmadoPorEjecutado?: Prisma.BoolWithAggregatesFilter<"AccountRequest"> | boolean
-  ejecutadoFecha?: Prisma.DateTimeNullableWithAggregatesFilter<"AccountRequest"> | Date | string | null
 }
 
 export type AccountRequestCreateInput = {
@@ -964,14 +871,7 @@ export type AccountRequestCreateInput = {
   pcAdicionalNombre?: string | null
   pcAdicionalInventario?: string | null
   softwareAutorizado?: string | null
-  firmadoPorSolicitado?: boolean
-  solicitadoFecha?: Date | string | null
-  firmadoPorRevisado?: boolean
-  revisadoFecha?: Date | string | null
-  firmadoPorAprobado?: boolean
-  aprobadoFecha?: Date | string | null
-  firmadoPorEjecutado?: boolean
-  ejecutadoFecha?: Date | string | null
+  signatures?: Prisma.AccountRequestSignatureCreateNestedManyWithoutAccountRequestInput
 }
 
 export type AccountRequestUncheckedCreateInput = {
@@ -1029,14 +929,7 @@ export type AccountRequestUncheckedCreateInput = {
   pcAdicionalNombre?: string | null
   pcAdicionalInventario?: string | null
   softwareAutorizado?: string | null
-  firmadoPorSolicitado?: boolean
-  solicitadoFecha?: Date | string | null
-  firmadoPorRevisado?: boolean
-  revisadoFecha?: Date | string | null
-  firmadoPorAprobado?: boolean
-  aprobadoFecha?: Date | string | null
-  firmadoPorEjecutado?: boolean
-  ejecutadoFecha?: Date | string | null
+  signatures?: Prisma.AccountRequestSignatureUncheckedCreateNestedManyWithoutAccountRequestInput
 }
 
 export type AccountRequestUpdateInput = {
@@ -1094,14 +987,7 @@ export type AccountRequestUpdateInput = {
   pcAdicionalNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   pcAdicionalInventario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   softwareAutorizado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  firmadoPorSolicitado?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  solicitadoFecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  firmadoPorRevisado?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  revisadoFecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  firmadoPorAprobado?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  aprobadoFecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  firmadoPorEjecutado?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  ejecutadoFecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  signatures?: Prisma.AccountRequestSignatureUpdateManyWithoutAccountRequestNestedInput
 }
 
 export type AccountRequestUncheckedUpdateInput = {
@@ -1159,14 +1045,7 @@ export type AccountRequestUncheckedUpdateInput = {
   pcAdicionalNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   pcAdicionalInventario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   softwareAutorizado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  firmadoPorSolicitado?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  solicitadoFecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  firmadoPorRevisado?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  revisadoFecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  firmadoPorAprobado?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  aprobadoFecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  firmadoPorEjecutado?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  ejecutadoFecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  signatures?: Prisma.AccountRequestSignatureUncheckedUpdateManyWithoutAccountRequestNestedInput
 }
 
 export type AccountRequestCreateManyInput = {
@@ -1224,14 +1103,6 @@ export type AccountRequestCreateManyInput = {
   pcAdicionalNombre?: string | null
   pcAdicionalInventario?: string | null
   softwareAutorizado?: string | null
-  firmadoPorSolicitado?: boolean
-  solicitadoFecha?: Date | string | null
-  firmadoPorRevisado?: boolean
-  revisadoFecha?: Date | string | null
-  firmadoPorAprobado?: boolean
-  aprobadoFecha?: Date | string | null
-  firmadoPorEjecutado?: boolean
-  ejecutadoFecha?: Date | string | null
 }
 
 export type AccountRequestUpdateManyMutationInput = {
@@ -1289,14 +1160,6 @@ export type AccountRequestUpdateManyMutationInput = {
   pcAdicionalNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   pcAdicionalInventario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   softwareAutorizado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  firmadoPorSolicitado?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  solicitadoFecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  firmadoPorRevisado?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  revisadoFecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  firmadoPorAprobado?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  aprobadoFecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  firmadoPorEjecutado?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  ejecutadoFecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type AccountRequestUncheckedUpdateManyInput = {
@@ -1354,14 +1217,6 @@ export type AccountRequestUncheckedUpdateManyInput = {
   pcAdicionalNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   pcAdicionalInventario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   softwareAutorizado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  firmadoPorSolicitado?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  solicitadoFecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  firmadoPorRevisado?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  revisadoFecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  firmadoPorAprobado?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  aprobadoFecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  firmadoPorEjecutado?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  ejecutadoFecha?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type AccountRequestCountOrderByAggregateInput = {
@@ -1419,14 +1274,6 @@ export type AccountRequestCountOrderByAggregateInput = {
   pcAdicionalNombre?: Prisma.SortOrder
   pcAdicionalInventario?: Prisma.SortOrder
   softwareAutorizado?: Prisma.SortOrder
-  firmadoPorSolicitado?: Prisma.SortOrder
-  solicitadoFecha?: Prisma.SortOrder
-  firmadoPorRevisado?: Prisma.SortOrder
-  revisadoFecha?: Prisma.SortOrder
-  firmadoPorAprobado?: Prisma.SortOrder
-  aprobadoFecha?: Prisma.SortOrder
-  firmadoPorEjecutado?: Prisma.SortOrder
-  ejecutadoFecha?: Prisma.SortOrder
 }
 
 export type AccountRequestMaxOrderByAggregateInput = {
@@ -1484,14 +1331,6 @@ export type AccountRequestMaxOrderByAggregateInput = {
   pcAdicionalNombre?: Prisma.SortOrder
   pcAdicionalInventario?: Prisma.SortOrder
   softwareAutorizado?: Prisma.SortOrder
-  firmadoPorSolicitado?: Prisma.SortOrder
-  solicitadoFecha?: Prisma.SortOrder
-  firmadoPorRevisado?: Prisma.SortOrder
-  revisadoFecha?: Prisma.SortOrder
-  firmadoPorAprobado?: Prisma.SortOrder
-  aprobadoFecha?: Prisma.SortOrder
-  firmadoPorEjecutado?: Prisma.SortOrder
-  ejecutadoFecha?: Prisma.SortOrder
 }
 
 export type AccountRequestMinOrderByAggregateInput = {
@@ -1549,14 +1388,11 @@ export type AccountRequestMinOrderByAggregateInput = {
   pcAdicionalNombre?: Prisma.SortOrder
   pcAdicionalInventario?: Prisma.SortOrder
   softwareAutorizado?: Prisma.SortOrder
-  firmadoPorSolicitado?: Prisma.SortOrder
-  solicitadoFecha?: Prisma.SortOrder
-  firmadoPorRevisado?: Prisma.SortOrder
-  revisadoFecha?: Prisma.SortOrder
-  firmadoPorAprobado?: Prisma.SortOrder
-  aprobadoFecha?: Prisma.SortOrder
-  firmadoPorEjecutado?: Prisma.SortOrder
-  ejecutadoFecha?: Prisma.SortOrder
+}
+
+export type AccountRequestScalarRelationFilter = {
+  is?: Prisma.AccountRequestWhereInput
+  isNot?: Prisma.AccountRequestWhereInput
 }
 
 export type EnumTipoSolicitudFieldUpdateOperationsInput = {
@@ -1571,6 +1407,293 @@ export type EnumTipoCuentaFieldUpdateOperationsInput = {
   set?: $Enums.TipoCuenta
 }
 
+export type AccountRequestCreateNestedOneWithoutSignaturesInput = {
+  create?: Prisma.XOR<Prisma.AccountRequestCreateWithoutSignaturesInput, Prisma.AccountRequestUncheckedCreateWithoutSignaturesInput>
+  connectOrCreate?: Prisma.AccountRequestCreateOrConnectWithoutSignaturesInput
+  connect?: Prisma.AccountRequestWhereUniqueInput
+}
+
+export type AccountRequestUpdateOneRequiredWithoutSignaturesNestedInput = {
+  create?: Prisma.XOR<Prisma.AccountRequestCreateWithoutSignaturesInput, Prisma.AccountRequestUncheckedCreateWithoutSignaturesInput>
+  connectOrCreate?: Prisma.AccountRequestCreateOrConnectWithoutSignaturesInput
+  upsert?: Prisma.AccountRequestUpsertWithoutSignaturesInput
+  connect?: Prisma.AccountRequestWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.AccountRequestUpdateToOneWithWhereWithoutSignaturesInput, Prisma.AccountRequestUpdateWithoutSignaturesInput>, Prisma.AccountRequestUncheckedUpdateWithoutSignaturesInput>
+}
+
+export type AccountRequestCreateWithoutSignaturesInput = {
+  id?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  folio?: string | null
+  tipoSolicitud: $Enums.TipoSolicitud
+  motivosBaja?: string | null
+  fechaBaja?: Date | string | null
+  nombreApellidos: string
+  telefonoExtension?: string | null
+  cargoOcupa: string
+  departamentoArea: string
+  tipoPersonal: $Enums.TipoPersonal
+  identificadorCuentaUsuario?: string | null
+  correoNacional?: boolean
+  correoInternacional?: boolean
+  correoInternet?: boolean
+  intranetUNE?: boolean
+  intranetNacional?: boolean
+  internet?: boolean
+  mensajeriaCorporativa?: boolean
+  facebook?: boolean
+  twitter?: boolean
+  youtube?: boolean
+  whatsapp?: boolean
+  telegram?: boolean
+  instagram?: boolean
+  otrasRedes?: string | null
+  usuario?: boolean
+  usuarioAvanzado?: boolean
+  adminLocal?: boolean
+  adminRed?: boolean
+  accesoNubeLectura?: boolean
+  accesoNubeModificar?: boolean
+  accesoNubeBorrar?: boolean
+  accesoNubeControlTotal?: boolean
+  tipoCuenta: $Enums.TipoCuenta
+  fechaExpiracion?: Date | string | null
+  horarioExtralaboral?: boolean
+  horario24Horas?: boolean
+  extraDesde?: string | null
+  extraHasta?: string | null
+  sabadoDesde?: string | null
+  sabadoHasta?: string | null
+  domingoDesde?: string | null
+  domingoHasta?: string | null
+  apnCorreoNacional?: boolean
+  apnCorreoInternacional?: boolean
+  apnInternet?: boolean
+  telefonoCelular?: string | null
+  pcNombre?: string | null
+  pcInventario?: string | null
+  pcAdicionalNombre?: string | null
+  pcAdicionalInventario?: string | null
+  softwareAutorizado?: string | null
+}
+
+export type AccountRequestUncheckedCreateWithoutSignaturesInput = {
+  id?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  folio?: string | null
+  tipoSolicitud: $Enums.TipoSolicitud
+  motivosBaja?: string | null
+  fechaBaja?: Date | string | null
+  nombreApellidos: string
+  telefonoExtension?: string | null
+  cargoOcupa: string
+  departamentoArea: string
+  tipoPersonal: $Enums.TipoPersonal
+  identificadorCuentaUsuario?: string | null
+  correoNacional?: boolean
+  correoInternacional?: boolean
+  correoInternet?: boolean
+  intranetUNE?: boolean
+  intranetNacional?: boolean
+  internet?: boolean
+  mensajeriaCorporativa?: boolean
+  facebook?: boolean
+  twitter?: boolean
+  youtube?: boolean
+  whatsapp?: boolean
+  telegram?: boolean
+  instagram?: boolean
+  otrasRedes?: string | null
+  usuario?: boolean
+  usuarioAvanzado?: boolean
+  adminLocal?: boolean
+  adminRed?: boolean
+  accesoNubeLectura?: boolean
+  accesoNubeModificar?: boolean
+  accesoNubeBorrar?: boolean
+  accesoNubeControlTotal?: boolean
+  tipoCuenta: $Enums.TipoCuenta
+  fechaExpiracion?: Date | string | null
+  horarioExtralaboral?: boolean
+  horario24Horas?: boolean
+  extraDesde?: string | null
+  extraHasta?: string | null
+  sabadoDesde?: string | null
+  sabadoHasta?: string | null
+  domingoDesde?: string | null
+  domingoHasta?: string | null
+  apnCorreoNacional?: boolean
+  apnCorreoInternacional?: boolean
+  apnInternet?: boolean
+  telefonoCelular?: string | null
+  pcNombre?: string | null
+  pcInventario?: string | null
+  pcAdicionalNombre?: string | null
+  pcAdicionalInventario?: string | null
+  softwareAutorizado?: string | null
+}
+
+export type AccountRequestCreateOrConnectWithoutSignaturesInput = {
+  where: Prisma.AccountRequestWhereUniqueInput
+  create: Prisma.XOR<Prisma.AccountRequestCreateWithoutSignaturesInput, Prisma.AccountRequestUncheckedCreateWithoutSignaturesInput>
+}
+
+export type AccountRequestUpsertWithoutSignaturesInput = {
+  update: Prisma.XOR<Prisma.AccountRequestUpdateWithoutSignaturesInput, Prisma.AccountRequestUncheckedUpdateWithoutSignaturesInput>
+  create: Prisma.XOR<Prisma.AccountRequestCreateWithoutSignaturesInput, Prisma.AccountRequestUncheckedCreateWithoutSignaturesInput>
+  where?: Prisma.AccountRequestWhereInput
+}
+
+export type AccountRequestUpdateToOneWithWhereWithoutSignaturesInput = {
+  where?: Prisma.AccountRequestWhereInput
+  data: Prisma.XOR<Prisma.AccountRequestUpdateWithoutSignaturesInput, Prisma.AccountRequestUncheckedUpdateWithoutSignaturesInput>
+}
+
+export type AccountRequestUpdateWithoutSignaturesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  folio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tipoSolicitud?: Prisma.EnumTipoSolicitudFieldUpdateOperationsInput | $Enums.TipoSolicitud
+  motivosBaja?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaBaja?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  nombreApellidos?: Prisma.StringFieldUpdateOperationsInput | string
+  telefonoExtension?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cargoOcupa?: Prisma.StringFieldUpdateOperationsInput | string
+  departamentoArea?: Prisma.StringFieldUpdateOperationsInput | string
+  tipoPersonal?: Prisma.EnumTipoPersonalFieldUpdateOperationsInput | $Enums.TipoPersonal
+  identificadorCuentaUsuario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  correoNacional?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  correoInternacional?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  correoInternet?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  intranetUNE?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  intranetNacional?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  internet?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mensajeriaCorporativa?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  facebook?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  twitter?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  youtube?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  whatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  telegram?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  instagram?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  otrasRedes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usuario?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  usuarioAvanzado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adminLocal?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adminRed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  accesoNubeLectura?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  accesoNubeModificar?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  accesoNubeBorrar?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  accesoNubeControlTotal?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  tipoCuenta?: Prisma.EnumTipoCuentaFieldUpdateOperationsInput | $Enums.TipoCuenta
+  fechaExpiracion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  horarioExtralaboral?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  horario24Horas?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  extraDesde?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  extraHasta?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sabadoDesde?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sabadoHasta?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  domingoDesde?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  domingoHasta?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apnCorreoNacional?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  apnCorreoInternacional?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  apnInternet?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  telefonoCelular?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pcNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pcInventario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pcAdicionalNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pcAdicionalInventario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  softwareAutorizado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+export type AccountRequestUncheckedUpdateWithoutSignaturesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  folio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tipoSolicitud?: Prisma.EnumTipoSolicitudFieldUpdateOperationsInput | $Enums.TipoSolicitud
+  motivosBaja?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaBaja?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  nombreApellidos?: Prisma.StringFieldUpdateOperationsInput | string
+  telefonoExtension?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cargoOcupa?: Prisma.StringFieldUpdateOperationsInput | string
+  departamentoArea?: Prisma.StringFieldUpdateOperationsInput | string
+  tipoPersonal?: Prisma.EnumTipoPersonalFieldUpdateOperationsInput | $Enums.TipoPersonal
+  identificadorCuentaUsuario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  correoNacional?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  correoInternacional?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  correoInternet?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  intranetUNE?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  intranetNacional?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  internet?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mensajeriaCorporativa?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  facebook?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  twitter?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  youtube?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  whatsapp?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  telegram?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  instagram?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  otrasRedes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usuario?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  usuarioAvanzado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adminLocal?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  adminRed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  accesoNubeLectura?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  accesoNubeModificar?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  accesoNubeBorrar?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  accesoNubeControlTotal?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  tipoCuenta?: Prisma.EnumTipoCuentaFieldUpdateOperationsInput | $Enums.TipoCuenta
+  fechaExpiracion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  horarioExtralaboral?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  horario24Horas?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  extraDesde?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  extraHasta?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sabadoDesde?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sabadoHasta?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  domingoDesde?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  domingoHasta?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apnCorreoNacional?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  apnCorreoInternacional?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  apnInternet?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  telefonoCelular?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pcNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pcInventario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pcAdicionalNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pcAdicionalInventario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  softwareAutorizado?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+
+/**
+ * Count Type AccountRequestCountOutputType
+ */
+
+export type AccountRequestCountOutputType = {
+  signatures: number
+}
+
+export type AccountRequestCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  signatures?: boolean | AccountRequestCountOutputTypeCountSignaturesArgs
+}
+
+/**
+ * AccountRequestCountOutputType without action
+ */
+export type AccountRequestCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AccountRequestCountOutputType
+   */
+  select?: Prisma.AccountRequestCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * AccountRequestCountOutputType without action
+ */
+export type AccountRequestCountOutputTypeCountSignaturesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AccountRequestSignatureWhereInput
+}
 
 
 export type AccountRequestSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1628,14 +1751,8 @@ export type AccountRequestSelect<ExtArgs extends runtime.Types.Extensions.Intern
   pcAdicionalNombre?: boolean
   pcAdicionalInventario?: boolean
   softwareAutorizado?: boolean
-  firmadoPorSolicitado?: boolean
-  solicitadoFecha?: boolean
-  firmadoPorRevisado?: boolean
-  revisadoFecha?: boolean
-  firmadoPorAprobado?: boolean
-  aprobadoFecha?: boolean
-  firmadoPorEjecutado?: boolean
-  ejecutadoFecha?: boolean
+  signatures?: boolean | Prisma.AccountRequest$signaturesArgs<ExtArgs>
+  _count?: boolean | Prisma.AccountRequestCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["accountRequest"]>
 
 export type AccountRequestSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1693,14 +1810,6 @@ export type AccountRequestSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   pcAdicionalNombre?: boolean
   pcAdicionalInventario?: boolean
   softwareAutorizado?: boolean
-  firmadoPorSolicitado?: boolean
-  solicitadoFecha?: boolean
-  firmadoPorRevisado?: boolean
-  revisadoFecha?: boolean
-  firmadoPorAprobado?: boolean
-  aprobadoFecha?: boolean
-  firmadoPorEjecutado?: boolean
-  ejecutadoFecha?: boolean
 }, ExtArgs["result"]["accountRequest"]>
 
 export type AccountRequestSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1758,14 +1867,6 @@ export type AccountRequestSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   pcAdicionalNombre?: boolean
   pcAdicionalInventario?: boolean
   softwareAutorizado?: boolean
-  firmadoPorSolicitado?: boolean
-  solicitadoFecha?: boolean
-  firmadoPorRevisado?: boolean
-  revisadoFecha?: boolean
-  firmadoPorAprobado?: boolean
-  aprobadoFecha?: boolean
-  firmadoPorEjecutado?: boolean
-  ejecutadoFecha?: boolean
 }, ExtArgs["result"]["accountRequest"]>
 
 export type AccountRequestSelectScalar = {
@@ -1823,21 +1924,21 @@ export type AccountRequestSelectScalar = {
   pcAdicionalNombre?: boolean
   pcAdicionalInventario?: boolean
   softwareAutorizado?: boolean
-  firmadoPorSolicitado?: boolean
-  solicitadoFecha?: boolean
-  firmadoPorRevisado?: boolean
-  revisadoFecha?: boolean
-  firmadoPorAprobado?: boolean
-  aprobadoFecha?: boolean
-  firmadoPorEjecutado?: boolean
-  ejecutadoFecha?: boolean
 }
 
-export type AccountRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "folio" | "tipoSolicitud" | "motivosBaja" | "fechaBaja" | "nombreApellidos" | "telefonoExtension" | "cargoOcupa" | "departamentoArea" | "tipoPersonal" | "identificadorCuentaUsuario" | "correoNacional" | "correoInternacional" | "correoInternet" | "intranetUNE" | "intranetNacional" | "internet" | "mensajeriaCorporativa" | "facebook" | "twitter" | "youtube" | "whatsapp" | "telegram" | "instagram" | "otrasRedes" | "usuario" | "usuarioAvanzado" | "adminLocal" | "adminRed" | "accesoNubeLectura" | "accesoNubeModificar" | "accesoNubeBorrar" | "accesoNubeControlTotal" | "tipoCuenta" | "fechaExpiracion" | "horarioExtralaboral" | "horario24Horas" | "extraDesde" | "extraHasta" | "sabadoDesde" | "sabadoHasta" | "domingoDesde" | "domingoHasta" | "apnCorreoNacional" | "apnCorreoInternacional" | "apnInternet" | "telefonoCelular" | "pcNombre" | "pcInventario" | "pcAdicionalNombre" | "pcAdicionalInventario" | "softwareAutorizado" | "firmadoPorSolicitado" | "solicitadoFecha" | "firmadoPorRevisado" | "revisadoFecha" | "firmadoPorAprobado" | "aprobadoFecha" | "firmadoPorEjecutado" | "ejecutadoFecha", ExtArgs["result"]["accountRequest"]>
+export type AccountRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "folio" | "tipoSolicitud" | "motivosBaja" | "fechaBaja" | "nombreApellidos" | "telefonoExtension" | "cargoOcupa" | "departamentoArea" | "tipoPersonal" | "identificadorCuentaUsuario" | "correoNacional" | "correoInternacional" | "correoInternet" | "intranetUNE" | "intranetNacional" | "internet" | "mensajeriaCorporativa" | "facebook" | "twitter" | "youtube" | "whatsapp" | "telegram" | "instagram" | "otrasRedes" | "usuario" | "usuarioAvanzado" | "adminLocal" | "adminRed" | "accesoNubeLectura" | "accesoNubeModificar" | "accesoNubeBorrar" | "accesoNubeControlTotal" | "tipoCuenta" | "fechaExpiracion" | "horarioExtralaboral" | "horario24Horas" | "extraDesde" | "extraHasta" | "sabadoDesde" | "sabadoHasta" | "domingoDesde" | "domingoHasta" | "apnCorreoNacional" | "apnCorreoInternacional" | "apnInternet" | "telefonoCelular" | "pcNombre" | "pcInventario" | "pcAdicionalNombre" | "pcAdicionalInventario" | "softwareAutorizado", ExtArgs["result"]["accountRequest"]>
+export type AccountRequestInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  signatures?: boolean | Prisma.AccountRequest$signaturesArgs<ExtArgs>
+  _count?: boolean | Prisma.AccountRequestCountOutputTypeDefaultArgs<ExtArgs>
+}
+export type AccountRequestIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
+export type AccountRequestIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
 
 export type $AccountRequestPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "AccountRequest"
-  objects: {}
+  objects: {
+    signatures: Prisma.$AccountRequestSignaturePayload<ExtArgs>[]
+  }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     createdAt: Date
@@ -1893,14 +1994,6 @@ export type $AccountRequestPayload<ExtArgs extends runtime.Types.Extensions.Inte
     pcAdicionalNombre: string | null
     pcAdicionalInventario: string | null
     softwareAutorizado: string | null
-    firmadoPorSolicitado: boolean
-    solicitadoFecha: Date | null
-    firmadoPorRevisado: boolean
-    revisadoFecha: Date | null
-    firmadoPorAprobado: boolean
-    aprobadoFecha: Date | null
-    firmadoPorEjecutado: boolean
-    ejecutadoFecha: Date | null
   }, ExtArgs["result"]["accountRequest"]>
   composites: {}
 }
@@ -2295,6 +2388,7 @@ readonly fields: AccountRequestFieldRefs;
  */
 export interface Prisma__AccountRequestClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  signatures<T extends Prisma.AccountRequest$signaturesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.AccountRequest$signaturesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AccountRequestSignaturePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2378,14 +2472,6 @@ export interface AccountRequestFieldRefs {
   readonly pcAdicionalNombre: Prisma.FieldRef<"AccountRequest", 'String'>
   readonly pcAdicionalInventario: Prisma.FieldRef<"AccountRequest", 'String'>
   readonly softwareAutorizado: Prisma.FieldRef<"AccountRequest", 'String'>
-  readonly firmadoPorSolicitado: Prisma.FieldRef<"AccountRequest", 'Boolean'>
-  readonly solicitadoFecha: Prisma.FieldRef<"AccountRequest", 'DateTime'>
-  readonly firmadoPorRevisado: Prisma.FieldRef<"AccountRequest", 'Boolean'>
-  readonly revisadoFecha: Prisma.FieldRef<"AccountRequest", 'DateTime'>
-  readonly firmadoPorAprobado: Prisma.FieldRef<"AccountRequest", 'Boolean'>
-  readonly aprobadoFecha: Prisma.FieldRef<"AccountRequest", 'DateTime'>
-  readonly firmadoPorEjecutado: Prisma.FieldRef<"AccountRequest", 'Boolean'>
-  readonly ejecutadoFecha: Prisma.FieldRef<"AccountRequest", 'DateTime'>
 }
     
 
@@ -2402,6 +2488,10 @@ export type AccountRequestFindUniqueArgs<ExtArgs extends runtime.Types.Extension
    * Omit specific fields from the AccountRequest
    */
   omit?: Prisma.AccountRequestOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AccountRequestInclude<ExtArgs> | null
   /**
    * Filter, which AccountRequest to fetch.
    */
@@ -2421,6 +2511,10 @@ export type AccountRequestFindUniqueOrThrowArgs<ExtArgs extends runtime.Types.Ex
    */
   omit?: Prisma.AccountRequestOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AccountRequestInclude<ExtArgs> | null
+  /**
    * Filter, which AccountRequest to fetch.
    */
   where: Prisma.AccountRequestWhereUniqueInput
@@ -2438,6 +2532,10 @@ export type AccountRequestFindFirstArgs<ExtArgs extends runtime.Types.Extensions
    * Omit specific fields from the AccountRequest
    */
   omit?: Prisma.AccountRequestOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AccountRequestInclude<ExtArgs> | null
   /**
    * Filter, which AccountRequest to fetch.
    */
@@ -2487,6 +2585,10 @@ export type AccountRequestFindFirstOrThrowArgs<ExtArgs extends runtime.Types.Ext
    */
   omit?: Prisma.AccountRequestOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AccountRequestInclude<ExtArgs> | null
+  /**
    * Filter, which AccountRequest to fetch.
    */
   where?: Prisma.AccountRequestWhereInput
@@ -2534,6 +2636,10 @@ export type AccountRequestFindManyArgs<ExtArgs extends runtime.Types.Extensions.
    * Omit specific fields from the AccountRequest
    */
   omit?: Prisma.AccountRequestOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AccountRequestInclude<ExtArgs> | null
   /**
    * Filter, which AccountRequests to fetch.
    */
@@ -2583,6 +2689,10 @@ export type AccountRequestCreateArgs<ExtArgs extends runtime.Types.Extensions.In
    */
   omit?: Prisma.AccountRequestOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AccountRequestInclude<ExtArgs> | null
+  /**
    * The data needed to create a AccountRequest.
    */
   data: Prisma.XOR<Prisma.AccountRequestCreateInput, Prisma.AccountRequestUncheckedCreateInput>
@@ -2630,6 +2740,10 @@ export type AccountRequestUpdateArgs<ExtArgs extends runtime.Types.Extensions.In
    * Omit specific fields from the AccountRequest
    */
   omit?: Prisma.AccountRequestOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AccountRequestInclude<ExtArgs> | null
   /**
    * The data needed to update a AccountRequest.
    */
@@ -2697,6 +2811,10 @@ export type AccountRequestUpsertArgs<ExtArgs extends runtime.Types.Extensions.In
    */
   omit?: Prisma.AccountRequestOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AccountRequestInclude<ExtArgs> | null
+  /**
    * The filter to search for the AccountRequest to update in case it exists.
    */
   where: Prisma.AccountRequestWhereUniqueInput
@@ -2723,6 +2841,10 @@ export type AccountRequestDeleteArgs<ExtArgs extends runtime.Types.Extensions.In
    */
   omit?: Prisma.AccountRequestOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AccountRequestInclude<ExtArgs> | null
+  /**
    * Filter which AccountRequest to delete.
    */
   where: Prisma.AccountRequestWhereUniqueInput
@@ -2743,6 +2865,30 @@ export type AccountRequestDeleteManyArgs<ExtArgs extends runtime.Types.Extension
 }
 
 /**
+ * AccountRequest.signatures
+ */
+export type AccountRequest$signaturesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AccountRequestSignature
+   */
+  select?: Prisma.AccountRequestSignatureSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AccountRequestSignature
+   */
+  omit?: Prisma.AccountRequestSignatureOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AccountRequestSignatureInclude<ExtArgs> | null
+  where?: Prisma.AccountRequestSignatureWhereInput
+  orderBy?: Prisma.AccountRequestSignatureOrderByWithRelationInput | Prisma.AccountRequestSignatureOrderByWithRelationInput[]
+  cursor?: Prisma.AccountRequestSignatureWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AccountRequestSignatureScalarFieldEnum | Prisma.AccountRequestSignatureScalarFieldEnum[]
+}
+
+/**
  * AccountRequest without action
  */
 export type AccountRequestDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2754,4 +2900,8 @@ export type AccountRequestDefaultArgs<ExtArgs extends runtime.Types.Extensions.I
    * Omit specific fields from the AccountRequest
    */
   omit?: Prisma.AccountRequestOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AccountRequestInclude<ExtArgs> | null
 }

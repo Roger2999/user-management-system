@@ -500,33 +500,6 @@ export default function UserAccountForm({
             />
           </CardContent>
         </Card>
-
-        {/* <Card>
-          <CardHeader>
-            <CardTitle>Cuenta de usuario</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <Field
-              label="Cuenta de usuario"
-              name="cuentaUsuario"
-              defaultValue={state.data?.cuentaUsuario}
-              errors={state.validationErrors?.cuentaUsuario}
-            />
-            <Field
-              label="Actividad que realiza"
-              name="actividadRealiza"
-              defaultValue={state.data?.actividadRealiza}
-              errors={state.validationErrors?.actividadRealiza}
-            />
-            <div className="col-span-full">
-              <CheckboxField
-                label="Administrador del sistema"
-                name="administradorSistema"
-                defaultChecked={!!state.data?.administradorSistema}
-              />
-            </div>
-          </CardContent>
-        </Card> */}
         {state.dbErrors && (
           <p className="text-destructive text-center text-sm">
             {state.dbErrors.message}
