@@ -83,9 +83,6 @@ export default async function EditUserAccountPage({ params }: Props) {
     pcAdicionalInventario: opt(user.pcAdicionalInventario),
 
     softwareAutorizado: opt(user.softwareAutorizado),
-    // cuentaUsuario: opt(user.cuentaUsuario),
-    // actividadRealiza: opt(user.actividadRealiza),
-    // administradorSistema: user.administradorSistema,
 
     motivosBaja: opt(user.motivosBaja),
     fechaBaja: toDateInput(user.fechaBaja),

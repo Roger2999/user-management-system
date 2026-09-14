@@ -72,8 +72,8 @@ export async function createUserAccountAction(
     apnInternet: formData.get("apnInternet") === "on",
     telefonoCelular: (formData.get("telefonoCelular") as string) || undefined,
 
-    pcNombre: formData.get("pcNombre") as string,
-    pcInventario: formData.get("pcInventario") as string,
+    pcNombre: (formData.get("pcNombre") as string) || undefined,
+    pcInventario: (formData.get("pcInventario") as string) || undefined,
     pcAdicionalNombre:
       (formData.get("pcAdicionalNombre") as string) || undefined,
     pcAdicionalInventario:
