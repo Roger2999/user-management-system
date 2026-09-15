@@ -48,6 +48,27 @@ const FIELDS: { key: keyof SignValues; label: string }[] = [
   },
 ];
 
+// Reconstruye un SignValues completo a partir de una fuente parcial
+// (el `initial` de la página o el `state.data` del último envío).
+function resolveValues(
+  source: Partial<SignValues> | null | undefined,
+): SignValues {
+  return {
+    requested: source?.requested ?? false,
+    requestedNombre: source?.requestedNombre ?? "",
+    requestedCargo: source?.requestedCargo ?? "",
+    revised: source?.revised ?? false,
+    revisedNombre: source?.revisedNombre ?? "",
+    revisedCargo: source?.revisedCargo ?? "",
+    approved: source?.approved ?? false,
+    approvedNombre: source?.approvedNombre ?? "",
+    approvedCargo: source?.approvedCargo ?? "",
+    executed: source?.executed ?? false,
+    executedNombre: source?.executedNombre ?? "",
+    executedCargo: source?.executedCargo ?? "",
+  };
+}
+
 export default function SignForm({ id, initial }: Props) {
   const [state, action, pending] = useActionState(signAction, initialState);
 
@@ -57,54 +78,35 @@ export default function SignForm({ id, initial }: Props) {
     }
   }, [state]);
 
-  // Ante un error de negocio (inmutabilidad u orden), el servidor no
-  // persistió los cambios: reconciliar contra el estado real de la DB.
-  const signs: SignValues = state.dbErrors
-    ? {
-        requested: initial?.requested ?? false,
-        requestedNombre: initial?.requestedNombre ?? "",
-        requestedCargo: initial?.requestedCargo ?? "",
-        revised: initial?.revised ?? false,
-        revisedNombre: initial?.revisedNombre ?? "",
-        revisedCargo: initial?.revisedCargo ?? "",
-        approved: initial?.approved ?? false,
-        approvedNombre: initial?.approvedNombre ?? "",
-        approvedCargo: initial?.approvedCargo ?? "",
-        executed: initial?.executed ?? false,
-        executedNombre: initial?.executedNombre ?? "",
-        executedCargo: initial?.executedCargo ?? "",
-      }
-    : {
-        requested: state.data?.requested ?? initial?.requested ?? false,
-        requestedNombre:
-          state.data?.requestedNombre ?? initial?.requestedNombre ?? "",
-        requestedCargo:
-          state.data?.requestedCargo ?? initial?.requestedCargo ?? "",
-        revised: state.data?.revised ?? initial?.revised ?? false,
-        revisedNombre: state.data?.revisedNombre ?? initial?.revisedNombre ?? "",
-        revisedCargo: state.data?.revisedCargo ?? initial?.revisedCargo ?? "",
-        approved: state.data?.approved ?? initial?.approved ?? false,
-        approvedNombre:
-          state.data?.approvedNombre ?? initial?.approvedNombre ?? "",
-        approvedCargo: state.data?.approvedCargo ?? initial?.approvedCargo ?? "",
-        executed: state.data?.executed ?? initial?.executed ?? false,
-        executedNombre:
-          state.data?.executedNombre ?? initial?.executedNombre ?? "",
-        executedCargo: state.data?.executedCargo ?? initial?.executedCargo ?? "",
-      };
+  // Lo que el usuario intentó en el último envío (para no perder lo escrito
+  // cuando la validación falla).
+  const attempted = resolveValues(state.data);
 
-  // Una etapa solo se puede firmar si la anterior ya está firmada.
+  // Qué hay realmente persistido en la DB: solo esto bloquea la edición.
+  // Un fallo de validación o negocio no escribió nada; usar el intento como
+  // "firmado" congelaba la etapa sin permitir corregir los errores.
+  const persisted: SignValues = state.success
+    ? attempted
+    : resolveValues(initial);
+
+  // Valores a mostrar: si el último envío falló por validación, el intento;
+  // en cualquier otro caso (éxito, error de negocio, primera carga), lo que
+  // realmente está en la DB vía `initial`.
+  const shown: SignValues =
+    state.data && !state.dbErrors ? attempted : persisted;
+
+  // Una etapa solo se puede firmar si la anterior ya está firmada en la DB.
   const canSign: Record<keyof SignValues, boolean> = {
-    requested: !signs.requested,
+    requested: !persisted.requested,
     requestedNombre: false,
     requestedCargo: false,
-    revised: !signs.revised && signs.requested,
+    revised: !persisted.revised && persisted.requested,
     revisedNombre: false,
     revisedCargo: false,
-    approved: !signs.approved && signs.revised,
+    approved: !persisted.approved && persisted.revised,
     approvedNombre: false,
     approvedCargo: false,
-    executed: !signs.executed && signs.approved,
+    executed: !persisted.executed && persisted.approved,
     executedNombre: false,
     executedCargo: false,
   };
@@ -113,13 +115,13 @@ export default function SignForm({ id, initial }: Props) {
     <form action={action} className="flex w-full flex-col gap-8">
       <input type="hidden" name="id" value={id} />
       {FIELDS.map(({ key, label }) => {
-        const signed = Boolean(signs[key]);
+        const signed = Boolean(persisted[key]);
         const stageReady = canSign[key];
         const inputsDisabled = signed || !stageReady;
         const nombreKey = `${key}Nombre` as keyof SignValues;
         const cargoKey = `${key}Cargo` as keyof SignValues;
-        const nombreValue = signs[nombreKey] as string;
-        const cargoValue = signs[cargoKey] as string;
+        const nombreValue = shown[nombreKey] as string;
+        const cargoValue = shown[cargoKey] as string;
         return (
           <div
             key={key}

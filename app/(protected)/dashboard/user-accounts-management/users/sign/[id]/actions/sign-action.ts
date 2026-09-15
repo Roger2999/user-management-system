@@ -2,18 +2,14 @@
 
 import { SignFormState } from "@/lib/types";
 import prisma from "@/lib/prisma";
-import { SignFormSchema } from "../models/signSchema.model";
+import {
+  SignFormSchema,
+  SIGN_STAGES,
+} from "../models/signSchema.model";
 import { revalidatePath } from "next/cache";
 import { AccountRequestStage } from "@/generated/prisma/enums";
 
-const STAGES = [
-  { key: "requested", label: "Solicitado" },
-  { key: "revised", label: "Revisado" },
-  { key: "approved", label: "Aprobado" },
-  { key: "executed", label: "Ejecutado" },
-] as const;
-
-type StageKey = (typeof STAGES)[number]["key"];
+type StageKey = (typeof SIGN_STAGES)[number]["key"];
 
 type RawSignFields = {
   id: string;
@@ -56,7 +52,7 @@ const stageToEnum: Record<StageKey, AccountRequestStage> = {
   executed: "executed",
 };
 
-// Limpia los campos crudos del FormData al shape de SignFormState.data.
+// Limpia los campos crudos al shape de SignFormState.data.
 function toData(f: RawSignFields) {
   return {
     requested: f.requested,
@@ -79,6 +75,33 @@ export const signAction = async (
   formData: FormData,
 ): Promise<SignFormState> => {
   const fields = readFields(formData);
+
+  // Una etapa ya firmada es inmutable: el cliente la bloquea con inputs
+  // disabled, que NO viajan en el formulario. Tomar sus campos de la DB
+  // para que la validación los evalúe con los valores reales y no con vacíos.
+  const current = await prisma.accountRequest.findUnique({
+    where: { id: fields.id },
+    include: { signatures: true },
+  });
+  if (!current) {
+    return {
+      data: toData(fields),
+      success: false,
+      dbErrors: { message: "No se encontró la solicitud de cuenta." },
+    };
+  }
+
+  const signatureByStage = new Map(
+    current.signatures.map((sig) => [sig.stage, sig]),
+  );
+  for (const stage of SIGN_STAGES) {
+    const sig = signatureByStage.get(stageToEnum[stage.key]);
+    if (sig) {
+      fields[`${stage.key}Nombre`] = sig.nombre;
+      fields[`${stage.key}Cargo`] = sig.cargo;
+    }
+  }
+
   const validatedFields = SignFormSchema.safeParse(fields);
   if (!validatedFields.success) {
     return {
@@ -88,24 +111,15 @@ export const signAction = async (
       validationErrors: validatedFields.error.flatten().fieldErrors,
     };
   }
-  const { id, ...signs } = validatedFields.data;
 
-  const current = await prisma.accountRequest.findUnique({
-    where: { id },
-    include: { signatures: true },
-  });
-  if (!current) {
-    return {
-      data: signs,
-      success: false,
-      dbErrors: { message: "No se encontró la solicitud de cuenta." },
-    };
-  }
+  const id = validatedFields.data.id;
+  // readFields siempre entrega todos los campos; toData normaliza el output del schema.
+  const signs = toData(validatedFields.data as RawSignFields);
 
   const existingStages = new Set(current.signatures.map((sig) => sig.stage));
 
   // Inmutabilidad: una etapa ya firmada no se puede desfirmar.
-  for (const stage of STAGES) {
+  for (const stage of SIGN_STAGES) {
     if (existingStages.has(stageToEnum[stage.key]) && !signs[stage.key]) {
       return {
         data: signs,
@@ -118,9 +132,9 @@ export const signAction = async (
   }
 
   // Orden del flujo: para firmar una etapa, la anterior debe estar firmada.
-  for (let i = 1; i < STAGES.length; i++) {
-    const stage = STAGES[i];
-    const prev = STAGES[i - 1];
+  for (let i = 1; i < SIGN_STAGES.length; i++) {
+    const stage = SIGN_STAGES[i];
+    const prev = SIGN_STAGES[i - 1];
     const previousSigned =
       signs[prev.key] || existingStages.has(stageToEnum[prev.key]);
     if (signs[stage.key] && !previousSigned) {
@@ -135,7 +149,7 @@ export const signAction = async (
   }
 
   // Crear SOLO las firmas nuevas (las ya existentes son inmutables).
-  const newSignatures = STAGES.filter(
+  const newSignatures = SIGN_STAGES.filter(
     (stage) =>
       signs[stage.key] && !existingStages.has(stageToEnum[stage.key]),
   ).map((stage) => ({

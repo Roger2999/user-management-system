@@ -1,19 +1,11 @@
 import prisma from "@/lib/prisma";
 import SignForm, { SignValues } from "./components/sign-form";
 import { notFound } from "next/navigation";
-import { FileSignature } from "lucide-react";
 import { AccountRequestStage } from "@/generated/prisma/enums";
 import type { AccountRequestSignature } from "@/generated/prisma/client";
 interface Props {
   params: Promise<{ id: string }>;
 }
-
-const STAGES = [
-  "requested",
-  "revised",
-  "approved",
-  "executed",
-] as const;
 
 function getSignature(
   signatures: AccountRequestSignature[],
@@ -47,17 +39,6 @@ export default async function SignPage({ params }: Props) {
     executedCargo: getSignature(user.signatures, "executed")?.cargo ?? "",
   };
 
-  const allSigned = STAGES.every((stage) =>
-    user.signatures.some((sig) => sig.stage === stage),
-  );
-
-  if (allSigned)
-    return (
-      <div className="mt-10 flex w-full flex-col items-center justify-center gap-4">
-        <p className="text-2xl">Solicitud de cuenta firmada</p>
-        <FileSignature className="text-success size-10 animate-bounce" />
-      </div>
-    );
   return (
     <div className="flex w-full flex-col items-center justify-center gap-14">
       <h1 className="text-3xl">

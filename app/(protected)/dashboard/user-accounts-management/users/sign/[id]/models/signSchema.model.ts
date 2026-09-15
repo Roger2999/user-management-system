@@ -1,6 +1,6 @@
 import z from "zod";
 
-const STAGES = [
+export const SIGN_STAGES = [
   { key: "requested", label: "Solicitado" },
   { key: "revised", label: "Revisado" },
   { key: "approved", label: "Aprobado" },
@@ -24,18 +24,18 @@ export const SignFormSchema = z
     executedCargo: z.string().trim().optional(),
   })
   .superRefine((values, ctx) => {
-    for (const { key, label } of STAGES) {
+    for (const { key, label } of SIGN_STAGES) {
       if (!values[key]) continue;
       const nombre = values[`${key}Nombre`]?.trim() ?? "";
       const cargo = values[`${key}Cargo`]?.trim() ?? "";
-      if (nombre.length < 1) {
+      if (!nombre) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: [`${key}Nombre`],
           message: `El nombre es obligatorio para firmar como «${label}».`,
         });
       }
-      if (cargo.length < 1) {
+      if (!cargo) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: [`${key}Cargo`],
@@ -43,17 +43,6 @@ export const SignFormSchema = z
         });
       }
     }
-  })
-  .transform((values) => ({
-    ...values,
-    requestedNombre: values.requestedNombre ?? "",
-    requestedCargo: values.requestedCargo ?? "",
-    revisedNombre: values.revisedNombre ?? "",
-    revisedCargo: values.revisedCargo ?? "",
-    approvedNombre: values.approvedNombre ?? "",
-    approvedCargo: values.approvedCargo ?? "",
-    executedNombre: values.executedNombre ?? "",
-    executedCargo: values.executedCargo ?? "",
-  }));
+  });
 
-export type SigninFormValues = z.infer<typeof SignFormSchema>;
+export type SignFormValues = z.infer<typeof SignFormSchema>;
