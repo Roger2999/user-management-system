@@ -7,7 +7,7 @@ import { requireAdmin } from "@/helpers/requireAdmin";
 import { DeleteUserAccountState } from "@/lib/types";
 
 const DeleteUserAccountSchema = z.object({
-  id: z.string().min(1, "ID inválido"),
+  id: z.string().min(1, "ID inválido").max(100, "Máximo 100 caracteres"),
 });
 
 export async function deleteUserAccountAction(

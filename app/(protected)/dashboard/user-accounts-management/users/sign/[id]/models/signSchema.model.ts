@@ -9,19 +9,19 @@ export const SIGN_STAGES = [
 
 export const SignFormSchema = z
   .object({
-    id: z.string().min(1),
+    id: z.string().min(1).max(100, "Máximo 100 caracteres"),
     requested: z.boolean().default(false),
-    requestedNombre: z.string().trim().optional(),
-    requestedCargo: z.string().trim().optional(),
+    requestedNombre: z.string().max(100, "Máximo 100 caracteres").trim().optional(),
+    requestedCargo: z.string().max(100, "Máximo 100 caracteres").trim().optional(),
     revised: z.boolean().default(false),
-    revisedNombre: z.string().trim().optional(),
-    revisedCargo: z.string().trim().optional(),
+    revisedNombre: z.string().max(100, "Máximo 100 caracteres").trim().optional(),
+    revisedCargo: z.string().max(100, "Máximo 100 caracteres").trim().optional(),
     approved: z.boolean().default(false),
-    approvedNombre: z.string().trim().optional(),
-    approvedCargo: z.string().trim().optional(),
+    approvedNombre: z.string().max(100, "Máximo 100 caracteres").trim().optional(),
+    approvedCargo: z.string().max(100, "Máximo 100 caracteres").trim().optional(),
     executed: z.boolean().default(false),
-    executedNombre: z.string().trim().optional(),
-    executedCargo: z.string().trim().optional(),
+    executedNombre: z.string().max(100, "Máximo 100 caracteres").trim().optional(),
+    executedCargo: z.string().max(100, "Máximo 100 caracteres").trim().optional(),
   })
   .superRefine((values, ctx) => {
     for (const { key, label } of SIGN_STAGES) {

@@ -9,18 +9,31 @@ export const AccountRequestSchema = z
     folio: z
       .string()
       .min(1, "Requerido")
-      .regex(/^[A-Z]+-[A-Z]+-\d+$/, "Formato inválido. Ejemplo: EE-CAR-016"),
+      .regex(/^[A-Z]+-[A-Z]+-\d+$/, "Formato inválido. Ejemplo: EE-CAR-016")
+      .max(100, "Máximo 100 caracteres"),
 
     // Datos personales
-    nombreApellidos: z.string().min(1, "Requerido"),
-    telefonoExtension: z.string().optional(),
-    cargoOcupa: z.string().min(1, "Requerido"),
-    departamentoArea: z.string().min(1, "Requerido"),
+    nombreApellidos: z
+      .string()
+      .min(1, "Requerido")
+      .max(100, "Máximo 100 caracteres"),
+    telefonoExtension: z.string().max(50, "Máximo 50 caracteres").optional(),
+    cargoOcupa: z
+      .string()
+      .min(1, "Requerido")
+      .max(100, "Máximo 100 caracteres"),
+    departamentoArea: z
+      .string()
+      .min(1, "Requerido")
+      .max(100, "Máximo 100 caracteres"),
     tipoPersonal: z.enum(
       ["DIRECTIVO", "ESPECIALISTA_PRINCIPAL", "TECNICO", "OTRO"],
       { message: "Requerido" },
     ),
-    identificadorCuentaUsuario: z.string().min(1, "Requerido"),
+    identificadorCuentaUsuario: z
+      .string()
+      .min(1, "Requerido")
+      .max(50, "Máximo 50 caracteres"),
 
     // Correo
     correoNacional: z.boolean().default(false),
@@ -42,7 +55,7 @@ export const AccountRequestSchema = z
     whatsapp: z.boolean().default(false),
     telegram: z.boolean().default(false),
     instagram: z.boolean().default(false),
-    otrasRedes: z.string().optional(),
+    otrasRedes: z.string().max(500, "Máximo 500 caracteres").optional(),
 
     // Privilegios
     usuario: z.boolean().default(false),
@@ -58,36 +71,48 @@ export const AccountRequestSchema = z
 
     // Tipo cuenta
     tipoCuenta: z.enum(["PERMANENTE", "TEMPORAL"], { message: "Requerido" }),
-    fechaExpiracion: z.string().optional(),
+    fechaExpiracion: z.string().max(50, "Máximo 50 caracteres").optional(),
 
     // Horarios
     horarioExtralaboral: z.boolean().default(false),
     horario24Horas: z.boolean().default(false),
-    extraDesde: z.string().optional(),
-    extraHasta: z.string().optional(),
-    sabadoDesde: z.string().optional(),
-    sabadoHasta: z.string().optional(),
-    domingoDesde: z.string().optional(),
-    domingoHasta: z.string().optional(),
+    extraDesde: z.string().max(50, "Máximo 50 caracteres").optional(),
+    extraHasta: z.string().max(50, "Máximo 50 caracteres").optional(),
+    sabadoDesde: z.string().max(50, "Máximo 50 caracteres").optional(),
+    sabadoHasta: z.string().max(50, "Máximo 50 caracteres").optional(),
+    domingoDesde: z.string().max(50, "Máximo 50 caracteres").optional(),
+    domingoHasta: z.string().max(50, "Máximo 50 caracteres").optional(),
 
     // APN
     apnCorreoNacional: z.boolean().default(false),
     apnCorreoInternacional: z.boolean().default(false),
     apnInternet: z.boolean().default(false),
-    telefonoCelular: z.string().optional(),
+    telefonoCelular: z.string().max(50, "Máximo 50 caracteres").optional(),
 
     // PC
-    pcNombre: z.string().min(1, "Requerido"),
-    pcInventario: z.string().min(1, "Requerido"),
-    pcAdicionalNombre: z.string().optional(),
-    pcAdicionalInventario: z.string().optional(),
+    pcNombre: z
+      .string()
+      .min(1, "Requerido")
+      .max(50, "Máximo 50 caracteres"),
+    pcInventario: z
+      .string()
+      .min(1, "Requerido")
+      .max(50, "Máximo 50 caracteres"),
+    pcAdicionalNombre: z
+      .string()
+      .max(100, "Máximo 100 caracteres")
+      .optional(),
+    pcAdicionalInventario: z
+      .string()
+      .max(100, "Máximo 100 caracteres")
+      .optional(),
 
     // Software
-    softwareAutorizado: z.string().optional(),
+    softwareAutorizado: z.string().max(500, "Máximo 500 caracteres").optional(),
 
     // Baja
-    motivosBaja: z.string().optional(),
-    fechaBaja: z.string().optional(),
+    motivosBaja: z.string().max(500, "Máximo 500 caracteres").optional(),
+    fechaBaja: z.string().max(50, "Máximo 50 caracteres").optional(),
   })
   .superRefine((data, ctx) => {
     if (data.tipoCuenta === "TEMPORAL" && !data.fechaExpiracion) {
