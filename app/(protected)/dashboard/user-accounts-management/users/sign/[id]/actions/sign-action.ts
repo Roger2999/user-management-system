@@ -47,7 +47,7 @@ const stageToEnum: Record<StageKey, AccountRequestStage> = {
 };
 
 /** Etapas firmadas por el propio operador (especialista) desde su sesión. */
-const ETAPAS_PROPIAS: AccountRequestStage[] = ["revised", "executed"];
+const ETAPAS_PROPIAS: AccountRequestStage[] = ["revised"];
 
 /** Entrada del historial de correcciones de una firma registrada. */
 type CorreccionEntry = {

@@ -49,9 +49,9 @@ const FIELDS: { key: keyof SignValues; label: string }[] = [
   },
 ];
 
-// Etapas que firma el propio operador desde su sesión: no admiten texto
+// Etapa que firma el propio operador desde su sesión: no admite texto
 // libre, su nombre/cargo provienen de la cuenta autenticada.
-const ETAPAS_PROPIAS: (keyof SignValues)[] = ["revised", "executed"];
+const ETAPAS_PROPIAS: (keyof SignValues)[] = ["revised"];
 
 // Reconstruye un SignValues completo a partir de una fuente parcial
 // (el `initial` de la página o el `state.data` del último envío).
