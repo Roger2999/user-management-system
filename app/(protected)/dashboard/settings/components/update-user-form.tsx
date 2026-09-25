@@ -30,7 +30,7 @@ export default function UpdateUserForm({ initialUser }: Props) {
         action={action}
       >
         <Field
-          label="Nombre de usuario (login)"
+          label="Nombre de usuario"
           errors={state.validationErrors?.username}
           type="text"
           name="username"
