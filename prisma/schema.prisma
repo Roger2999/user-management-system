@@ -15,18 +15,20 @@ datasource db {
 }
 
 model User {
-  id              String    @id
-  name            String
-  username        String?   @unique @db.Citext
-  displayUsername String?
-  email           String
-  emailVerified   Boolean   @default(false)
-  image           String?
-  role            UserRole  @default(USER)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  sessions        Session[]
-  accounts        Account[]
+  id                String                    @id
+  name              String
+  username          String?                   @unique @db.Citext
+  displayUsername   String?
+  email             String
+  emailVerified     Boolean                   @default(false)
+  image             String?
+  role              UserRole                  @default(USER)
+  cargo             String?
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+  sessions          Session[]
+  accounts          Account[]
+  firmasRegistradas AccountRequestSignature[]
 
   @@unique([email])
   @@map("user")
@@ -91,7 +93,6 @@ enum TipoSolicitud {
   BAJA
 }
 
-
 enum TipoPersonal {
   DIRECTIVO
   ESPECIALISTA_PRINCIPAL
@@ -117,7 +118,7 @@ model AccountRequest {
   updatedAt DateTime @updatedAt
 
   // Encabezado
-  folio         String?   @unique @db.Citext
+  folio         String?       @unique @db.Citext
   tipoSolicitud TipoSolicitud
 
   // Baja
@@ -125,12 +126,12 @@ model AccountRequest {
   fechaBaja   DateTime?
 
   // Datos personales
-  nombreApellidos   String
-  telefonoExtension String? @unique @db.Citext
-  cargoOcupa        String
-  departamentoArea  String
-  tipoPersonal      TipoPersonal
-  identificadorCuentaUsuario String? @unique @db.Citext
+  nombreApellidos            String
+  telefonoExtension          String?      @unique @db.Citext
+  cargoOcupa                 String
+  departamentoArea           String
+  tipoPersonal               TipoPersonal
+  identificadorCuentaUsuario String?      @unique @db.Citext
 
   // Correo electrónico
   correoNacional      Boolean @default(false)
@@ -205,14 +206,19 @@ model AccountRequest {
 }
 
 model AccountRequestSignature {
-  id               String              @id @default(cuid())
-  accountRequestId String
-  accountRequest   AccountRequest      @relation(fields: [accountRequestId], references: [id], onDelete: Cascade)
-  stage            AccountRequestStage
-  nombre           String
-  cargo            String
-  fecha            DateTime            @default(now())
+  id                    String              @id @default(cuid())
+  accountRequestId      String
+  accountRequest        AccountRequest      @relation(fields: [accountRequestId], references: [id], onDelete: Cascade)
+  stage                 AccountRequestStage
+  nombre                String
+  cargo                 String
+  fecha                 DateTime            @default(now())
+  registradoPorUserId   String?
+  registradoPorUser     User?               @relation(fields: [registradoPorUserId], references: [id], onDelete: SetNull)
+  registradoPorNombre   String?
+  historialCorrecciones Json?
 
   @@unique([accountRequestId, stage])
   @@index([accountRequestId])
+  @@index([registradoPorUserId])
 }

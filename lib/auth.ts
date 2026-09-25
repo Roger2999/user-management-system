@@ -26,6 +26,13 @@ export const auth = betterAuth({
         defaultValue: "USER",
         input: false,
       },
+      // Cargo del operador (especialista): se edita en Ajustes y se usa
+      // como identidad en sus firmas (etapas Revisado/Ejecutado).
+      cargo: {
+        type: "string",
+        required: false,
+        input: true,
+      },
     },
   },
   advanced: {

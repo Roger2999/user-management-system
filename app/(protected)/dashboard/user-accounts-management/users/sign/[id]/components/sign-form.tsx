@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { SignFormState } from "@/lib/types";
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { signAction } from "../actions/sign-action";
 import { toast } from "sonner";
 import CheckboxField from "@/components/checkbox-field";
@@ -27,6 +27,7 @@ export interface SignValues {
 interface Props {
   id: string;
   initial?: SignValues;
+  currentUser?: { name: string; cargo: string | null };
 }
 
 const initialState: SignFormState = {
@@ -47,6 +48,10 @@ const FIELDS: { key: keyof SignValues; label: string }[] = [
     label: "Ejecutado (Especialista que configura la cuenta y los servicios)",
   },
 ];
+
+// Etapas que firma el propio operador desde su sesión: no admiten texto
+// libre, su nombre/cargo provienen de la cuenta autenticada.
+const ETAPAS_PROPIAS: (keyof SignValues)[] = ["revised", "executed"];
 
 // Reconstruye un SignValues completo a partir de una fuente parcial
 // (el `initial` de la página o el `state.data` del último envío).
@@ -69,8 +74,15 @@ function resolveValues(
   };
 }
 
-export default function SignForm({ id, initial }: Props) {
+export default function SignForm({ id, initial, currentUser }: Props) {
   const [state, action, pending] = useActionState(signAction, initialState);
+
+  // Estado local de los checkboxes de las etapas propias: permite mostrar
+  // la vista previa "Firmará" apenas el operador marca el checkbox, sin
+  // esperar a que el formulario se envíe.
+  const [checksPropios, setChecksPropios] = useState<
+    Partial<Record<keyof SignValues, boolean>>
+  >({});
 
   useEffect(() => {
     if (state.success) {
@@ -116,12 +128,21 @@ export default function SignForm({ id, initial }: Props) {
       <input type="hidden" name="id" value={id} />
       {FIELDS.map(({ key, label }) => {
         const signed = Boolean(persisted[key]);
-        const stageReady = canSign[key];
-        const inputsDisabled = signed || !stageReady;
+        // Los inputs quedan editables mientras la etapa sea alcanzable
+        // (la anterior firmada) o ya esté firmada: las etapas externas
+        // admiten corrección de errores de tipeo, sin poder desfirmar.
+        const stageReady = canSign[key] || signed;
+        const inputsDisabled = !stageReady;
+        const esPropia = ETAPAS_PROPIAS.includes(key as keyof SignValues);
         const nombreKey = `${key}Nombre` as keyof SignValues;
         const cargoKey = `${key}Cargo` as keyof SignValues;
         const nombreValue = shown[nombreKey] as string;
         const cargoValue = shown[cargoKey] as string;
+        const marcadoHoy =
+          !signed && (checksPropios[key] || Boolean(shown[key]));
+        const errorPropio =
+          state.validationErrors?.[`${key}Nombre`]?.[0] ??
+          state.validationErrors?.[`${key}Cargo`]?.[0];
         return (
           <div
             key={key}
@@ -144,25 +165,51 @@ export default function SignForm({ id, initial }: Props) {
                   </span>
                 </>
               ) : (
-                <CheckboxField label={label} name={key} disabled={!stageReady} />
+                <CheckboxField
+                  label={label}
+                  name={key}
+                  disabled={!stageReady}
+                  onChange={(checked) =>
+                    setChecksPropios((prev) => ({ ...prev, [key]: checked }))
+                  }
+                />
               )}
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field
-                label="Nombre y apellidos"
-                name={`${key}Nombre`}
-                defaultValue={nombreValue}
-                disabled={inputsDisabled}
-                errors={state.validationErrors?.[`${key}Nombre`]}
-              />
-              <Field
-                label="Cargo"
-                name={`${key}Cargo`}
-                defaultValue={cargoValue}
-                disabled={inputsDisabled}
-                errors={state.validationErrors?.[`${key}Cargo`]}
-              />
-            </div>
+            {esPropia ? (
+              <div>
+                {signed ? (
+                  <p className="text-muted-foreground text-sm">
+                    Firmado por: {nombreValue} — {cargoValue}
+                  </p>
+                ) : marcadoHoy ? (
+                  <p className="text-muted-foreground text-sm">
+                    Firmará: {currentUser?.name} —{" "}
+                    {currentUser?.cargo ??
+                      "sin cargo (configuralo en Ajustes)"}
+                  </p>
+                ) : null}
+                {!signed && errorPropio && (
+                  <p className="text-destructive text-sm">{errorPropio}</p>
+                )}
+              </div>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field
+                  label="Nombre y apellidos"
+                  name={`${key}Nombre`}
+                  defaultValue={nombreValue}
+                  disabled={inputsDisabled}
+                  errors={state.validationErrors?.[`${key}Nombre`]}
+                />
+                <Field
+                  label="Cargo"
+                  name={`${key}Cargo`}
+                  defaultValue={cargoValue}
+                  disabled={inputsDisabled}
+                  errors={state.validationErrors?.[`${key}Cargo`]}
+                />
+              </div>
+            )}
           </div>
         );
       })}

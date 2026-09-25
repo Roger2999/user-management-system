@@ -3,12 +3,25 @@
 import { SignFormState } from "@/lib/types";
 import prisma from "@/lib/prisma";
 import { requireAdmin } from "@/helpers/requireAdmin";
+import { getSession } from "@/helpers/getSession";
 import { SignFormSchema, SIGN_STAGES } from "../models/signSchema.model";
 import { revalidatePath } from "next/cache";
 import { AccountRequestStage } from "@/generated/prisma/enums";
+import type { Prisma } from "@/generated/prisma/client";
 import z from "zod";
 
 type StageKey = (typeof SIGN_STAGES)[number]["key"];
+
+// Claves de texto (nombre/cargo) del formulario de firmas.
+type CampoTexto =
+  | "requestedNombre"
+  | "requestedCargo"
+  | "revisedNombre"
+  | "revisedCargo"
+  | "approvedNombre"
+  | "approvedCargo"
+  | "executedNombre"
+  | "executedCargo";
 
 type SignFields = {
   id: string;
@@ -31,6 +44,18 @@ const stageToEnum: Record<StageKey, AccountRequestStage> = {
   revised: "revised",
   approved: "approved",
   executed: "executed",
+};
+
+/** Etapas firmadas por el propio operador (especialista) desde su sesión. */
+const ETAPAS_PROPIAS: AccountRequestStage[] = ["revised", "executed"];
+
+/** Entrada del historial de correcciones de una firma registrada. */
+type CorreccionEntry = {
+  campo: "nombre" | "cargo";
+  valorAnterior: string;
+  valorNuevo: string;
+  editadoPorUsuario: string;
+  fecha: string;
 };
 
 function toData(f: SignFields) {
@@ -56,25 +81,45 @@ export const signAction = async (
 ): Promise<SignFormState> => {
   await requireAdmin();
 
-  const fields = {
-    id: formData.get("id") as string,
+  // La identidad del operador sale de la sesión para sus etapas propias
+  // (Revisado/Ejecutado). requireAdmin ya redirige sin sesión; esto es
+  // defensa en profundidad para TypeScript y para corridas anómalas.
+  const session = await getSession();
+  const sessionUser = session?.user;
+  if (!sessionUser) {
+    return {
+      data: null,
+      success: false,
+      dbErrors: { message: "Sesión no válida. Vuelve a iniciar sesión." },
+    };
+  }
+  const nombreOperador =
+    (sessionUser.name ?? "").trim() || (sessionUser.username ?? "").trim();
+  const cargoOperador = (sessionUser.cargo ?? "").trim();
+
+  const fields: SignFields = {
+    id: (formData.get("id") as string) ?? "",
     requested: formData.get("requested") === "on",
-    requestedNombre: (formData.get("requestedNombre") as string) ?? "",
-    requestedCargo: (formData.get("requestedCargo") as string) ?? "",
+    requestedNombre: "",
+    requestedCargo: "",
     revised: formData.get("revised") === "on",
-    revisedNombre: (formData.get("revisedNombre") as string) ?? "",
-    revisedCargo: (formData.get("revisedCargo") as string) ?? "",
+    revisedNombre: "",
+    revisedCargo: "",
     approved: formData.get("approved") === "on",
-    approvedNombre: (formData.get("approvedNombre") as string) ?? "",
-    approvedCargo: (formData.get("approvedCargo") as string) ?? "",
+    approvedNombre: "",
+    approvedCargo: "",
     executed: formData.get("executed") === "on",
-    executedNombre: (formData.get("executedNombre") as string) ?? "",
-    executedCargo: (formData.get("executedCargo") as string) ?? "",
+    executedNombre: "",
+    executedCargo: "",
   };
 
-  // Una etapa ya firmada es inmutable: el cliente la bloquea con inputs
-  // disabled, que NO viajan en el formulario. Tomar sus campos de la DB
-  // para que la validación los evalúe con los valores reales y no con vacíos.
+  // Valor textual de un campo, o null si no viajó en el formulario
+  // (input deshabilitado / no renderizado) o quedó vacío.
+  const valorFormulario = (campo: string): string | null => {
+    const v = formData.get(campo);
+    return typeof v === "string" && v.trim().length > 0 ? v : null;
+  };
+
   const current = await prisma.accountRequest.findUnique({
     where: { id: fields.id },
     include: { signatures: true },
@@ -90,12 +135,31 @@ export const signAction = async (
   const signatureByStage = new Map(
     current.signatures.map((sig) => [sig.stage, sig]),
   );
+
+  // Por etapa: identidad del firmante y valores para la validación.
   for (const stage of SIGN_STAGES) {
-    const sig = signatureByStage.get(stageToEnum[stage.key]);
-    if (sig) {
-      fields[`${stage.key}Nombre`] = sig.nombre;
-      fields[`${stage.key}Cargo`] = sig.cargo;
+    const enumStage = stageToEnum[stage.key];
+    const sig = signatureByStage.get(enumStage);
+    const esPropia = ETAPAS_PROPIAS.includes(enumStage);
+    const nombreKey = `${stage.key}Nombre` as CampoTexto;
+    const cargoKey = `${stage.key}Cargo` as CampoTexto;
+
+    if (esPropia) {
+      // Etapas del especialista: la identidad viene de la sesión y NUNCA
+      // del formulario (el cliente ni siquiera renderiza inputs para ellas).
+      fields[nombreKey] = nombreOperador;
+      fields[cargoKey] = cargoOperador;
+      continue;
     }
+
+    // Etapas externas (Solicitado/Aprobado): texto libre del operador,
+    // que registra fielmente lo firmado en papel. Si el input no viajó
+    // (deshabilitado por orden) y la etapa ya está firmada, se usan los
+    // valores reales de la DB para que la validación no falle.
+    const nombreForm = valorFormulario(`${stage.key}Nombre`);
+    const cargoForm = valorFormulario(`${stage.key}Cargo`);
+    fields[nombreKey] = nombreForm ?? (sig ? sig.nombre : "");
+    fields[cargoKey] = cargoForm ?? (sig ? sig.cargo : "");
   }
 
   const validatedFields = SignFormSchema.safeParse(fields);
@@ -143,24 +207,80 @@ export const signAction = async (
     }
   }
 
-  // Crear SOLO las firmas nuevas (las ya existentes son inmutables).
-  const newSignatures = SIGN_STAGES.filter(
-    (stage) => signs[stage.key] && !existingStages.has(stageToEnum[stage.key]),
-  ).map((stage) => ({
-    accountRequestId: id,
-    stage: stageToEnum[stage.key],
-    nombre: signs[`${stage.key}Nombre`],
-    cargo: signs[`${stage.key}Cargo`],
-    fecha: new Date(),
-  }));
+  const editadoPorUsuario = sessionUser.username ?? sessionUser.id;
+
+  // Operaciones por etapa: crear firmas nuevas y corregir las existentes.
+  const operations: Prisma.PrismaPromise<unknown>[] = [];
+
+  for (const stage of SIGN_STAGES) {
+    const enumStage = stageToEnum[stage.key];
+    const sig = signatureByStage.get(enumStage);
+    const nombreKey = `${stage.key}Nombre` as CampoTexto;
+    const cargoKey = `${stage.key}Cargo` as CampoTexto;
+
+    if (!sig) {
+      // Sin firma previa: solo se crea si el checkbox está marcado.
+      if (signs[stage.key]) {
+        operations.push(
+          prisma.accountRequestSignature.create({
+            data: {
+              accountRequestId: id,
+              stage: enumStage,
+              nombre: signs[nombreKey],
+              cargo: signs[cargoKey],
+              fecha: new Date(),
+              registradoPorUserId: sessionUser.id,
+              registradoPorNombre: sessionUser.name,
+            },
+          }),
+        );
+      }
+      continue;
+    }
+
+    // Firma existente (el cliente fuerza el checkbox en "on", por lo que
+    // aquí ya se validó la inmutabilidad): si nombre/cargo cambiaron, se
+    // corrigen y se anexan las entradas al historial.
+    const nombreNuevo = signs[nombreKey];
+    const cargoNuevo = signs[cargoKey];
+    const correcciones: CorreccionEntry[] = [];
+    if (sig.nombre !== nombreNuevo) {
+      correcciones.push({
+        campo: "nombre",
+        valorAnterior: sig.nombre,
+        valorNuevo: nombreNuevo,
+        editadoPorUsuario,
+        fecha: new Date().toISOString(),
+      });
+    }
+    if (sig.cargo !== cargoNuevo) {
+      correcciones.push({
+        campo: "cargo",
+        valorAnterior: sig.cargo,
+        valorNuevo: cargoNuevo,
+        editadoPorUsuario,
+        fecha: new Date().toISOString(),
+      });
+    }
+    if (correcciones.length > 0) {
+      const historialPrevio =
+        (sig.historialCorrecciones ?? []) as unknown as CorreccionEntry[];
+      operations.push(
+        prisma.accountRequestSignature.update({
+          where: { id: sig.id },
+          data: {
+            nombre: nombreNuevo,
+            cargo: cargoNuevo,
+            historialCorrecciones: [...historialPrevio, ...correcciones],
+          },
+        }),
+      );
+    }
+  }
 
   try {
-    if (newSignatures.length > 0) {
-      await prisma.$transaction(
-        newSignatures.map((sig) =>
-          prisma.accountRequestSignature.create({ data: sig }),
-        ),
-      );
+    if (operations.length > 0) {
+      await prisma.$transaction(operations);
     }
     revalidatePath(`/dashboard/user-accounts-management/users/sign/${id}`);
     return {

@@ -31,6 +31,8 @@ export type AccountRequestSignatureMinAggregateOutputType = {
   nombre: string | null
   cargo: string | null
   fecha: Date | null
+  registradoPorUserId: string | null
+  registradoPorNombre: string | null
 }
 
 export type AccountRequestSignatureMaxAggregateOutputType = {
@@ -40,6 +42,8 @@ export type AccountRequestSignatureMaxAggregateOutputType = {
   nombre: string | null
   cargo: string | null
   fecha: Date | null
+  registradoPorUserId: string | null
+  registradoPorNombre: string | null
 }
 
 export type AccountRequestSignatureCountAggregateOutputType = {
@@ -49,6 +53,9 @@ export type AccountRequestSignatureCountAggregateOutputType = {
   nombre: number
   cargo: number
   fecha: number
+  registradoPorUserId: number
+  registradoPorNombre: number
+  historialCorrecciones: number
   _all: number
 }
 
@@ -60,6 +67,8 @@ export type AccountRequestSignatureMinAggregateInputType = {
   nombre?: true
   cargo?: true
   fecha?: true
+  registradoPorUserId?: true
+  registradoPorNombre?: true
 }
 
 export type AccountRequestSignatureMaxAggregateInputType = {
@@ -69,6 +78,8 @@ export type AccountRequestSignatureMaxAggregateInputType = {
   nombre?: true
   cargo?: true
   fecha?: true
+  registradoPorUserId?: true
+  registradoPorNombre?: true
 }
 
 export type AccountRequestSignatureCountAggregateInputType = {
@@ -78,6 +89,9 @@ export type AccountRequestSignatureCountAggregateInputType = {
   nombre?: true
   cargo?: true
   fecha?: true
+  registradoPorUserId?: true
+  registradoPorNombre?: true
+  historialCorrecciones?: true
   _all?: true
 }
 
@@ -160,6 +174,9 @@ export type AccountRequestSignatureGroupByOutputType = {
   nombre: string
   cargo: string
   fecha: Date
+  registradoPorUserId: string | null
+  registradoPorNombre: string | null
+  historialCorrecciones: runtime.JsonValue | null
   _count: AccountRequestSignatureCountAggregateOutputType | null
   _min: AccountRequestSignatureMinAggregateOutputType | null
   _max: AccountRequestSignatureMaxAggregateOutputType | null
@@ -190,7 +207,11 @@ export type AccountRequestSignatureWhereInput = {
   nombre?: Prisma.StringFilter<"AccountRequestSignature"> | string
   cargo?: Prisma.StringFilter<"AccountRequestSignature"> | string
   fecha?: Prisma.DateTimeFilter<"AccountRequestSignature"> | Date | string
+  registradoPorUserId?: Prisma.StringNullableFilter<"AccountRequestSignature"> | string | null
+  registradoPorNombre?: Prisma.StringNullableFilter<"AccountRequestSignature"> | string | null
+  historialCorrecciones?: Prisma.JsonNullableFilter<"AccountRequestSignature">
   accountRequest?: Prisma.XOR<Prisma.AccountRequestScalarRelationFilter, Prisma.AccountRequestWhereInput>
+  registradoPorUser?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
 }
 
 export type AccountRequestSignatureOrderByWithRelationInput = {
@@ -200,7 +221,11 @@ export type AccountRequestSignatureOrderByWithRelationInput = {
   nombre?: Prisma.SortOrder
   cargo?: Prisma.SortOrder
   fecha?: Prisma.SortOrder
+  registradoPorUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  registradoPorNombre?: Prisma.SortOrderInput | Prisma.SortOrder
+  historialCorrecciones?: Prisma.SortOrderInput | Prisma.SortOrder
   accountRequest?: Prisma.AccountRequestOrderByWithRelationInput
+  registradoPorUser?: Prisma.UserOrderByWithRelationInput
 }
 
 export type AccountRequestSignatureWhereUniqueInput = Prisma.AtLeast<{
@@ -214,7 +239,11 @@ export type AccountRequestSignatureWhereUniqueInput = Prisma.AtLeast<{
   nombre?: Prisma.StringFilter<"AccountRequestSignature"> | string
   cargo?: Prisma.StringFilter<"AccountRequestSignature"> | string
   fecha?: Prisma.DateTimeFilter<"AccountRequestSignature"> | Date | string
+  registradoPorUserId?: Prisma.StringNullableFilter<"AccountRequestSignature"> | string | null
+  registradoPorNombre?: Prisma.StringNullableFilter<"AccountRequestSignature"> | string | null
+  historialCorrecciones?: Prisma.JsonNullableFilter<"AccountRequestSignature">
   accountRequest?: Prisma.XOR<Prisma.AccountRequestScalarRelationFilter, Prisma.AccountRequestWhereInput>
+  registradoPorUser?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
 }, "id" | "accountRequestId_stage">
 
 export type AccountRequestSignatureOrderByWithAggregationInput = {
@@ -224,6 +253,9 @@ export type AccountRequestSignatureOrderByWithAggregationInput = {
   nombre?: Prisma.SortOrder
   cargo?: Prisma.SortOrder
   fecha?: Prisma.SortOrder
+  registradoPorUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  registradoPorNombre?: Prisma.SortOrderInput | Prisma.SortOrder
+  historialCorrecciones?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.AccountRequestSignatureCountOrderByAggregateInput
   _max?: Prisma.AccountRequestSignatureMaxOrderByAggregateInput
   _min?: Prisma.AccountRequestSignatureMinOrderByAggregateInput
@@ -239,6 +271,9 @@ export type AccountRequestSignatureScalarWhereWithAggregatesInput = {
   nombre?: Prisma.StringWithAggregatesFilter<"AccountRequestSignature"> | string
   cargo?: Prisma.StringWithAggregatesFilter<"AccountRequestSignature"> | string
   fecha?: Prisma.DateTimeWithAggregatesFilter<"AccountRequestSignature"> | Date | string
+  registradoPorUserId?: Prisma.StringNullableWithAggregatesFilter<"AccountRequestSignature"> | string | null
+  registradoPorNombre?: Prisma.StringNullableWithAggregatesFilter<"AccountRequestSignature"> | string | null
+  historialCorrecciones?: Prisma.JsonNullableWithAggregatesFilter<"AccountRequestSignature">
 }
 
 export type AccountRequestSignatureCreateInput = {
@@ -247,7 +282,10 @@ export type AccountRequestSignatureCreateInput = {
   nombre: string
   cargo: string
   fecha?: Date | string
+  registradoPorNombre?: string | null
+  historialCorrecciones?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   accountRequest: Prisma.AccountRequestCreateNestedOneWithoutSignaturesInput
+  registradoPorUser?: Prisma.UserCreateNestedOneWithoutFirmasRegistradasInput
 }
 
 export type AccountRequestSignatureUncheckedCreateInput = {
@@ -257,6 +295,9 @@ export type AccountRequestSignatureUncheckedCreateInput = {
   nombre: string
   cargo: string
   fecha?: Date | string
+  registradoPorUserId?: string | null
+  registradoPorNombre?: string | null
+  historialCorrecciones?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type AccountRequestSignatureUpdateInput = {
@@ -265,7 +306,10 @@ export type AccountRequestSignatureUpdateInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   cargo?: Prisma.StringFieldUpdateOperationsInput | string
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  registradoPorNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  historialCorrecciones?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   accountRequest?: Prisma.AccountRequestUpdateOneRequiredWithoutSignaturesNestedInput
+  registradoPorUser?: Prisma.UserUpdateOneWithoutFirmasRegistradasNestedInput
 }
 
 export type AccountRequestSignatureUncheckedUpdateInput = {
@@ -275,6 +319,9 @@ export type AccountRequestSignatureUncheckedUpdateInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   cargo?: Prisma.StringFieldUpdateOperationsInput | string
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  registradoPorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registradoPorNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  historialCorrecciones?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type AccountRequestSignatureCreateManyInput = {
@@ -284,6 +331,9 @@ export type AccountRequestSignatureCreateManyInput = {
   nombre: string
   cargo: string
   fecha?: Date | string
+  registradoPorUserId?: string | null
+  registradoPorNombre?: string | null
+  historialCorrecciones?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type AccountRequestSignatureUpdateManyMutationInput = {
@@ -292,6 +342,8 @@ export type AccountRequestSignatureUpdateManyMutationInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   cargo?: Prisma.StringFieldUpdateOperationsInput | string
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  registradoPorNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  historialCorrecciones?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type AccountRequestSignatureUncheckedUpdateManyInput = {
@@ -301,6 +353,9 @@ export type AccountRequestSignatureUncheckedUpdateManyInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   cargo?: Prisma.StringFieldUpdateOperationsInput | string
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  registradoPorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registradoPorNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  historialCorrecciones?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type AccountRequestSignatureListRelationFilter = {
@@ -325,6 +380,9 @@ export type AccountRequestSignatureCountOrderByAggregateInput = {
   nombre?: Prisma.SortOrder
   cargo?: Prisma.SortOrder
   fecha?: Prisma.SortOrder
+  registradoPorUserId?: Prisma.SortOrder
+  registradoPorNombre?: Prisma.SortOrder
+  historialCorrecciones?: Prisma.SortOrder
 }
 
 export type AccountRequestSignatureMaxOrderByAggregateInput = {
@@ -334,6 +392,8 @@ export type AccountRequestSignatureMaxOrderByAggregateInput = {
   nombre?: Prisma.SortOrder
   cargo?: Prisma.SortOrder
   fecha?: Prisma.SortOrder
+  registradoPorUserId?: Prisma.SortOrder
+  registradoPorNombre?: Prisma.SortOrder
 }
 
 export type AccountRequestSignatureMinOrderByAggregateInput = {
@@ -343,6 +403,50 @@ export type AccountRequestSignatureMinOrderByAggregateInput = {
   nombre?: Prisma.SortOrder
   cargo?: Prisma.SortOrder
   fecha?: Prisma.SortOrder
+  registradoPorUserId?: Prisma.SortOrder
+  registradoPorNombre?: Prisma.SortOrder
+}
+
+export type AccountRequestSignatureCreateNestedManyWithoutRegistradoPorUserInput = {
+  create?: Prisma.XOR<Prisma.AccountRequestSignatureCreateWithoutRegistradoPorUserInput, Prisma.AccountRequestSignatureUncheckedCreateWithoutRegistradoPorUserInput> | Prisma.AccountRequestSignatureCreateWithoutRegistradoPorUserInput[] | Prisma.AccountRequestSignatureUncheckedCreateWithoutRegistradoPorUserInput[]
+  connectOrCreate?: Prisma.AccountRequestSignatureCreateOrConnectWithoutRegistradoPorUserInput | Prisma.AccountRequestSignatureCreateOrConnectWithoutRegistradoPorUserInput[]
+  createMany?: Prisma.AccountRequestSignatureCreateManyRegistradoPorUserInputEnvelope
+  connect?: Prisma.AccountRequestSignatureWhereUniqueInput | Prisma.AccountRequestSignatureWhereUniqueInput[]
+}
+
+export type AccountRequestSignatureUncheckedCreateNestedManyWithoutRegistradoPorUserInput = {
+  create?: Prisma.XOR<Prisma.AccountRequestSignatureCreateWithoutRegistradoPorUserInput, Prisma.AccountRequestSignatureUncheckedCreateWithoutRegistradoPorUserInput> | Prisma.AccountRequestSignatureCreateWithoutRegistradoPorUserInput[] | Prisma.AccountRequestSignatureUncheckedCreateWithoutRegistradoPorUserInput[]
+  connectOrCreate?: Prisma.AccountRequestSignatureCreateOrConnectWithoutRegistradoPorUserInput | Prisma.AccountRequestSignatureCreateOrConnectWithoutRegistradoPorUserInput[]
+  createMany?: Prisma.AccountRequestSignatureCreateManyRegistradoPorUserInputEnvelope
+  connect?: Prisma.AccountRequestSignatureWhereUniqueInput | Prisma.AccountRequestSignatureWhereUniqueInput[]
+}
+
+export type AccountRequestSignatureUpdateManyWithoutRegistradoPorUserNestedInput = {
+  create?: Prisma.XOR<Prisma.AccountRequestSignatureCreateWithoutRegistradoPorUserInput, Prisma.AccountRequestSignatureUncheckedCreateWithoutRegistradoPorUserInput> | Prisma.AccountRequestSignatureCreateWithoutRegistradoPorUserInput[] | Prisma.AccountRequestSignatureUncheckedCreateWithoutRegistradoPorUserInput[]
+  connectOrCreate?: Prisma.AccountRequestSignatureCreateOrConnectWithoutRegistradoPorUserInput | Prisma.AccountRequestSignatureCreateOrConnectWithoutRegistradoPorUserInput[]
+  upsert?: Prisma.AccountRequestSignatureUpsertWithWhereUniqueWithoutRegistradoPorUserInput | Prisma.AccountRequestSignatureUpsertWithWhereUniqueWithoutRegistradoPorUserInput[]
+  createMany?: Prisma.AccountRequestSignatureCreateManyRegistradoPorUserInputEnvelope
+  set?: Prisma.AccountRequestSignatureWhereUniqueInput | Prisma.AccountRequestSignatureWhereUniqueInput[]
+  disconnect?: Prisma.AccountRequestSignatureWhereUniqueInput | Prisma.AccountRequestSignatureWhereUniqueInput[]
+  delete?: Prisma.AccountRequestSignatureWhereUniqueInput | Prisma.AccountRequestSignatureWhereUniqueInput[]
+  connect?: Prisma.AccountRequestSignatureWhereUniqueInput | Prisma.AccountRequestSignatureWhereUniqueInput[]
+  update?: Prisma.AccountRequestSignatureUpdateWithWhereUniqueWithoutRegistradoPorUserInput | Prisma.AccountRequestSignatureUpdateWithWhereUniqueWithoutRegistradoPorUserInput[]
+  updateMany?: Prisma.AccountRequestSignatureUpdateManyWithWhereWithoutRegistradoPorUserInput | Prisma.AccountRequestSignatureUpdateManyWithWhereWithoutRegistradoPorUserInput[]
+  deleteMany?: Prisma.AccountRequestSignatureScalarWhereInput | Prisma.AccountRequestSignatureScalarWhereInput[]
+}
+
+export type AccountRequestSignatureUncheckedUpdateManyWithoutRegistradoPorUserNestedInput = {
+  create?: Prisma.XOR<Prisma.AccountRequestSignatureCreateWithoutRegistradoPorUserInput, Prisma.AccountRequestSignatureUncheckedCreateWithoutRegistradoPorUserInput> | Prisma.AccountRequestSignatureCreateWithoutRegistradoPorUserInput[] | Prisma.AccountRequestSignatureUncheckedCreateWithoutRegistradoPorUserInput[]
+  connectOrCreate?: Prisma.AccountRequestSignatureCreateOrConnectWithoutRegistradoPorUserInput | Prisma.AccountRequestSignatureCreateOrConnectWithoutRegistradoPorUserInput[]
+  upsert?: Prisma.AccountRequestSignatureUpsertWithWhereUniqueWithoutRegistradoPorUserInput | Prisma.AccountRequestSignatureUpsertWithWhereUniqueWithoutRegistradoPorUserInput[]
+  createMany?: Prisma.AccountRequestSignatureCreateManyRegistradoPorUserInputEnvelope
+  set?: Prisma.AccountRequestSignatureWhereUniqueInput | Prisma.AccountRequestSignatureWhereUniqueInput[]
+  disconnect?: Prisma.AccountRequestSignatureWhereUniqueInput | Prisma.AccountRequestSignatureWhereUniqueInput[]
+  delete?: Prisma.AccountRequestSignatureWhereUniqueInput | Prisma.AccountRequestSignatureWhereUniqueInput[]
+  connect?: Prisma.AccountRequestSignatureWhereUniqueInput | Prisma.AccountRequestSignatureWhereUniqueInput[]
+  update?: Prisma.AccountRequestSignatureUpdateWithWhereUniqueWithoutRegistradoPorUserInput | Prisma.AccountRequestSignatureUpdateWithWhereUniqueWithoutRegistradoPorUserInput[]
+  updateMany?: Prisma.AccountRequestSignatureUpdateManyWithWhereWithoutRegistradoPorUserInput | Prisma.AccountRequestSignatureUpdateManyWithWhereWithoutRegistradoPorUserInput[]
+  deleteMany?: Prisma.AccountRequestSignatureScalarWhereInput | Prisma.AccountRequestSignatureScalarWhereInput[]
 }
 
 export type AccountRequestSignatureCreateNestedManyWithoutAccountRequestInput = {
@@ -391,12 +495,78 @@ export type EnumAccountRequestStageFieldUpdateOperationsInput = {
   set?: $Enums.AccountRequestStage
 }
 
+export type AccountRequestSignatureCreateWithoutRegistradoPorUserInput = {
+  id?: string
+  stage: $Enums.AccountRequestStage
+  nombre: string
+  cargo: string
+  fecha?: Date | string
+  registradoPorNombre?: string | null
+  historialCorrecciones?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  accountRequest: Prisma.AccountRequestCreateNestedOneWithoutSignaturesInput
+}
+
+export type AccountRequestSignatureUncheckedCreateWithoutRegistradoPorUserInput = {
+  id?: string
+  accountRequestId: string
+  stage: $Enums.AccountRequestStage
+  nombre: string
+  cargo: string
+  fecha?: Date | string
+  registradoPorNombre?: string | null
+  historialCorrecciones?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+}
+
+export type AccountRequestSignatureCreateOrConnectWithoutRegistradoPorUserInput = {
+  where: Prisma.AccountRequestSignatureWhereUniqueInput
+  create: Prisma.XOR<Prisma.AccountRequestSignatureCreateWithoutRegistradoPorUserInput, Prisma.AccountRequestSignatureUncheckedCreateWithoutRegistradoPorUserInput>
+}
+
+export type AccountRequestSignatureCreateManyRegistradoPorUserInputEnvelope = {
+  data: Prisma.AccountRequestSignatureCreateManyRegistradoPorUserInput | Prisma.AccountRequestSignatureCreateManyRegistradoPorUserInput[]
+  skipDuplicates?: boolean
+}
+
+export type AccountRequestSignatureUpsertWithWhereUniqueWithoutRegistradoPorUserInput = {
+  where: Prisma.AccountRequestSignatureWhereUniqueInput
+  update: Prisma.XOR<Prisma.AccountRequestSignatureUpdateWithoutRegistradoPorUserInput, Prisma.AccountRequestSignatureUncheckedUpdateWithoutRegistradoPorUserInput>
+  create: Prisma.XOR<Prisma.AccountRequestSignatureCreateWithoutRegistradoPorUserInput, Prisma.AccountRequestSignatureUncheckedCreateWithoutRegistradoPorUserInput>
+}
+
+export type AccountRequestSignatureUpdateWithWhereUniqueWithoutRegistradoPorUserInput = {
+  where: Prisma.AccountRequestSignatureWhereUniqueInput
+  data: Prisma.XOR<Prisma.AccountRequestSignatureUpdateWithoutRegistradoPorUserInput, Prisma.AccountRequestSignatureUncheckedUpdateWithoutRegistradoPorUserInput>
+}
+
+export type AccountRequestSignatureUpdateManyWithWhereWithoutRegistradoPorUserInput = {
+  where: Prisma.AccountRequestSignatureScalarWhereInput
+  data: Prisma.XOR<Prisma.AccountRequestSignatureUpdateManyMutationInput, Prisma.AccountRequestSignatureUncheckedUpdateManyWithoutRegistradoPorUserInput>
+}
+
+export type AccountRequestSignatureScalarWhereInput = {
+  AND?: Prisma.AccountRequestSignatureScalarWhereInput | Prisma.AccountRequestSignatureScalarWhereInput[]
+  OR?: Prisma.AccountRequestSignatureScalarWhereInput[]
+  NOT?: Prisma.AccountRequestSignatureScalarWhereInput | Prisma.AccountRequestSignatureScalarWhereInput[]
+  id?: Prisma.StringFilter<"AccountRequestSignature"> | string
+  accountRequestId?: Prisma.StringFilter<"AccountRequestSignature"> | string
+  stage?: Prisma.EnumAccountRequestStageFilter<"AccountRequestSignature"> | $Enums.AccountRequestStage
+  nombre?: Prisma.StringFilter<"AccountRequestSignature"> | string
+  cargo?: Prisma.StringFilter<"AccountRequestSignature"> | string
+  fecha?: Prisma.DateTimeFilter<"AccountRequestSignature"> | Date | string
+  registradoPorUserId?: Prisma.StringNullableFilter<"AccountRequestSignature"> | string | null
+  registradoPorNombre?: Prisma.StringNullableFilter<"AccountRequestSignature"> | string | null
+  historialCorrecciones?: Prisma.JsonNullableFilter<"AccountRequestSignature">
+}
+
 export type AccountRequestSignatureCreateWithoutAccountRequestInput = {
   id?: string
   stage: $Enums.AccountRequestStage
   nombre: string
   cargo: string
   fecha?: Date | string
+  registradoPorNombre?: string | null
+  historialCorrecciones?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  registradoPorUser?: Prisma.UserCreateNestedOneWithoutFirmasRegistradasInput
 }
 
 export type AccountRequestSignatureUncheckedCreateWithoutAccountRequestInput = {
@@ -405,6 +575,9 @@ export type AccountRequestSignatureUncheckedCreateWithoutAccountRequestInput = {
   nombre: string
   cargo: string
   fecha?: Date | string
+  registradoPorUserId?: string | null
+  registradoPorNombre?: string | null
+  historialCorrecciones?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type AccountRequestSignatureCreateOrConnectWithoutAccountRequestInput = {
@@ -433,16 +606,48 @@ export type AccountRequestSignatureUpdateManyWithWhereWithoutAccountRequestInput
   data: Prisma.XOR<Prisma.AccountRequestSignatureUpdateManyMutationInput, Prisma.AccountRequestSignatureUncheckedUpdateManyWithoutAccountRequestInput>
 }
 
-export type AccountRequestSignatureScalarWhereInput = {
-  AND?: Prisma.AccountRequestSignatureScalarWhereInput | Prisma.AccountRequestSignatureScalarWhereInput[]
-  OR?: Prisma.AccountRequestSignatureScalarWhereInput[]
-  NOT?: Prisma.AccountRequestSignatureScalarWhereInput | Prisma.AccountRequestSignatureScalarWhereInput[]
-  id?: Prisma.StringFilter<"AccountRequestSignature"> | string
-  accountRequestId?: Prisma.StringFilter<"AccountRequestSignature"> | string
-  stage?: Prisma.EnumAccountRequestStageFilter<"AccountRequestSignature"> | $Enums.AccountRequestStage
-  nombre?: Prisma.StringFilter<"AccountRequestSignature"> | string
-  cargo?: Prisma.StringFilter<"AccountRequestSignature"> | string
-  fecha?: Prisma.DateTimeFilter<"AccountRequestSignature"> | Date | string
+export type AccountRequestSignatureCreateManyRegistradoPorUserInput = {
+  id?: string
+  accountRequestId: string
+  stage: $Enums.AccountRequestStage
+  nombre: string
+  cargo: string
+  fecha?: Date | string
+  registradoPorNombre?: string | null
+  historialCorrecciones?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+}
+
+export type AccountRequestSignatureUpdateWithoutRegistradoPorUserInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  stage?: Prisma.EnumAccountRequestStageFieldUpdateOperationsInput | $Enums.AccountRequestStage
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  cargo?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  registradoPorNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  historialCorrecciones?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  accountRequest?: Prisma.AccountRequestUpdateOneRequiredWithoutSignaturesNestedInput
+}
+
+export type AccountRequestSignatureUncheckedUpdateWithoutRegistradoPorUserInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  accountRequestId?: Prisma.StringFieldUpdateOperationsInput | string
+  stage?: Prisma.EnumAccountRequestStageFieldUpdateOperationsInput | $Enums.AccountRequestStage
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  cargo?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  registradoPorNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  historialCorrecciones?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+}
+
+export type AccountRequestSignatureUncheckedUpdateManyWithoutRegistradoPorUserInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  accountRequestId?: Prisma.StringFieldUpdateOperationsInput | string
+  stage?: Prisma.EnumAccountRequestStageFieldUpdateOperationsInput | $Enums.AccountRequestStage
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  cargo?: Prisma.StringFieldUpdateOperationsInput | string
+  fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  registradoPorNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  historialCorrecciones?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type AccountRequestSignatureCreateManyAccountRequestInput = {
@@ -451,6 +656,9 @@ export type AccountRequestSignatureCreateManyAccountRequestInput = {
   nombre: string
   cargo: string
   fecha?: Date | string
+  registradoPorUserId?: string | null
+  registradoPorNombre?: string | null
+  historialCorrecciones?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type AccountRequestSignatureUpdateWithoutAccountRequestInput = {
@@ -459,6 +667,9 @@ export type AccountRequestSignatureUpdateWithoutAccountRequestInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   cargo?: Prisma.StringFieldUpdateOperationsInput | string
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  registradoPorNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  historialCorrecciones?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  registradoPorUser?: Prisma.UserUpdateOneWithoutFirmasRegistradasNestedInput
 }
 
 export type AccountRequestSignatureUncheckedUpdateWithoutAccountRequestInput = {
@@ -467,6 +678,9 @@ export type AccountRequestSignatureUncheckedUpdateWithoutAccountRequestInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   cargo?: Prisma.StringFieldUpdateOperationsInput | string
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  registradoPorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registradoPorNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  historialCorrecciones?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 export type AccountRequestSignatureUncheckedUpdateManyWithoutAccountRequestInput = {
@@ -475,6 +689,9 @@ export type AccountRequestSignatureUncheckedUpdateManyWithoutAccountRequestInput
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   cargo?: Prisma.StringFieldUpdateOperationsInput | string
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  registradoPorUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registradoPorNombre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  historialCorrecciones?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
 
@@ -486,7 +703,11 @@ export type AccountRequestSignatureSelect<ExtArgs extends runtime.Types.Extensio
   nombre?: boolean
   cargo?: boolean
   fecha?: boolean
+  registradoPorUserId?: boolean
+  registradoPorNombre?: boolean
+  historialCorrecciones?: boolean
   accountRequest?: boolean | Prisma.AccountRequestDefaultArgs<ExtArgs>
+  registradoPorUser?: boolean | Prisma.AccountRequestSignature$registradoPorUserArgs<ExtArgs>
 }, ExtArgs["result"]["accountRequestSignature"]>
 
 export type AccountRequestSignatureSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -496,7 +717,11 @@ export type AccountRequestSignatureSelectCreateManyAndReturn<ExtArgs extends run
   nombre?: boolean
   cargo?: boolean
   fecha?: boolean
+  registradoPorUserId?: boolean
+  registradoPorNombre?: boolean
+  historialCorrecciones?: boolean
   accountRequest?: boolean | Prisma.AccountRequestDefaultArgs<ExtArgs>
+  registradoPorUser?: boolean | Prisma.AccountRequestSignature$registradoPorUserArgs<ExtArgs>
 }, ExtArgs["result"]["accountRequestSignature"]>
 
 export type AccountRequestSignatureSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -506,7 +731,11 @@ export type AccountRequestSignatureSelectUpdateManyAndReturn<ExtArgs extends run
   nombre?: boolean
   cargo?: boolean
   fecha?: boolean
+  registradoPorUserId?: boolean
+  registradoPorNombre?: boolean
+  historialCorrecciones?: boolean
   accountRequest?: boolean | Prisma.AccountRequestDefaultArgs<ExtArgs>
+  registradoPorUser?: boolean | Prisma.AccountRequestSignature$registradoPorUserArgs<ExtArgs>
 }, ExtArgs["result"]["accountRequestSignature"]>
 
 export type AccountRequestSignatureSelectScalar = {
@@ -516,23 +745,30 @@ export type AccountRequestSignatureSelectScalar = {
   nombre?: boolean
   cargo?: boolean
   fecha?: boolean
+  registradoPorUserId?: boolean
+  registradoPorNombre?: boolean
+  historialCorrecciones?: boolean
 }
 
-export type AccountRequestSignatureOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "accountRequestId" | "stage" | "nombre" | "cargo" | "fecha", ExtArgs["result"]["accountRequestSignature"]>
+export type AccountRequestSignatureOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "accountRequestId" | "stage" | "nombre" | "cargo" | "fecha" | "registradoPorUserId" | "registradoPorNombre" | "historialCorrecciones", ExtArgs["result"]["accountRequestSignature"]>
 export type AccountRequestSignatureInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   accountRequest?: boolean | Prisma.AccountRequestDefaultArgs<ExtArgs>
+  registradoPorUser?: boolean | Prisma.AccountRequestSignature$registradoPorUserArgs<ExtArgs>
 }
 export type AccountRequestSignatureIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   accountRequest?: boolean | Prisma.AccountRequestDefaultArgs<ExtArgs>
+  registradoPorUser?: boolean | Prisma.AccountRequestSignature$registradoPorUserArgs<ExtArgs>
 }
 export type AccountRequestSignatureIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   accountRequest?: boolean | Prisma.AccountRequestDefaultArgs<ExtArgs>
+  registradoPorUser?: boolean | Prisma.AccountRequestSignature$registradoPorUserArgs<ExtArgs>
 }
 
 export type $AccountRequestSignaturePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "AccountRequestSignature"
   objects: {
     accountRequest: Prisma.$AccountRequestPayload<ExtArgs>
+    registradoPorUser: Prisma.$UserPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -541,6 +777,9 @@ export type $AccountRequestSignaturePayload<ExtArgs extends runtime.Types.Extens
     nombre: string
     cargo: string
     fecha: Date
+    registradoPorUserId: string | null
+    registradoPorNombre: string | null
+    historialCorrecciones: runtime.JsonValue | null
   }, ExtArgs["result"]["accountRequestSignature"]>
   composites: {}
 }
@@ -936,6 +1175,7 @@ readonly fields: AccountRequestSignatureFieldRefs;
 export interface Prisma__AccountRequestSignatureClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   accountRequest<T extends Prisma.AccountRequestDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.AccountRequestDefaultArgs<ExtArgs>>): Prisma.Prisma__AccountRequestClient<runtime.Types.Result.GetResult<Prisma.$AccountRequestPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  registradoPorUser<T extends Prisma.AccountRequestSignature$registradoPorUserArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.AccountRequestSignature$registradoPorUserArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -971,6 +1211,9 @@ export interface AccountRequestSignatureFieldRefs {
   readonly nombre: Prisma.FieldRef<"AccountRequestSignature", 'String'>
   readonly cargo: Prisma.FieldRef<"AccountRequestSignature", 'String'>
   readonly fecha: Prisma.FieldRef<"AccountRequestSignature", 'DateTime'>
+  readonly registradoPorUserId: Prisma.FieldRef<"AccountRequestSignature", 'String'>
+  readonly registradoPorNombre: Prisma.FieldRef<"AccountRequestSignature", 'String'>
+  readonly historialCorrecciones: Prisma.FieldRef<"AccountRequestSignature", 'Json'>
 }
     
 
@@ -1369,6 +1612,25 @@ export type AccountRequestSignatureDeleteManyArgs<ExtArgs extends runtime.Types.
    * Limit how many AccountRequestSignatures to delete.
    */
   limit?: number
+}
+
+/**
+ * AccountRequestSignature.registradoPorUser
+ */
+export type AccountRequestSignature$registradoPorUserArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the User
+   */
+  select?: Prisma.UserSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the User
+   */
+  omit?: Prisma.UserOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
+  where?: Prisma.UserWhereInput
 }
 
 /**
