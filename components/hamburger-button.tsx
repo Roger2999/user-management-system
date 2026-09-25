@@ -5,13 +5,13 @@ import { Menu } from "lucide-react";
 import { Button } from "./ui/button";
 
 export default function HamburgerButton() {
-  const { setIsMenuOpen } = useNavMenuStore();
+  const { isMenuOpen, setIsMenuOpen } = useNavMenuStore();
 
   return (
     <Button
       variant={"outline"}
       className="relative z-30 ml-5 sm:hidden"
-      onClick={() => setIsMenuOpen(false)}
+      onClick={() => setIsMenuOpen(!isMenuOpen)}
     >
       <Menu />
     </Button>

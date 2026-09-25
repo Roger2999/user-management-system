@@ -7,6 +7,5 @@ type Store = {
 
 export const useNavMenuStore = create<Store>((set) => ({
   isMenuOpen: false,
-  setIsMenuOpen: (value) =>
-    set((state) => ({ isMenuOpen: state.isMenuOpen === value })),
+  setIsMenuOpen: (value) => set({ isMenuOpen: value }),
 }));
