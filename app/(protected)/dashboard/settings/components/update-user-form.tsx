@@ -7,7 +7,7 @@ import { UpdateUserState } from "@/lib/types";
 import { UpdateUserAction } from "../actions/update-user-action";
 
 type Props = {
-  initialUser: { username: string; displayName: string };
+  initialUser: { username: string; displayName: string; cargo: string | null };
 };
 
 export default function UpdateUserForm({ initialUser }: Props) {
@@ -42,6 +42,13 @@ export default function UpdateUserForm({ initialUser }: Props) {
           type="text"
           name="displayName"
           defaultValue={state.data?.displayName ?? initialUser.displayName}
+        />
+        <Field
+          label="Cargo (aparece en tus firmas)"
+          errors={state.validationErrors?.cargo}
+          type="text"
+          name="cargo"
+          defaultValue={state.data?.cargo ?? initialUser.cargo ?? ""}
         />
         <Button className="mt-auto">
           {pending ? "Enviando..." : "Guardar"}

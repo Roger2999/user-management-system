@@ -20,6 +20,7 @@ export default async function SettingsPage() {
               (user as { displayUsername?: string })?.displayUsername ??
               user?.name ??
               "",
+            cargo: user?.cargo ?? null,
           }}
         />
         <ChangePasswordForm />

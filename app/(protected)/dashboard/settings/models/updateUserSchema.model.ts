@@ -9,6 +9,12 @@ export const UpdateUserSchema = z.object({
     .string()
     .max(40, "Máximo de 40 caracteres")
     .optional(),
+  // Cargo del operador: aparece en sus firmas (etapas Revisado/Ejecutado).
+  cargo: z
+    .string()
+    .trim()
+    .max(100, "Máximo de 100 caracteres")
+    .optional(),
 });
 
 export type UpdateUserFormValues = z.infer<typeof UpdateUserSchema>;

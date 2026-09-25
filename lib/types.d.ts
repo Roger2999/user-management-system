@@ -64,13 +64,14 @@ export type ResetPasswordState = {
 };
 
 export type UpdateUserState = {
-  data?: { username: string; displayName?: string };
+  data?: { username: string; displayName?: string; cargo?: string };
   message?: string;
   success?: boolean;
   dbErrors?: DbError;
   validationErrors?: {
     username?: string[];
     displayName?: string[];
+    cargo?: string[];
   } | null;
 };
 
