@@ -10,7 +10,7 @@ export async function requireAdmin() {
   if (!session) {
     redirect("/signin");
   }
-  if ((session.user as { role?: string }).role !== "ADMIN") {
+  if (session.user.role !== "ADMIN") {
     redirect("/dashboard");
   }
 }

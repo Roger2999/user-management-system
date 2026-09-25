@@ -6,7 +6,7 @@ import { DASHBOARD_CARDS } from "@/lib/constants";
 export default async function Dashboard() {
   const session = await getSession();
   const username = session?.user.username;
-  const isAdmin = (session?.user as { role?: string } | null)?.role === "ADMIN";
+  const isAdmin = session?.user.role === "ADMIN";
 
   return (
     <div className="flex flex-col items-center space-y-10">

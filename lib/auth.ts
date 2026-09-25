@@ -18,6 +18,16 @@ export const auth = betterAuth({
     },
     storage: "memory",
   },
+  user: {
+    additionalFields: {
+      role: {
+        type: ["USER", "ADMIN"],
+        required: false,
+        defaultValue: "USER",
+        input: false,
+      },
+    },
+  },
   advanced: {
     useSecureCookies: process.env.NODE_ENV === "production",
     defaultCookieAttributes: {
