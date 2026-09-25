@@ -3,6 +3,7 @@
 import z from "zod";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { requireAdmin } from "@/helpers/requireAdmin";
 import { DeleteUserAccountState } from "@/lib/types";
 
 const DeleteUserAccountSchema = z.object({
@@ -13,6 +14,8 @@ export async function deleteUserAccountAction(
   _prevState: DeleteUserAccountState,
   formData: FormData,
 ): Promise<DeleteUserAccountState> {
+  await requireAdmin();
+
   const fields = {
     id: (formData.get("id") as string) || "",
   };

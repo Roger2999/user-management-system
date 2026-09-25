@@ -6,6 +6,7 @@ import { DASHBOARD_CARDS } from "@/lib/constants";
 export default async function Dashboard() {
   const session = await getSession();
   const username = session?.user.username;
+  const isAdmin = (session?.user as { role?: string } | null)?.role === "ADMIN";
 
   return (
     <div className="flex flex-col items-center space-y-10">
@@ -17,23 +18,25 @@ export default async function Dashboard() {
           Bienvenido de vuelta, {username ?? "usuario"}
         </h2>
       </header>
-      <section className="grid w-full max-w-md gap-10">
-        {DASHBOARD_CARDS.map((card) => (
-          <Link href={card.href} key={card.title}>
-            <Card className="hover:bg-card-hover gap-4 py-8 text-center">
-              <CardHeader>
-                {<card.icon className="text-brand mx-auto my-1 size-6" />}
-                <CardTitle className="text-xl font-bold">
-                  {card.title}{" "}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">{card.description}</p>
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
-      </section>
+      {isAdmin && (
+        <section className="grid w-full max-w-md gap-10">
+          {DASHBOARD_CARDS.map((card) => (
+            <Link href={card.href} key={card.title}>
+              <Card className="hover:bg-card-hover gap-4 py-8 text-center">
+                <CardHeader>
+                  {<card.icon className="text-brand mx-auto my-1 size-6" />}
+                  <CardTitle className="text-xl font-bold">
+                    {card.title}{" "}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">{card.description}</p>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </section>
+      )}
     </div>
   );
 }

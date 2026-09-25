@@ -1,134 +1,171 @@
 # User Management System
 
-Sistema de autenticación y gestión de usuarios construido con Next.js, Better Auth y Prisma.
+Sistema de autenticación, gestión de solicitudes de cuentas de usuario y flujo de aprobación con firmas por etapas. Construido con Next.js, Better Auth y Prisma.
+
+## Funcionalidades
+
+| Módulo | Descripción |
+|--------|-------------|
+| Autenticación | Inicio de sesión por **username** + contraseña, registro de usuarios, cierre de sesión |
+| Recuperación de contraseña | Email con enlace de restablecimiento (Resend), token con expiración |
+| Roles y autorización | `USER` / `ADMIN`; toda la gestión exige rol `ADMIN` (server actions + rutas protegidas) |
+| Solicitudes de cuenta | Alta, actualización y baja de cuentas de usuario, con validación de campos únicos |
+| Flujo de firmas | Etapas `Solicitado → Revisado → Aprobado → Ejecutado`, inmutables y ordenadas |
+| Dashboard | Estadísticas de solicitudes: pendientes de firma, expiradas, por tipo y por cuenta |
+| Configuración | Editar perfil (username / nombre visible), cambiar contraseña, revocar sesiones |
+| Extras | Tema claro / oscuro / océano / sistema, impresión de plantilla de solicitud, búsqueda y filtros |
 
 ## Stack
 
-- **Framework:** Next.js 16 (App Router)
-- **Auth:** Better Auth v1.6
-- **ORM:** Prisma v7
-- **Database:** PostgreSQL (Prisma Postgres)
-- **UI:** shadcn/ui + Tailwind CSS v4
-- **Runtime:** React 19, TypeScript 5
+| Capa | Tecnología |
+|------|------------|
+| Framework | Next.js 16 (App Router), React 19, TypeScript |
+| Auth | Better Auth v1.6 (plugin username + email/password) |
+| ORM / DB | Prisma v7 con PostgreSQL (Prisma Postgres) |
+| UI | shadcn/ui + Tailwind CSS v4, Radix UI |
+| Validación | Zod 4 |
+| Email | Resend |
+| Estado | Zustand |
 
-## Características
+## Roles y autorización
 
-- Registro de usuarios (sign up)
-- Inicio de sesión con email y contraseña (sign in)
-- Protección de rutas por sesión
-- Dashboard con información del usuario
-- Tema claro / oscuro / sistema
+| Rol | Qué puede hacer |
+|-----|-----------------|
+| `USER` (default) | Dashboard personal, configuración de su cuenta |
+| `ADMIN` | Todo lo de `USER` + crear, editar, borrar y firmar solicitudes de cuenta, y ver las estadísticas de gestión |
+
+La protección se aplica en dos capas:
+
+- **Server actions**: `helpers/requireAdmin.ts` corta la ejecución sin sesión (`/signin`) o sin rol `ADMIN` (`/dashboard`).
+- **Rutas**: el layout de `user-accounts-management/` aplica la misma guardia; la card de gestión del dashboard solo se muestra a admins.
+
+Para promover un administrador por username:
+
+```bash
+pnpm exec tsx prisma/promote-admin.ts <username>
+```
+
+> **Nota:** los usuarios creados antes del plugin de username pueden no tener `username` en la DB; el script no los cubre. En ese caso promové por búsqueda directa en la base.
 
 ## Estructura del proyecto
 
 ```
 app/
 ├── (auth)/
-│   ├── signin/
-│   │   ├── actions/signin-action.ts       # Server action de inicio de sesión
-│   │   ├── components/signin-form.tsx     # Formulario de inicio de sesión
-│   │   ├── models/signinSchema.model.ts   # Validación Zod
-│   │   ├── forgot-password/               # Recuperar contraseña (placeholder)
-│   │   ├── reset-password/                # Restablecer contraseña (placeholder)
-│   │   └── page.tsx
-│   └── signup/
-│       ├── actions/signup-action.ts       # Server action de registro
-│       ├── components/signup-form.tsx     # Formulario de registro
-│       ├── models/signupFormSchema.model.ts
-│       └── page.tsx
-├── (protected)/
-│   └── dashboard/
-│       ├── layout.tsx                     # Verificación de sesión
-│       └── page.tsx                       # Dashboard del usuario
-├── api/auth/[...all]/route.ts             # API routes de Better Auth
-├── layout.tsx                             # Layout raíz
-├── page.tsx                               # Home (redirige a signin)
-└── globals.css
-lib/
-├── auth.ts                                # Config server de Better Auth
-├── auth-client.ts                         # Config client de Better Auth
-├── prisma.ts                              # PrismaClient singleton con PrismaPg
-├── types.d.ts                             # Tipos TypeScript
-└── utils.ts                               # Utilidad cn()
-components/
-├── field.tsx                              # Componente reutilizable de campo
-├── theme-mode-toggle.tsx                  # Toggle tema claro/oscuro
-├── theme-provider.tsx                     # Provider de next-themes
-└── ui/                                    # Componentes shadcn/ui
+│   ├── signin/                 # Login + forgot-password + reset-password
+│   ├── signup/                 # Registro (email + username + password)
+│   ├── verify-email-address/   # Resend de verificación (flujo inactivo en el código)
+│   └── actions/                # signout
+├── (protected)/dashboard/
+│   ├── page.tsx                # Bienvenida + card de gestión (solo ADMIN)
+│   ├── layout.tsx              # Protección de sesión
+│   ├── components/             # Breadcrumbs, notificaciones, stats
+│   ├── settings/               # Perfil, contraseña, sesiones
+│   └── user-accounts-management/
+│       ├── layout.tsx          # Guardia requireAdmin (toda la sección)
+│       ├── services/           # getAccountsCount
+│       └── users/              # Lista, crear, editar, firmar, borrar
+├── api/auth/[...all]/route.ts  # Handler de Better Auth
+└── layout.tsx / page.tsx / globals.css
+
+components/                     # Nav (desktop/mobile), field, botones, ui/ (shadcn)
 helpers/
-└── getSession.ts                          # Helper de sesión cacheada
+├── getSession.ts               # Sesión cacheada por request
+└── requireAdmin.ts             # Guardia de autorización
+lib/
+├── auth.ts                     # Config server de Better Auth
+├── auth-client.ts              # Config client
+├── prisma.ts                   # PrismaClient singleton (PrismaPg)
+├── resend.ts                   # Cliente de email
+├── constants.ts                # Rutas, opciones de formularios
+└── types.d.ts                  # Tipos de estado de las server actions
 prisma/
-├── schema.prisma                          # Modelos: User, Session, Account, Verification
-└── migrations/                            # Migraciones de Prisma
+├── schema.prisma               # Modelos: User, Session, Account, Verification, AccountRequest, AccountRequestSignature
+├── migrations/                 # Migraciones de Prisma
+├── seed.ts                     # Datos de ejemplo (⚠️ borra solicitudes existentes)
+└── promote-admin.ts            # Promueve un usuario a ADMIN por username
+generated/prisma/               # Cliente Prisma generado (se commitea)
 ```
 
-## Instalación
+Cada ruta sigue la convención `actions/` (server actions), `models/` (validación Zod), `components/` y `page.tsx`.
 
-### 1. Instalar dependencias
+## Inicio rápido
 
-```bash
-pnpm install
-```
+1. Instalar dependencias:
 
-### 2. Configurar variables de entorno
+   ```bash
+   pnpm install
+   ```
 
-Crea un archivo `.env` en la raíz del proyecto:
+2. Crear `.env` con las variables de [Variables de entorno](#variables-de-entorno)
 
-```bash
-BETTER_AUTH_SECRET=tu-secreto-aqui
-BETTER_AUTH_URL=http://localhost:3000
-DATABASE_URL="postgres://USUARIO:PASSWORD@db.prisma.io:5432/postgres?sslmode=require"
-```
+3. Aplicar migraciones y generar el cliente:
 
-### 3. Aplicar migraciones
+   ```bash
+   pnpm exec prisma migrate dev
+   pnpm exec prisma generate
+   ```
 
-```bash
-pnpm dlx prisma migrate dev
-```
+4. (Opcional) Crear el primer administrador:
 
-### 4. Generar Prisma Client
+   ```bash
+   pnpm exec tsx prisma/promote-admin.ts <tu-username>
+   ```
 
-```bash
-pnpm dlx prisma generate
-```
+5. Levantar el servidor:
 
-### 5. Iniciar el servidor de desarrollo
+   ```bash
+   pnpm dev
+   ```
 
-```bash
-pnpm dev
-```
+Abrí [http://localhost:3000](http://localhost:3000).
 
-Abre [http://localhost:3000](http://localhost:3000).
+## Variables de entorno
+
+| Variable | Obligatoria | Descripción |
+|----------|-------------|-------------|
+| `DATABASE_URL` | Sí | Connection string de PostgreSQL |
+| `BETTER_AUTH_SECRET` | Sí | Secreto de firma de sesiones |
+| `BETTER_AUTH_URL` | Sí | URL base del servidor (```http://localhost:3000``` en dev) |
+| `NEXT_PUBLIC_BETTER_AUTH_URL` | No | URL base para el cliente (fallback a localhost) |
+| `RESEND_API_KEY` | No* | Clave de Resend para emails (necesaria para recuperar contraseña) |
+
+\* Si no configurás `RESEND_API_KEY`, el envío de emails de recuperación falla silenciosamente en el servidor.
 
 ## Comandos útiles
 
 | Comando | Descripción |
 |---------|-------------|
-| `pnpm dev` | Iniciar servidor de desarrollo |
+| `pnpm dev` | Servidor de desarrollo |
 | `pnpm build` | Build de producción |
-| `pnpm lint` | Ejecutar ESLint |
-| `pnpm dlx prisma studio` | Abrir Prisma Studio (editor visual de la DB) |
-| `pnpm dlx prisma migrate dev` | Aplicar/crear migraciones |
-| `pnpm dlx prisma generate` | Regenerar Prisma Client |
+| `pnpm lint` | ESLint |
+| `pnpm exec prisma studio` | Prisma Studio (editor visual de la DB) |
+| `pnpm exec prisma migrate dev` | Crear/aplicar migraciones en desarrollo |
+| `pnpm exec prisma migrate deploy` | Aplicar migraciones pendientes (producción) |
+| `pnpm exec prisma generate` | Regenerar el cliente Prisma |
+| `pnpm exec prisma db seed` | Cargar datos de ejemplo |
+| `pnpm exec tsx prisma/promote-admin.ts <username>` | Promover administrador |
 
-## Desarrollo local sin internet
+> **⚠️ Seed:** `pnpm exec prisma db seed` borra todas las solicitudes de cuenta existentes antes de insertar los ejemplos. No lo corras sobre datos reales.
 
-Para desarrollar sin conexión a Prisma Postgres, usa `prisma dev` que crea un PostgreSQL local:
+## Desarrollo local sin conexión a Prisma Postgres
+
+Para levantar un PostgreSQL local:
 
 ```bash
 # Terminal 1: Base de datos local
-pnpm dlx prisma dev
+pnpm exec prisma dev
 
 # Terminal 2: Servidor de desarrollo
 pnpm dev
 ```
 
-Cuando uses `prisma dev`, actualiza el `DATABASE_URL` en `.env` con el connection string local que se muestra al ejecutar el comando.
+Cuando uses `prisma dev`, actualizá el `DATABASE_URL` en `.env` con el connection string local que imprime el comando.
 
 ## Deploy
 
-La app está configurada para deploy en Vercel. Asegúrate de configurar las variables de entorno en el dashboard de Vercel:
+La app está configurada para Vercel. En el dashboard configurá las variables de entorno de la tabla anterior, con `BETTER_AUTH_URL` y `NEXT_PUBLIC_BETTER_AUTH_URL` apuntando a la URL de producción.
 
-- `BETTER_AUTH_SECRET`
-- `BETTER_AUTH_URL` (URL de producción)
-- `DATABASE_URL`
+> **Importante:** `lib/auth.ts` define `trustedOrigins` con las URLs permitidas (localhost y producción). Si cambiás de dominio, agregalo ahí y en `BETTER_AUTH_URL` antes de desplegar.
+
+Una vez en producción, promové al administrador con el script `promote-admin.ts` contra la base de producción.

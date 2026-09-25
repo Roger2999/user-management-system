@@ -8,6 +8,7 @@ import {
 } from "../models/unique-account-request";
 import prisma from "@/lib/prisma";
 import { CreateUserAccountState } from "@/lib/types";
+import { requireAdmin } from "@/helpers/requireAdmin";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -15,6 +16,8 @@ export async function createUserAccountAction(
   _prevState: CreateUserAccountState,
   formData: FormData,
 ): Promise<CreateUserAccountState> {
+  await requireAdmin();
+
   const fields = {
     tipoSolicitud: (formData.get("tipoSolicitud") as string) || undefined,
     folio: (formData.get("folio") as string)?.trim().toUpperCase() ?? "",

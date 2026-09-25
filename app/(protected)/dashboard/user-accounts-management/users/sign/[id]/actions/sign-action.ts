@@ -2,16 +2,15 @@
 
 import { SignFormState } from "@/lib/types";
 import prisma from "@/lib/prisma";
-import {
-  SignFormSchema,
-  SIGN_STAGES,
-} from "../models/signSchema.model";
+import { requireAdmin } from "@/helpers/requireAdmin";
+import { SignFormSchema, SIGN_STAGES } from "../models/signSchema.model";
 import { revalidatePath } from "next/cache";
 import { AccountRequestStage } from "@/generated/prisma/enums";
+import z from "zod";
 
 type StageKey = (typeof SIGN_STAGES)[number]["key"];
 
-type RawSignFields = {
+type SignFields = {
   id: string;
   requested: boolean;
   requestedNombre: string;
@@ -27,24 +26,6 @@ type RawSignFields = {
   executedCargo: string;
 };
 
-function readFields(formData: FormData): RawSignFields {
-  return {
-    id: formData.get("id") as string,
-    requested: formData.get("requested") === "on",
-    requestedNombre: (formData.get("requestedNombre") as string) ?? "",
-    requestedCargo: (formData.get("requestedCargo") as string) ?? "",
-    revised: formData.get("revised") === "on",
-    revisedNombre: (formData.get("revisedNombre") as string) ?? "",
-    revisedCargo: (formData.get("revisedCargo") as string) ?? "",
-    approved: formData.get("approved") === "on",
-    approvedNombre: (formData.get("approvedNombre") as string) ?? "",
-    approvedCargo: (formData.get("approvedCargo") as string) ?? "",
-    executed: formData.get("executed") === "on",
-    executedNombre: (formData.get("executedNombre") as string) ?? "",
-    executedCargo: (formData.get("executedCargo") as string) ?? "",
-  };
-}
-
 const stageToEnum: Record<StageKey, AccountRequestStage> = {
   requested: "requested",
   revised: "revised",
@@ -52,8 +33,7 @@ const stageToEnum: Record<StageKey, AccountRequestStage> = {
   executed: "executed",
 };
 
-// Limpia los campos crudos al shape de SignFormState.data.
-function toData(f: RawSignFields) {
+function toData(f: SignFields) {
   return {
     requested: f.requested,
     requestedNombre: f.requestedNombre,
@@ -74,7 +54,23 @@ export const signAction = async (
   prevState: SignFormState,
   formData: FormData,
 ): Promise<SignFormState> => {
-  const fields = readFields(formData);
+  await requireAdmin();
+
+  const fields = {
+    id: formData.get("id") as string,
+    requested: formData.get("requested") === "on",
+    requestedNombre: (formData.get("requestedNombre") as string) ?? "",
+    requestedCargo: (formData.get("requestedCargo") as string) ?? "",
+    revised: formData.get("revised") === "on",
+    revisedNombre: (formData.get("revisedNombre") as string) ?? "",
+    revisedCargo: (formData.get("revisedCargo") as string) ?? "",
+    approved: formData.get("approved") === "on",
+    approvedNombre: (formData.get("approvedNombre") as string) ?? "",
+    approvedCargo: (formData.get("approvedCargo") as string) ?? "",
+    executed: formData.get("executed") === "on",
+    executedNombre: (formData.get("executedNombre") as string) ?? "",
+    executedCargo: (formData.get("executedCargo") as string) ?? "",
+  };
 
   // Una etapa ya firmada es inmutable: el cliente la bloquea con inputs
   // disabled, que NO viajan en el formulario. Tomar sus campos de la DB
@@ -108,13 +104,12 @@ export const signAction = async (
       data: toData(fields),
       success: false,
       dbErrors: null,
-      validationErrors: validatedFields.error.flatten().fieldErrors,
+      validationErrors: z.flattenError(validatedFields.error).fieldErrors,
     };
   }
 
   const id = validatedFields.data.id;
-  // readFields siempre entrega todos los campos; toData normaliza el output del schema.
-  const signs = toData(validatedFields.data as RawSignFields);
+  const signs = toData(validatedFields.data as SignFields);
 
   const existingStages = new Set(current.signatures.map((sig) => sig.stage));
 
@@ -150,8 +145,7 @@ export const signAction = async (
 
   // Crear SOLO las firmas nuevas (las ya existentes son inmutables).
   const newSignatures = SIGN_STAGES.filter(
-    (stage) =>
-      signs[stage.key] && !existingStages.has(stageToEnum[stage.key]),
+    (stage) => signs[stage.key] && !existingStages.has(stageToEnum[stage.key]),
   ).map((stage) => ({
     accountRequestId: id,
     stage: stageToEnum[stage.key],
