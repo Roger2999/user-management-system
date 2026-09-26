@@ -95,7 +95,7 @@ export const signAction = async (
   }
   const nombreOperador =
     (sessionUser.name ?? "").trim() || (sessionUser.username ?? "").trim();
-  const cargoOperador = (sessionUser.cargo ?? "").trim();
+  const cargoOperador = (sessionUser.charge ?? "").trim();
 
   const fields: SignFields = {
     id: (formData.get("id") as string) ?? "",

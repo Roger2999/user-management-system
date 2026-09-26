@@ -14,6 +14,8 @@ export const signupAction = async (
 ): Promise<SignupFormState> => {
   const fields = {
     username: formData.get("username") as string,
+    fullName: formData.get("fullName") as string,
+    charge: formData.get("charge") as string,
     email: formData.get("email") as string,
     password: formData.get("password") as string,
     confirmPassword: formData.get("confirmPassword") as string,
@@ -21,14 +23,19 @@ export const signupAction = async (
   const validatedFields = SignupFormSchema.safeParse(fields);
   if (!validatedFields.success) {
     return {
-      data: { email: fields.email, username: fields.username },
+      data: {
+        email: fields.email,
+        username: fields.username,
+        charge: fields.charge,
+        fullName: fields.fullName,
+      },
       success: false,
       dbErrors: null,
       validationErrors: z.flattenError(validatedFields.error).fieldErrors,
     };
   }
 
-  const { email, password, username } = validatedFields.data;
+  const { email, password, username, fullName, charge } = validatedFields.data;
 
   //validar si ya existe email y username en la db
   const [existingUsername, existingEmail] = await Promise.all([
@@ -49,7 +56,7 @@ export const signupAction = async (
   }
   if (existingUsername || existingEmail) {
     return {
-      data: { username, email },
+      data: { username, email, charge, fullName },
       success: false,
       dbErrors: null,
       validationErrors,
@@ -58,7 +65,15 @@ export const signupAction = async (
 
   try {
     await auth.api.signUpEmail({
-      body: { email, password, name: username, username, rememberMe: true },
+      body: {
+        email,
+        charge,
+        fullName,
+        password,
+        name: username,
+        username,
+        rememberMe: true,
+      },
       headers: await headers(),
     });
     // await auth.api.sendVerificationEmail({
@@ -67,7 +82,7 @@ export const signupAction = async (
     // });
   } catch {
     return {
-      data: { email, username },
+      data: { email, username, charge, fullName },
       success: false,
       dbErrors: { message: "Error al crear la cuenta. Intenta de nuevo." },
       validationErrors: null,

@@ -8,11 +8,13 @@ type DbError = {
 } | null;
 
 export type SignupFormState = {
-  data?: { username?: string; email: string };
+  data?: { username?: string; email: string; fullName: string; charge: string };
   success?: boolean;
   dbErrors?: DbError;
   validationErrors?: {
     username?: string[];
+    fullName?: string[];
+    charge?: string[];
     email?: string[];
     password?: string[];
     confirmPassword?: string[];
@@ -64,14 +66,14 @@ export type ResetPasswordState = {
 };
 
 export type UpdateUserState = {
-  data?: { username: string; displayName?: string; cargo?: string };
+  data?: { username: string; displayName?: string; charge?: string };
   message?: string;
   success?: boolean;
   dbErrors?: DbError;
   validationErrors?: {
     username?: string[];
     displayName?: string[];
-    cargo?: string[];
+    charge?: string[];
   } | null;
 };
 

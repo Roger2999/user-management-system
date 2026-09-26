@@ -20,10 +20,23 @@ export default function SignupForm() {
       className="bg-form w-md max-w-full space-y-2 rounded-xl border p-10"
     >
       <Field
+        label="Nombre y apellidos"
+        name="fullName"
+        type="text"
+        errors={state.validationErrors?.fullName}
+        defaultValue={state.data?.fullName}
+      />
+      <Field
         label="Nombre de usuario"
         name="username"
         errors={state.validationErrors?.username}
         defaultValue={state.data?.username}
+      />
+      <Field
+        label="Cargo"
+        name="charge"
+        errors={state.validationErrors?.charge}
+        defaultValue={state.data?.charge}
       />
       <Field
         label="Correo electrónico"

@@ -31,7 +31,7 @@ export default async function SignPage({ params }: Props) {
   const currentUser = session?.user
     ? {
         name: session.user.name.trim() || session.user.username || "",
-        cargo: session.user.cargo ?? null,
+        charge: session.user.charge ?? null,
       }
     : undefined;
 

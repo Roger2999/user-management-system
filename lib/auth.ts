@@ -20,17 +20,20 @@ export const auth = betterAuth({
   },
   user: {
     additionalFields: {
+      fullName: {
+        type: "string",
+        required: true,
+        input: true,
+      },
       role: {
         type: ["USER", "ADMIN"],
         required: false,
         defaultValue: "USER",
         input: false,
       },
-      // Cargo del operador (especialista): se edita en Ajustes y se usa
-      // como identidad en sus firmas (etapas Revisado/Ejecutado).
-      cargo: {
+      charge: {
         type: "string",
-        required: false,
+        required: true,
         input: true,
       },
     },

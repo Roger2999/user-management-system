@@ -27,7 +27,7 @@ export interface SignValues {
 interface Props {
   id: string;
   initial?: SignValues;
-  currentUser?: { name: string; cargo: string | null };
+  currentUser?: { name: string; charge: string | null };
 }
 
 const initialState: SignFormState = {
@@ -184,8 +184,7 @@ export default function SignForm({ id, initial, currentUser }: Props) {
                 ) : marcadoHoy ? (
                   <p className="text-muted-foreground text-sm">
                     Firmará: {currentUser?.name} —{" "}
-                    {currentUser?.cargo ??
-                      "sin cargo (configuralo en Ajustes)"}
+                    {currentUser?.charge ?? "sin cargo (configuralo en Ajustes)"}
                   </p>
                 ) : null}
                 {!signed && errorPropio && (
