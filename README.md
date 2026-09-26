@@ -97,13 +97,22 @@ Cada ruta sigue la convención `actions/` (server actions), `models/` (validaci�
    pnpm install
    ```
 
-2. Crear `.env` con las variables de [Variables de entorno](#variables-de-entorno)
-
-3. Aplicar migraciones y generar el cliente:
+2. Crear `.env` a partir del template:
 
    ```bash
-   pnpm exec prisma migrate dev
-   pnpm exec prisma generate
+   cp .env.example .env
+   ```
+
+   Después completá los valores de [Variables de entorno](#variables-de-entorno).
+
+   > El paso de `pnpm install` ya corre `prisma generate` por vos
+   > (`postinstall`), así que el cliente queda generado solo. Si tocás
+   > `schema.prisma`, corré `pnpm db:generate`.
+
+3. Aplicar migraciones:
+
+   ```bash
+   pnpm db:migrate
    ```
 
 4. (Opcional) Crear el primer administrador:
@@ -128,6 +137,9 @@ Abrí [http://localhost:3000](http://localhost:3000).
 | `BETTER_AUTH_SECRET` | Sí | Secreto de firma de sesiones |
 | `BETTER_AUTH_URL` | Sí | URL base del servidor (```http://localhost:3000``` en dev) |
 | `NEXT_PUBLIC_BETTER_AUTH_URL` | No | URL base para el cliente (fallback a localhost) |
+| `CONNECTION_STRING_ACCELERATE` | No | Connection string de Prisma Accelerate |
+| `GITHUB_CLIENT_ID` | No | Client ID de GitHub OAuth (login social) |
+| `GITHUB_CLIENT_SECRET` | No | Secret de GitHub OAuth (login social) |
 | `RESEND_API_KEY` | No* | Clave de Resend para emails (necesaria para recuperar contraseña) |
 
 \* Si no configurás `RESEND_API_KEY`, el envío de emails de recuperación falla silenciosamente en el servidor.
@@ -139,14 +151,18 @@ Abrí [http://localhost:3000](http://localhost:3000).
 | `pnpm dev` | Servidor de desarrollo |
 | `pnpm build` | Build de producción |
 | `pnpm lint` | ESLint |
+| `pnpm db:migrate` | Crear/aplicar migraciones en desarrollo |
+| `pnpm db:generate` | Regenerar el cliente Prisma |
+| `pnpm db:seed` | Cargar datos de ejemplo |
+| `pnpm exec prisma migrate deploy` | Aplicar migraciones pendientes (producción, no interactivo) |
 | `pnpm exec prisma studio` | Prisma Studio (editor visual de la DB) |
-| `pnpm exec prisma migrate dev` | Crear/aplicar migraciones en desarrollo |
-| `pnpm exec prisma migrate deploy` | Aplicar migraciones pendientes (producción) |
-| `pnpm exec prisma generate` | Regenerar el cliente Prisma |
-| `pnpm exec prisma db seed` | Cargar datos de ejemplo |
 | `pnpm exec tsx prisma/promote-admin.ts <username>` | Promover administrador |
 
-> **⚠️ Seed:** `pnpm exec prisma db seed` borra todas las solicitudes de cuenta existentes antes de insertar los ejemplos. No lo corras sobre datos reales.
+> El cliente Prisma **no está versionado**: vive en `generated/` y lo regenera
+> `pnpm install` mediante el script `postinstall`. Después de tocar
+> `schema.prisma`, corré `pnpm db:generate`.
+
+> **⚠️ Seed:** `pnpm db:seed` borra todas las solicitudes de cuenta existentes antes de insertar los ejemplos. No lo corras sobre datos reales.
 
 ## Desarrollo local sin conexión a Prisma Postgres
 
