@@ -105,9 +105,10 @@ Cada ruta sigue la convención `actions/` (server actions), `models/` (validaci�
 
    Después completá los valores de [Variables de entorno](#variables-de-entorno).
 
-   > El paso de `pnpm install` ya corre `prisma generate` por vos
-   > (`postinstall`), así que el cliente queda generado solo. Si tocás
-   > `schema.prisma`, corré `pnpm db:generate`.
+   > El cliente Prisma se genera solo: `pnpm install` lo corre por
+   > `postinstall`, y `pnpm dev` / `pnpm build` lo seguras con `predev` y
+   > `prebuild`. Si tocás `schema.prisma` y querés regenerarlo sin tocar
+   > nada más, corré `pnpm db:generate`.
 
 3. Aplicar migraciones:
 
@@ -158,9 +159,11 @@ Abrí [http://localhost:3000](http://localhost:3000).
 | `pnpm exec prisma studio` | Prisma Studio (editor visual de la DB) |
 | `pnpm exec tsx prisma/promote-admin.ts <username>` | Promover administrador |
 
-> El cliente Prisma **no está versionado**: vive en `generated/` y lo regenera
-> `pnpm install` mediante el script `postinstall`. Después de tocar
-> `schema.prisma`, corré `pnpm db:generate`.
+> El cliente Prisma **no está versionado**: vive en `generated/` y lo
+> regeneran `pnpm install` (`postinstall`), `pnpm dev` (`predev`) y
+> `pnpm build` (`prebuild`). Los ganchos existen porque pnpm omite
+> `postinstall` cuando `pnpm install` no cambia nada; `predev` y `prebuild`
+> corren siempre, así que el cliente nunca queda viejo.
 
 > **⚠️ Seed:** `pnpm db:seed` borra todas las solicitudes de cuenta existentes antes de insertar los ejemplos. No lo corras sobre datos reales.
 
