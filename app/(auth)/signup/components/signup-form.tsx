@@ -34,9 +34,9 @@ export default function SignupForm() {
       />
       <Field
         label="Cargo"
-        name="charge"
-        errors={state.validationErrors?.charge}
-        defaultValue={state.data?.charge}
+        name="position"
+        errors={state.validationErrors?.position}
+        defaultValue={state.data?.position}
       />
       <Field
         label="Correo electrónico"

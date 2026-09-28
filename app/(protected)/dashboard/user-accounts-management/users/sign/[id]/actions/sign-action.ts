@@ -12,31 +12,31 @@ import z from "zod";
 
 type StageKey = (typeof SIGN_STAGES)[number]["key"];
 
-// Claves de texto (nombre/cargo) del formulario de firmas.
-type CampoTexto =
-  | "requestedNombre"
-  | "requestedCargo"
-  | "revisedNombre"
-  | "revisedCargo"
-  | "approvedNombre"
-  | "approvedCargo"
-  | "executedNombre"
-  | "executedCargo";
+// Text field keys (name/position) of the signature form.
+type TextFieldKey =
+  | "requestedName"
+  | "requestedPosition"
+  | "revisedName"
+  | "revisedPosition"
+  | "approvedName"
+  | "approvedPosition"
+  | "executedName"
+  | "executedPosition";
 
 type SignFields = {
   id: string;
   requested: boolean;
-  requestedNombre: string;
-  requestedCargo: string;
+  requestedName: string;
+  requestedPosition: string;
   revised: boolean;
-  revisedNombre: string;
-  revisedCargo: string;
+  revisedName: string;
+  revisedPosition: string;
   approved: boolean;
-  approvedNombre: string;
-  approvedCargo: string;
+  approvedName: string;
+  approvedPosition: string;
   executed: boolean;
-  executedNombre: string;
-  executedCargo: string;
+  executedName: string;
+  executedPosition: string;
 };
 
 const stageToEnum: Record<StageKey, AccountRequestStage> = {
@@ -46,32 +46,32 @@ const stageToEnum: Record<StageKey, AccountRequestStage> = {
   executed: "executed",
 };
 
-/** Etapas firmadas por el propio operador (especialista) desde su sesión. */
-const ETAPAS_PROPIAS: AccountRequestStage[] = ["revised"];
+/** Stages the operator signs themselves (specialist) from their session. */
+const OWN_STAGES: AccountRequestStage[] = ["revised"];
 
-/** Entrada del historial de correcciones de una firma registrada. */
-type CorreccionEntry = {
-  campo: "nombre" | "cargo";
-  valorAnterior: string;
-  valorNuevo: string;
-  editadoPorUsuario: string;
-  fecha: string;
+/** One entry of the correction history of a registered signature. */
+type CorrectionEntry = {
+  field: "name" | "position";
+  previousValue: string;
+  newValue: string;
+  editedByUser: string;
+  date: string;
 };
 
 function toData(f: SignFields) {
   return {
     requested: f.requested,
-    requestedNombre: f.requestedNombre,
-    requestedCargo: f.requestedCargo,
+    requestedName: f.requestedName,
+    requestedPosition: f.requestedPosition,
     revised: f.revised,
-    revisedNombre: f.revisedNombre,
-    revisedCargo: f.revisedCargo,
+    revisedName: f.revisedName,
+    revisedPosition: f.revisedPosition,
     approved: f.approved,
-    approvedNombre: f.approvedNombre,
-    approvedCargo: f.approvedCargo,
+    approvedName: f.approvedName,
+    approvedPosition: f.approvedPosition,
     executed: f.executed,
-    executedNombre: f.executedNombre,
-    executedCargo: f.executedCargo,
+    executedName: f.executedName,
+    executedPosition: f.executedPosition,
   };
 }
 
@@ -81,9 +81,9 @@ export const signAction = async (
 ): Promise<SignFormState> => {
   await requireAdmin();
 
-  // La identidad del operador sale de la sesión para sus etapas propias
-  // (Revisado/Ejecutado). requireAdmin ya redirige sin sesión; esto es
-  // defensa en profundidad para TypeScript y para corridas anómalas.
+  // The operator identity comes from the session for their own stages
+  // (Revised/Executed). requireAdmin already redirects without a session; this
+  // is defence in depth for TypeScript and for anomalous runs.
   const session = await getSession();
   const sessionUser = session?.user;
   if (!sessionUser) {
@@ -93,30 +93,30 @@ export const signAction = async (
       dbErrors: { message: "Sesión no válida. Vuelve a iniciar sesión." },
     };
   }
-  const nombreOperador =
+  const operatorName =
     (sessionUser.name ?? "").trim() || (sessionUser.username ?? "").trim();
-  const cargoOperador = (sessionUser.charge ?? "").trim();
+  const operatorPosition = (sessionUser.position ?? "").trim();
 
   const fields: SignFields = {
     id: (formData.get("id") as string) ?? "",
     requested: formData.get("requested") === "on",
-    requestedNombre: "",
-    requestedCargo: "",
+    requestedName: "",
+    requestedPosition: "",
     revised: formData.get("revised") === "on",
-    revisedNombre: "",
-    revisedCargo: "",
+    revisedName: "",
+    revisedPosition: "",
     approved: formData.get("approved") === "on",
-    approvedNombre: "",
-    approvedCargo: "",
+    approvedName: "",
+    approvedPosition: "",
     executed: formData.get("executed") === "on",
-    executedNombre: "",
-    executedCargo: "",
+    executedName: "",
+    executedPosition: "",
   };
 
-  // Valor textual de un campo, o null si no viajó en el formulario
-  // (input deshabilitado / no renderizado) o quedó vacío.
-  const valorFormulario = (campo: string): string | null => {
-    const v = formData.get(campo);
+  // Text value of a field, or null if it did not travel in the form
+  // (disabled input / not rendered) or ended up empty.
+  const formValue = (name: string): string | null => {
+    const v = formData.get(name);
     return typeof v === "string" && v.trim().length > 0 ? v : null;
   };
 
@@ -136,30 +136,30 @@ export const signAction = async (
     current.signatures.map((sig) => [sig.stage, sig]),
   );
 
-  // Por etapa: identidad del firmante y valores para la validación.
+  // Per stage: signer identity and values used for validation.
   for (const stage of SIGN_STAGES) {
     const enumStage = stageToEnum[stage.key];
     const sig = signatureByStage.get(enumStage);
-    const esPropia = ETAPAS_PROPIAS.includes(enumStage);
-    const nombreKey = `${stage.key}Nombre` as CampoTexto;
-    const cargoKey = `${stage.key}Cargo` as CampoTexto;
+    const isOwn = OWN_STAGES.includes(enumStage);
+    const nameKey = `${stage.key}Name` as TextFieldKey;
+    const positionKey = `${stage.key}Position` as TextFieldKey;
 
-    if (esPropia) {
-      // Etapas del especialista: la identidad viene de la sesión y NUNCA
-      // del formulario (el cliente ni siquiera renderiza inputs para ellas).
-      fields[nombreKey] = nombreOperador;
-      fields[cargoKey] = cargoOperador;
+    if (isOwn) {
+      // Specialist stages: identity comes from the session and NEVER from the
+      // form (the client does not even render inputs for them).
+      fields[nameKey] = operatorName;
+      fields[positionKey] = operatorPosition;
       continue;
     }
 
-    // Etapas externas (Solicitado/Aprobado): texto libre del operador,
-    // que registra fielmente lo firmado en papel. Si el input no viajó
-    // (deshabilitado por orden) y la etapa ya está firmada, se usan los
-    // valores reales de la DB para que la validación no falle.
-    const nombreForm = valorFormulario(`${stage.key}Nombre`);
-    const cargoForm = valorFormulario(`${stage.key}Cargo`);
-    fields[nombreKey] = nombreForm ?? (sig ? sig.nombre : "");
-    fields[cargoKey] = cargoForm ?? (sig ? sig.cargo : "");
+    // External stages (Requested/Approved): free text from the operator,
+    // faithfully recording what was signed on paper. If the input did not
+    // travel (disabled by stage order) and the stage is already signed, the
+    // real DB values are used so validation does not fail.
+    const nameForm = formValue(`${stage.key}Name`);
+    const positionForm = formValue(`${stage.key}Position`);
+    fields[nameKey] = nameForm ?? (sig ? sig.fullName : "");
+    fields[positionKey] = positionForm ?? (sig ? sig.position : "");
   }
 
   const validatedFields = SignFormSchema.safeParse(fields);
@@ -177,7 +177,7 @@ export const signAction = async (
 
   const existingStages = new Set(current.signatures.map((sig) => sig.stage));
 
-  // Inmutabilidad: una etapa ya firmada no se puede desfirmar.
+  // Immutability: a stage that is already signed cannot be unsigned.
   for (const stage of SIGN_STAGES) {
     if (existingStages.has(stageToEnum[stage.key]) && !signs[stage.key]) {
       return {
@@ -190,7 +190,7 @@ export const signAction = async (
     }
   }
 
-  // Orden del flujo: para firmar una etapa, la anterior debe estar firmada.
+  // Flow order: to sign a stage, the previous one must already be signed.
   for (let i = 1; i < SIGN_STAGES.length; i++) {
     const stage = SIGN_STAGES[i];
     const prev = SIGN_STAGES[i - 1];
@@ -207,30 +207,30 @@ export const signAction = async (
     }
   }
 
-  const editadoPorUsuario = sessionUser.username ?? sessionUser.id;
+  const editedByUser = sessionUser.username ?? sessionUser.id;
 
-  // Operaciones por etapa: crear firmas nuevas y corregir las existentes.
+  // Per-stage operations: create new signatures and correct existing ones.
   const operations: Prisma.PrismaPromise<unknown>[] = [];
 
   for (const stage of SIGN_STAGES) {
     const enumStage = stageToEnum[stage.key];
     const sig = signatureByStage.get(enumStage);
-    const nombreKey = `${stage.key}Nombre` as CampoTexto;
-    const cargoKey = `${stage.key}Cargo` as CampoTexto;
+    const nameKey = `${stage.key}Name` as TextFieldKey;
+    const positionKey = `${stage.key}Position` as TextFieldKey;
 
     if (!sig) {
-      // Sin firma previa: solo se crea si el checkbox está marcado.
+      // No previous signature: only created if the checkbox is ticked.
       if (signs[stage.key]) {
         operations.push(
           prisma.accountRequestSignature.create({
             data: {
               accountRequestId: id,
               stage: enumStage,
-              nombre: signs[nombreKey],
-              cargo: signs[cargoKey],
-              fecha: new Date(),
-              registradoPorUserId: sessionUser.id,
-              registradoPorNombre: sessionUser.name,
+              fullName: signs[nameKey],
+              position: signs[positionKey],
+              signedAt: new Date(),
+              registeredByUserId: sessionUser.id,
+              registeredByName: sessionUser.name,
             },
           }),
         );
@@ -238,40 +238,40 @@ export const signAction = async (
       continue;
     }
 
-    // Firma existente (el cliente fuerza el checkbox en "on", por lo que
-    // aquí ya se validó la inmutabilidad): si nombre/cargo cambiaron, se
-    // corrigen y se anexan las entradas al historial.
-    const nombreNuevo = signs[nombreKey];
-    const cargoNuevo = signs[cargoKey];
-    const correcciones: CorreccionEntry[] = [];
-    if (sig.nombre !== nombreNuevo) {
-      correcciones.push({
-        campo: "nombre",
-        valorAnterior: sig.nombre,
-        valorNuevo: nombreNuevo,
-        editadoPorUsuario,
-        fecha: new Date().toISOString(),
+    // Existing signature (the client forces the checkbox to "on", so
+    // immutability was already validated above): if name/position changed,
+    // they are corrected and the entries are appended to the history.
+    const newName = signs[nameKey];
+    const newPosition = signs[positionKey];
+    const corrections: CorrectionEntry[] = [];
+    if (sig.fullName !== newName) {
+      corrections.push({
+        field: "name",
+        previousValue: sig.fullName,
+        newValue: newName,
+        editedByUser,
+        date: new Date().toISOString(),
       });
     }
-    if (sig.cargo !== cargoNuevo) {
-      correcciones.push({
-        campo: "cargo",
-        valorAnterior: sig.cargo,
-        valorNuevo: cargoNuevo,
-        editadoPorUsuario,
-        fecha: new Date().toISOString(),
+    if (sig.position !== newPosition) {
+      corrections.push({
+        field: "position",
+        previousValue: sig.position,
+        newValue: newPosition,
+        editedByUser,
+        date: new Date().toISOString(),
       });
     }
-    if (correcciones.length > 0) {
-      const historialPrevio =
-        (sig.historialCorrecciones ?? []) as unknown as CorreccionEntry[];
+    if (corrections.length > 0) {
+      const previousHistory =
+        (sig.correctionHistory ?? []) as unknown as CorrectionEntry[];
       operations.push(
         prisma.accountRequestSignature.update({
           where: { id: sig.id },
           data: {
-            nombre: nombreNuevo,
-            cargo: cargoNuevo,
-            historialCorrecciones: [...historialPrevio, ...correcciones],
+            fullName: newName,
+            position: newPosition,
+            correctionHistory: [...previousHistory, ...corrections],
           },
         }),
       );

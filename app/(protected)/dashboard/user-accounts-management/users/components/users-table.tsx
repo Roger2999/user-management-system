@@ -62,7 +62,7 @@ export default async function UsersTable({
     where: search
       ? {
           ...where,
-          nombreApellidos: { contains: search, mode: "insensitive" },
+          fullName: { contains: search, mode: "insensitive" },
         }
       : where,
     include: { signatures: true },
@@ -74,7 +74,7 @@ export default async function UsersTable({
     where: search
       ? {
           ...where,
-          nombreApellidos: { contains: search, mode: "insensitive" },
+          fullName: { contains: search, mode: "insensitive" },
         }
       : where,
   });
@@ -104,13 +104,13 @@ export default async function UsersTable({
                 <TableRow key={user.id}>
                   <TableCell className="font-medium">{user.folio}</TableCell>
                   <TableCell className="font-medium">
-                    {user.nombreApellidos}
+                    {user.fullName}
                   </TableCell>
                   <TableCell className="font-medium">
-                    {user.identificadorCuentaUsuario}
+                    {user.username}
                   </TableCell>
                   <TableCell className="font-medium">
-                    {user.departamentoArea}
+                    {user.department}
                   </TableCell>
                   <TableCell className="text-center whitespace-nowrap">
                     {user.createdAt.toLocaleDateString("es-CU")}
@@ -127,7 +127,7 @@ export default async function UsersTable({
                   <TableCell className="text-center">
                     <Link
                       href={`/dashboard/user-accounts-management/users/${user.id}`}
-                      aria-label={`Ver solicitud de ${user.nombreApellidos}`}
+                      aria-label={`Ver solicitud de ${user.fullName}`}
                     >
                       <EyeIcon className="hover:text-brand mx-auto size-5" />
                     </Link>
@@ -135,7 +135,7 @@ export default async function UsersTable({
                   <TableCell className="text-right">
                     <DropdownMenuTable
                       id={user.id}
-                      name={user.nombreApellidos}
+                      name={user.fullName}
                     />
                   </TableCell>
                 </TableRow>

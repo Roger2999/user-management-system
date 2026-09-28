@@ -10,7 +10,7 @@ export const SignupFormSchema = z
       .string()
       .min(3, "Mínimo de 3 caracteres")
       .max(20, "Máximo de 20 caracteres"),
-    charge: z
+    position: z
       .string()
       .min(1, "Campo obligatorio")
       .max(128, "No puede tener más de 128 caracteres"),

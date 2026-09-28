@@ -15,7 +15,7 @@ export const signupAction = async (
   const fields = {
     username: formData.get("username") as string,
     fullName: formData.get("fullName") as string,
-    charge: formData.get("charge") as string,
+    position: formData.get("position") as string,
     email: formData.get("email") as string,
     password: formData.get("password") as string,
     confirmPassword: formData.get("confirmPassword") as string,
@@ -26,7 +26,7 @@ export const signupAction = async (
       data: {
         email: fields.email,
         username: fields.username,
-        charge: fields.charge,
+        position: fields.position,
         fullName: fields.fullName,
       },
       success: false,
@@ -35,9 +35,9 @@ export const signupAction = async (
     };
   }
 
-  const { email, password, username, fullName, charge } = validatedFields.data;
+  const { email, password, username, fullName, position } = validatedFields.data;
 
-  //validar si ya existe email y username en la db
+  // Check whether the email and username already exist in the DB.
   const [existingUsername, existingEmail] = await Promise.all([
     prisma.user.findFirst({
       where: { username },
@@ -56,7 +56,7 @@ export const signupAction = async (
   }
   if (existingUsername || existingEmail) {
     return {
-      data: { username, email, charge, fullName },
+      data: { username, email, position, fullName },
       success: false,
       dbErrors: null,
       validationErrors,
@@ -67,7 +67,7 @@ export const signupAction = async (
     await auth.api.signUpEmail({
       body: {
         email,
-        charge,
+        position,
         fullName,
         password,
         name: username,
@@ -82,7 +82,7 @@ export const signupAction = async (
     // });
   } catch {
     return {
-      data: { email, username, charge, fullName },
+      data: { email, username, position, fullName },
       success: false,
       dbErrors: { message: "Error al crear la cuenta. Intenta de nuevo." },
       validationErrors: null,

@@ -22,18 +22,18 @@ export function PcSection({ user }: { user: AccountRequest }) {
           className="flex-col items-stretch justify-between"
         >
           <span className="block w-full border-b border-black">
-            {user.pcNombre || "\u00A0"}
+            {user.pcName || "\u00A0"}
           </span>
           <div className="w-full leading-[1.15] font-bold">
             Software autorizado (Además del autorizado por política)
-            {user.softwareAutorizado ? (
-              <span className="font-normal">: {user.softwareAutorizado}</span>
+            {user.authorizedSoftware ? (
+              <span className="font-normal">: {user.authorizedSoftware}</span>
             ) : null}
           </div>
         </Cell>
         <Cell end className="flex-col items-start">
           <span className="block w-full border-b border-black">
-            {user.pcAdicionalNombre || "\u00A0"}
+            {user.additionalPcName || "\u00A0"}
           </span>
         </Cell>
       </Row>

@@ -31,7 +31,7 @@ export const auth = betterAuth({
         defaultValue: "USER",
         input: false,
       },
-      charge: {
+      position: {
         type: "string",
         required: true,
         input: true,
@@ -72,10 +72,10 @@ export const auth = betterAuth({
   },
 
   trustedOrigins: ["http://localhost:3000", "https://sigel-eemtz.vercel.app"],
-  //username()-plugin de better-auth para autenticacion a traves del username-password
-  //se debe agregar al schema de prisma username @unique @db.Citext y displayName
-  //migrar db y generar cliente
-  //ajutar tipos y schemas de zod de formularios
-  //ajustar actions de signin y signup
+  // username() plugin of better-auth for username-password authentication
+  // the prisma schema must add username @unique @db.Citext and displayName
+  // migrate the db and generate the client
+  // adjust the types and zod schemas of the forms
+  // adjust the signin and signup actions
   plugins: [nextCookies(), username()],
 });

@@ -25,7 +25,7 @@ export const dashboardSections: DashboardSection[] = [
     title: "Estado de cuentas",
     cards: [
       {
-        value: "pendientesFirma",
+        value: "pendingSignature",
         label: "Pendientes de firma",
         icon: PenLine,
         tone: "destructive",
@@ -47,16 +47,16 @@ export const dashboardSections: DashboardSection[] = [
   {
     title: "Por tipo de solicitud",
     cards: [
-      { value: "alta", label: "Alta", icon: UserPlus },
-      { value: "actualizacion", label: "Actualización", icon: RefreshCw },
-      { value: "bajaEntidad", label: "Baja", icon: UserMinus },
+      { value: "new", label: "Alta", icon: UserPlus },
+      { value: "update", label: "Actualización", icon: RefreshCw },
+      { value: "deprovisioning", label: "Baja", icon: UserMinus },
     ],
   },
   {
     title: "Por tipo de cuenta",
     cards: [
-      { value: "permanente", label: "Cuentas permanentes", icon: BadgeCheck },
-      { value: "temporal", label: "Cuentas temporales", icon: Clock },
+      { value: "permanent", label: "Cuentas permanentes", icon: BadgeCheck },
+      { value: "temporary", label: "Cuentas temporales", icon: Clock },
     ],
   },
 ];

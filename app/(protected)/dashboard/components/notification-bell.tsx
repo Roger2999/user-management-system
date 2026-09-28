@@ -14,8 +14,8 @@ import { cn } from "@/lib/utils";
 
 export interface ExpiringAccount {
   id: string;
-  nombreApellidos: string;
-  fechaExpiracion: string;
+  fullName: string;
+  expiresAt: string;
 }
 
 interface Props {
@@ -24,8 +24,8 @@ interface Props {
   accounts: ExpiringAccount[];
 }
 
-function daysLeft(fechaExpiracion: string): number {
-  const diff = new Date(fechaExpiracion).getTime() - Date.now();
+function daysLeft(expiresAt: string): number {
+  const diff = new Date(expiresAt).getTime() - Date.now();
   return Math.ceil(diff / (1000 * 60 * 60 * 24));
 }
 
@@ -89,7 +89,7 @@ export default function NotificationBell({ count7, count1, accounts }: Props) {
             <DropdownMenuSeparator />
             <div className="max-h-60 overflow-y-auto">
               {accounts.map((account) => {
-                const left = daysLeft(account.fechaExpiracion);
+                const left = daysLeft(account.expiresAt);
                 return (
                   <DropdownMenuItem key={account.id} asChild>
                     <Link
@@ -97,7 +97,7 @@ export default function NotificationBell({ count7, count1, accounts }: Props) {
                       className="flex w-full items-center justify-between gap-2"
                     >
                       <span className="truncate">
-                        {account.nombreApellidos}
+                        {account.fullName}
                       </span>
                       <span
                         className={cn(

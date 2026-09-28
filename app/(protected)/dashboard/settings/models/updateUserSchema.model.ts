@@ -9,11 +9,10 @@ export const UpdateUserSchema = z.object({
     .string()
     .max(40, "Máximo de 40 caracteres")
     .optional(),
-  // Cargo del operador: aparece en sus firmas (etapas Revisado/Ejecutado).
-  // Obligatorio: la columna `charge` es NOT NULL desde la migración
-  // 20260925225235_rename_user_cargo_to_charge. El `.trim()` va antes del
-  // `.min()` para que un campo con solo espacios también se rechace.
-  charge: z
+  // Operator position: shown in their signatures (Revised/Executed stages).
+  // Required: the `position` column is NOT NULL. The `.trim()` runs before
+  // `.min()` so a field with only spaces is also rejected.
+  position: z
     .string()
     .trim()
     .min(1, "El cargo es obligatorio")

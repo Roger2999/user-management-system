@@ -11,21 +11,21 @@ export function ScheduleSection({ user }: { user: AccountRequest }) {
         <Cell end className="gap-[10pt]">
           <span className="flex items-center gap-1">
             <span>Lunes a Viernes</span>
-            <CB checked={!user.horarioExtralaboral && !user.horario24Horas} />
+            <CB checked={!user.overtimeSchedule && !user.aroundTheClockSchedule} />
           </span>
           <span className="flex items-center gap-1">
             <span>Horario Extralaboral</span>
-            <CB checked={user.horarioExtralaboral} />
+            <CB checked={user.overtimeSchedule} />
           </span>
-          {!user.horario24Horas && (
+          {!user.aroundTheClockSchedule && (
             <span className="flex items-center gap-1">
               <span>de</span>
               <span className="min-w-[40pt] border-b border-black text-center">
-                {user.extraDesde || ""}
+                {user.overtimeFrom || ""}
               </span>
               <span>hrs. a</span>
               <span className="min-w-[40pt] border-b border-black text-center">
-                {user.extraHasta || ""}
+                {user.overtimeTo || ""}
               </span>
               <span>hrs.</span>
             </span>
@@ -38,29 +38,29 @@ export function ScheduleSection({ user }: { user: AccountRequest }) {
           <span className="flex w-full items-center gap-1">
             <span>No laborables: Sábado de</span>
             <span className="min-w-10 border-b border-black text-center">
-              {user.sabadoDesde || ""}
+              {user.saturdayFrom || ""}
             </span>
             <span>hrs. a</span>
             <span className="min-w-10 border-b border-black text-center">
-              {user.sabadoHasta || ""}
+              {user.saturdayTo || ""}
             </span>
             <span>hrs.</span>
           </span>
           <span className="flex w-full items-center gap-1">
             <span>Domingo de</span>
             <span className="min-w-10 border-b border-black text-center">
-              {user.domingoDesde || ""}
+              {user.sundayFrom || ""}
             </span>
             <span>hrs. a</span>
             <span className="min-w-10 border-b border-black text-center">
-              {user.domingoHasta || ""}
+              {user.sundayTo || ""}
             </span>
             <span>hrs.</span>
           </span>
         </Cell>
         <Cell end className="justify-center gap-1">
           <span>24 horas</span>
-          <CB checked={user.horario24Horas} />
+          <CB checked={user.aroundTheClockSchedule} />
         </Cell>
       </Row>
     </>

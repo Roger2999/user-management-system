@@ -35,18 +35,18 @@ export default function UserAccountForm({
   };
   const [state, formAction, pending] = useActionState(action, initialState);
 
-  const [tipoSolicitud, setTipoSolicitud] = useState(
-    initialData?.tipoSolicitud ?? "",
+  const [requestType, setTipoSolicitud] = useState(
+    initialData?.requestType ?? "",
   );
-  const [tipoCuenta, setTipoCuenta] = useState(initialData?.tipoCuenta ?? "");
-  const [horarioExtralaboral, setHorarioExtralaboral] = useState(
-    !!initialData?.horarioExtralaboral,
+  const [accountType, setTipoCuenta] = useState(initialData?.accountType ?? "");
+  const [overtimeSchedule, setHorarioExtralaboral] = useState(
+    !!initialData?.overtimeSchedule,
   );
-  const [horario24Horas, setHorario24Horas] = useState(
-    !!initialData?.horario24Horas,
+  const [aroundTheClockSchedule, setHorario24Horas] = useState(
+    !!initialData?.aroundTheClockSchedule,
   );
 
-  const disableHorarios = horario24Horas;
+  const disableHorarios = aroundTheClockSchedule;
 
   return (
     <div className="xs:px-8 space-y-6 sm:px-20">
@@ -64,32 +64,32 @@ export default function UserAccountForm({
           <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <SelectField
               label="Tipo de solicitud"
-              name="tipoSolicitud"
+              name="requestType"
               options={REQUEST_OPTIONS}
               defaultValue={
-                state.data?.tipoSolicitud ??
-                (mode === "create" ? "ALTA" : undefined)
+                state.data?.requestType ??
+                (mode === "create" ? "NEW" : undefined)
               }
-              errors={state.validationErrors?.tipoSolicitud}
+              errors={state.validationErrors?.requestType}
               onChange={setTipoSolicitud}
               disabledValues={
-                mode === "create" ? ["BAJA", "ACTUALIZACION"] : ["ALTA"]
+                mode === "create" ? ["DEPROVISIONING", "UPDATE"] : ["NEW"]
               }
             />
-            {tipoSolicitud === "BAJA" && (
+            {requestType === "DEPROVISIONING" && (
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <Field
                   label="Motivos de baja"
-                  name="motivosBaja"
-                  defaultValue={state.data?.motivosBaja}
-                  errors={state.validationErrors?.motivosBaja}
+                  name="deprovisioningReasons"
+                  defaultValue={state.data?.deprovisioningReasons}
+                  errors={state.validationErrors?.deprovisioningReasons}
                 />
                 <Field
                   label="Fecha de baja"
-                  name="fechaBaja"
+                  name="deprovisionedAt"
                   type="date"
-                  defaultValue={state.data?.fechaBaja}
-                  errors={state.validationErrors?.fechaBaja}
+                  defaultValue={state.data?.deprovisionedAt}
+                  errors={state.validationErrors?.deprovisionedAt}
                 />
               </div>
             )}
@@ -109,40 +109,40 @@ export default function UserAccountForm({
           <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <Field
               label="Nombre y apellidos"
-              name="nombreApellidos"
-              defaultValue={state.data?.nombreApellidos}
-              errors={state.validationErrors?.nombreApellidos}
+              name="fullName"
+              defaultValue={state.data?.fullName}
+              errors={state.validationErrors?.fullName}
             />
             <Field
               label="Teléfono / Extensión"
-              name="telefonoExtension"
-              defaultValue={state.data?.telefonoExtension}
-              errors={state.validationErrors?.telefonoExtension}
+              name="phoneExtension"
+              defaultValue={state.data?.phoneExtension}
+              errors={state.validationErrors?.phoneExtension}
             />
             <Field
               label="Cargo que ocupa"
-              name="cargoOcupa"
-              defaultValue={state.data?.cargoOcupa}
-              errors={state.validationErrors?.cargoOcupa}
+              name="currentPosition"
+              defaultValue={state.data?.currentPosition}
+              errors={state.validationErrors?.currentPosition}
             />
             <Field
               label="Departamento / Área"
-              name="departamentoArea"
-              defaultValue={state.data?.departamentoArea}
-              errors={state.validationErrors?.departamentoArea}
+              name="department"
+              defaultValue={state.data?.department}
+              errors={state.validationErrors?.department}
             />
             <SelectField
               label="Tipo de personal"
-              name="tipoPersonal"
+              name="staffType"
               options={PERSONAL_OPTIONS}
-              defaultValue={state.data?.tipoPersonal}
-              errors={state.validationErrors?.tipoPersonal}
+              defaultValue={state.data?.staffType}
+              errors={state.validationErrors?.staffType}
             />
             <Field
               label="Identificador de cuenta de usuario"
-              name="identificadorCuentaUsuario"
-              defaultValue={state.data?.identificadorCuentaUsuario}
-              errors={state.validationErrors?.identificadorCuentaUsuario}
+              name="username"
+              defaultValue={state.data?.username}
+              errors={state.validationErrors?.username}
             />
           </CardContent>
         </Card>
@@ -155,18 +155,18 @@ export default function UserAccountForm({
             <div className="grid grid-cols-3 gap-3">
               <CheckboxField
                 label="Correo Nacional"
-                name="correoNacional"
-                defaultChecked={!!state.data?.correoNacional}
+                name="nationalEmail"
+                defaultChecked={!!state.data?.nationalEmail}
               />
               <CheckboxField
                 label="Correo Internacional"
-                name="correoInternacional"
-                defaultChecked={!!state.data?.correoInternacional}
+                name="internationalEmail"
+                defaultChecked={!!state.data?.internationalEmail}
               />
               <CheckboxField
                 label="Correo Internet"
-                name="correoInternet"
-                defaultChecked={!!state.data?.correoInternet}
+                name="internetEmail"
+                defaultChecked={!!state.data?.internetEmail}
               />
             </div>
           </CardContent>
@@ -185,8 +185,8 @@ export default function UserAccountForm({
               />
               <CheckboxField
                 label="Intranet Nacional"
-                name="intranetNacional"
-                defaultChecked={!!state.data?.intranetNacional}
+                name="nationalIntranet"
+                defaultChecked={!!state.data?.nationalIntranet}
               />
               <CheckboxField
                 label="Internet"
@@ -204,8 +204,8 @@ export default function UserAccountForm({
           <CardContent>
             <CheckboxField
               label="Mensajería Corporativa"
-              name="mensajeriaCorporativa"
-              defaultChecked={!!state.data?.mensajeriaCorporativa}
+              name="corporateMessaging"
+              defaultChecked={!!state.data?.corporateMessaging}
             />
           </CardContent>
         </Card>
@@ -251,9 +251,9 @@ export default function UserAccountForm({
             </div>
             <Field
               label="Otras redes"
-              name="otrasRedes"
-              defaultValue={state.data?.otrasRedes}
-              errors={state.validationErrors?.otrasRedes}
+              name="otherNetworks"
+              defaultValue={state.data?.otherNetworks}
+              errors={state.validationErrors?.otherNetworks}
             />
           </CardContent>
         </Card>
@@ -266,23 +266,23 @@ export default function UserAccountForm({
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <CheckboxField
                 label="Usuario"
-                name="usuario"
-                defaultChecked={!!state.data?.usuario}
+                name="userAccount"
+                defaultChecked={!!state.data?.userAccount}
               />
               <CheckboxField
                 label="Usuario Avanzado"
-                name="usuarioAvanzado"
-                defaultChecked={!!state.data?.usuarioAvanzado}
+                name="advancedUserAccount"
+                defaultChecked={!!state.data?.advancedUserAccount}
               />
               <CheckboxField
                 label="Admin Local"
-                name="adminLocal"
-                defaultChecked={!!state.data?.adminLocal}
+                name="localAdmin"
+                defaultChecked={!!state.data?.localAdmin}
               />
               <CheckboxField
                 label="Admin Red"
-                name="adminRed"
-                defaultChecked={!!state.data?.adminRed}
+                name="networkAdmin"
+                defaultChecked={!!state.data?.networkAdmin}
               />
             </div>
           </CardContent>
@@ -296,23 +296,23 @@ export default function UserAccountForm({
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <CheckboxField
                 label="Solo lectura"
-                name="accesoNubeLectura"
-                defaultChecked={!!state.data?.accesoNubeLectura}
+                name="cloudAccessRead"
+                defaultChecked={!!state.data?.cloudAccessRead}
               />
               <CheckboxField
                 label="Modificar"
-                name="accesoNubeModificar"
-                defaultChecked={!!state.data?.accesoNubeModificar}
+                name="cloudAccessModify"
+                defaultChecked={!!state.data?.cloudAccessModify}
               />
               <CheckboxField
                 label="Borrar"
-                name="accesoNubeBorrar"
-                defaultChecked={!!state.data?.accesoNubeBorrar}
+                name="cloudAccessDelete"
+                defaultChecked={!!state.data?.cloudAccessDelete}
               />
               <CheckboxField
                 label="Control total"
-                name="accesoNubeControlTotal"
-                defaultChecked={!!state.data?.accesoNubeControlTotal}
+                name="cloudAccessFullControl"
+                defaultChecked={!!state.data?.cloudAccessFullControl}
               />
             </div>
           </CardContent>
@@ -325,19 +325,19 @@ export default function UserAccountForm({
           <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <SelectField
               label="Tipo de cuenta"
-              name="tipoCuenta"
+              name="accountType"
               options={ACCOUNT_OPTIONS}
-              defaultValue={state.data?.tipoCuenta}
-              errors={state.validationErrors?.tipoCuenta}
+              defaultValue={state.data?.accountType}
+              errors={state.validationErrors?.accountType}
               onChange={setTipoCuenta}
             />
-            {tipoCuenta === "TEMPORAL" && (
+            {accountType === "TEMPORARY" && (
               <Field
                 label="Fecha de expiración"
-                name="fechaExpiracion"
+                name="expiresAt"
                 type="date"
-                defaultValue={state.data?.fechaExpiracion}
-                errors={state.validationErrors?.fechaExpiracion}
+                defaultValue={state.data?.expiresAt}
+                errors={state.validationErrors?.expiresAt}
               />
             )}
           </CardContent>
@@ -351,33 +351,33 @@ export default function UserAccountForm({
             <div className="grid grid-cols-2 gap-3">
               <CheckboxField
                 label="Horario Extralaboral"
-                name="horarioExtralaboral"
-                defaultChecked={!!state.data?.horarioExtralaboral}
+                name="overtimeSchedule"
+                defaultChecked={!!state.data?.overtimeSchedule}
                 onChange={setHorarioExtralaboral}
                 disabled={disableHorarios}
               />
               <CheckboxField
                 label="24 horas"
-                name="horario24Horas"
-                defaultChecked={!!state.data?.horario24Horas}
+                name="aroundTheClockSchedule"
+                defaultChecked={!!state.data?.aroundTheClockSchedule}
                 onChange={setHorario24Horas}
               />
             </div>
-            {horarioExtralaboral && !disableHorarios && (
+            {overtimeSchedule && !disableHorarios && (
               <div className="grid grid-cols-2 gap-4">
                 <Field
                   label="Extra desde"
-                  name="extraDesde"
+                  name="overtimeFrom"
                   type="time"
-                  defaultValue={state.data?.extraDesde}
-                  errors={state.validationErrors?.extraDesde}
+                  defaultValue={state.data?.overtimeFrom}
+                  errors={state.validationErrors?.overtimeFrom}
                 />
                 <Field
                   label="Extra hasta"
-                  name="extraHasta"
+                  name="overtimeTo"
                   type="time"
-                  defaultValue={state.data?.extraHasta}
-                  errors={state.validationErrors?.extraHasta}
+                  defaultValue={state.data?.overtimeTo}
+                  errors={state.validationErrors?.overtimeTo}
                 />
               </div>
             )}
@@ -386,33 +386,33 @@ export default function UserAccountForm({
                 <div className="grid grid-cols-2 gap-4">
                   <Field
                     label="Sábado desde"
-                    name="sabadoDesde"
+                    name="saturdayFrom"
                     type="time"
-                    defaultValue={state.data?.sabadoDesde}
-                    errors={state.validationErrors?.sabadoDesde}
+                    defaultValue={state.data?.saturdayFrom}
+                    errors={state.validationErrors?.saturdayFrom}
                   />
                   <Field
                     label="Sábado hasta"
-                    name="sabadoHasta"
+                    name="saturdayTo"
                     type="time"
-                    defaultValue={state.data?.sabadoHasta}
-                    errors={state.validationErrors?.sabadoHasta}
+                    defaultValue={state.data?.saturdayTo}
+                    errors={state.validationErrors?.saturdayTo}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <Field
                     label="Domingo desde"
-                    name="domingoDesde"
+                    name="sundayFrom"
                     type="time"
-                    defaultValue={state.data?.domingoDesde}
-                    errors={state.validationErrors?.domingoDesde}
+                    defaultValue={state.data?.sundayFrom}
+                    errors={state.validationErrors?.sundayFrom}
                   />
                   <Field
                     label="Domingo hasta"
-                    name="domingoHasta"
+                    name="sundayTo"
                     type="time"
-                    defaultValue={state.data?.domingoHasta}
-                    errors={state.validationErrors?.domingoHasta}
+                    defaultValue={state.data?.sundayTo}
+                    errors={state.validationErrors?.sundayTo}
                   />
                 </div>
               </>
@@ -428,13 +428,13 @@ export default function UserAccountForm({
             <div className="grid grid-cols-3 gap-3">
               <CheckboxField
                 label="Correo Nacional"
-                name="apnCorreoNacional"
-                defaultChecked={!!state.data?.apnCorreoNacional}
+                name="apnNationalEmail"
+                defaultChecked={!!state.data?.apnNationalEmail}
               />
               <CheckboxField
                 label="Correo Internacional"
-                name="apnCorreoInternacional"
-                defaultChecked={!!state.data?.apnCorreoInternacional}
+                name="apnInternationalEmail"
+                defaultChecked={!!state.data?.apnInternationalEmail}
               />
               <CheckboxField
                 label="Internet"
@@ -444,9 +444,9 @@ export default function UserAccountForm({
             </div>
             <Field
               label="Teléfono celular"
-              name="telefonoCelular"
-              defaultValue={state.data?.telefonoCelular}
-              errors={state.validationErrors?.telefonoCelular}
+              name="mobilePhone"
+              defaultValue={state.data?.mobilePhone}
+              errors={state.validationErrors?.mobilePhone}
             />
           </CardContent>
         </Card>
@@ -459,29 +459,29 @@ export default function UserAccountForm({
             <div className="grid grid-cols-2 gap-4">
               <Field
                 label="Nombre del PC"
-                name="pcNombre"
-                defaultValue={state.data?.pcNombre}
-                errors={state.validationErrors?.pcNombre}
+                name="pcName"
+                defaultValue={state.data?.pcName}
+                errors={state.validationErrors?.pcName}
               />
               <Field
                 label="Inventario"
-                name="pcInventario"
-                defaultValue={state.data?.pcInventario}
-                errors={state.validationErrors?.pcInventario}
+                name="pcAssetTag"
+                defaultValue={state.data?.pcAssetTag}
+                errors={state.validationErrors?.pcAssetTag}
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <Field
                 label="PC Adicional - Nombre"
-                name="pcAdicionalNombre"
-                defaultValue={state.data?.pcAdicionalNombre}
-                errors={state.validationErrors?.pcAdicionalNombre}
+                name="additionalPcName"
+                defaultValue={state.data?.additionalPcName}
+                errors={state.validationErrors?.additionalPcName}
               />
               <Field
                 label="PC Adicional - Inventario"
-                name="pcAdicionalInventario"
-                defaultValue={state.data?.pcAdicionalInventario}
-                errors={state.validationErrors?.pcAdicionalInventario}
+                name="additionalPcAssetTag"
+                defaultValue={state.data?.additionalPcAssetTag}
+                errors={state.validationErrors?.additionalPcAssetTag}
               />
             </div>
           </CardContent>
@@ -494,9 +494,9 @@ export default function UserAccountForm({
           <CardContent>
             <Field
               label="Software autorizado"
-              name="softwareAutorizado"
-              defaultValue={state.data?.softwareAutorizado}
-              errors={state.validationErrors?.softwareAutorizado}
+              name="authorizedSoftware"
+              defaultValue={state.data?.authorizedSoftware}
+              errors={state.validationErrors?.authorizedSoftware}
             />
           </CardContent>
         </Card>

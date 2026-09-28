@@ -20,33 +20,33 @@ export function SignaturesSection({ user }: { user: UserWithSignatures }) {
     <>
       <SignatureBlock
         title="SOLICITADO POR EL DIRECTOR QUE SOLICITA EL SERVICIO. (Este responde por los servicios solicitados)"
-        cargo="Director del área"
-        fechaValue={requested?.fecha}
-        nombreValue={requested?.nombre}
-        cargoValue={requested?.cargo}
+        position="Director del área"
+        dateValue={requested?.signedAt}
+        nameValue={requested?.fullName}
+        positionValue={requested?.position}
       />
       <SignatureBlock
         title="REVISADO POR:"
-        cargo="especialista o Técnico de S.Informatica"
+        position="especialista o Técnico de S.Informatica"
         labelsH={21.2}
-        fechaValue={revised?.fecha}
-        nombreValue={revised?.nombre}
-        cargoValue={revised?.cargo}
+        dateValue={revised?.signedAt}
+        nameValue={revised?.fullName}
+        positionValue={revised?.position}
       />
       <SignatureBlock
         title="APROBADO POR (Director que autoriza el servicio o persona designada por Resolución del Director General de la Entidad)"
         signH={17.8}
-        fechaValue={approved?.fecha}
-        nombreValue={approved?.nombre}
-        cargoValue={approved?.cargo}
+        dateValue={approved?.signedAt}
+        nameValue={approved?.fullName}
+        positionValue={approved?.position}
       />
       <SignatureBlock
         title="EJECUTADO POR (Especialista que configura la cuenta de usuario y los servicios)"
         labelsH={17.8}
         signH={17.8}
-        fechaValue={executed?.fecha}
-        nombreValue={executed?.nombre}
-        cargoValue={executed?.cargo}
+        dateValue={executed?.signedAt}
+        nameValue={executed?.fullName}
+        positionValue={executed?.position}
       />
     </>
   );

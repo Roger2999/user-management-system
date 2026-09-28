@@ -11,11 +11,11 @@ export function ApnSection({ user }: { user: AccountRequest }) {
         <Cell end className="gap-[10pt]">
           <span className="flex items-center gap-1">
             <span>Correo nacional</span>
-            <CB checked={user.apnCorreoNacional} />
+            <CB checked={user.apnNationalEmail} />
           </span>
           <span className="flex items-center gap-1">
             <span>Correo Internacional</span>
-            <CB checked={user.apnCorreoInternacional} />
+            <CB checked={user.apnInternationalEmail} />
           </span>
           <span className="flex items-center gap-1">
             <span>Internet</span>
@@ -23,7 +23,7 @@ export function ApnSection({ user }: { user: AccountRequest }) {
           </span>
           <span className="flex items-center gap-1">
             <span>Numero celular:</span>
-            <span className="min-w-[50pt]">{user.telefonoCelular || ""}</span>
+            <span className="min-w-[50pt]">{user.mobilePhone || ""}</span>
           </span>
         </Cell>
       </Row>

@@ -3,26 +3,26 @@ import { SolicitudCuentaFormData } from "./account-request-schema.model";
 
 const UNIQUE_FIELDS = [
   "folio",
-  "identificadorCuentaUsuario",
-  "telefonoExtension",
-  "telefonoCelular",
-  "pcNombre",
-  "pcInventario",
-  "pcAdicionalNombre",
-  "pcAdicionalInventario",
+  "username",
+  "phoneExtension",
+  "mobilePhone",
+  "pcName",
+  "pcAssetTag",
+  "additionalPcName",
+  "additionalPcAssetTag",
 ] as const;
 
 export type UniqueAccountRequestField = (typeof UNIQUE_FIELDS)[number];
 
 const FIELD_LABELS: Record<UniqueAccountRequestField, string> = {
   folio: "folio",
-  identificadorCuentaUsuario: "identificador de cuenta de usuario",
-  telefonoExtension: "teléfono / extensión",
-  telefonoCelular: "teléfono celular",
-  pcNombre: "nombre de PC",
-  pcInventario: "inventario de PC",
-  pcAdicionalNombre: "nombre de PC adicional",
-  pcAdicionalInventario: "inventario de PC adicional",
+  username: "identificador de cuenta de usuario",
+  phoneExtension: "teléfono / extensión",
+  mobilePhone: "teléfono celular",
+  pcName: "nombre de PC",
+  pcAssetTag: "inventario de PC",
+  additionalPcName: "nombre de PC adicional",
+  additionalPcAssetTag: "inventario de PC adicional",
 };
 
 export async function findDuplicateFields(

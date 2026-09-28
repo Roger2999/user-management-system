@@ -51,7 +51,7 @@ export default function Loading() {
           <div className="mx-auto w-[201mm] zoom-[0.45] sm:zoom-[0.58] md:zoom-[0.7] lg:zoom-[0.85] xl:zoom-[1]">
             <Skeleton className="mx-auto mb-4 h-5 w-3/4 rounded-none" />
             <div className="border-[0.5pt] border-black">
-              {/* UD-PG 0074-A1.1 + Folio + Tipo de gestión */}
+              {/* UD-PG 0074-A1.1 + Folio + Request type */}
               <SkeletonRow cols={["w-[21.3%]", "flex-1"]} />
               <SkeletonRow cols={["w-[34.3%]", "flex-1"]} />
               <SkeletonRow
@@ -59,7 +59,7 @@ export default function Loading() {
                 h={12.7}
               />
 
-              {/* Datos de gestión */}
+              {/* Management data */}
               <SkeletonRow cols={["flex-1"]} h={12.7} />
               <SkeletonRow cols={["flex-1"]} h={12.7} />
               <SkeletonRow cols={["w-[37.7%]", "flex-1"]} h={12.7} />
@@ -67,7 +67,7 @@ export default function Loading() {
               <SkeletonRow cols={["flex-1"]} />
               <SkeletonRow cols={["flex-1"]} h={12.7} />
 
-              {/* SERVICIOS REQUERIDOS */}
+              {/* REQUIRED SERVICES */}
               <SkeletonRow cols={["flex-1"]} />
               <SkeletonRow cols={["w-[35.2%]", "flex-1"]} />
               <SkeletonRow cols={["w-[35.2%]", "flex-1"]} />
@@ -87,43 +87,43 @@ export default function Loading() {
               <SkeletonRow cols={["w-[35.2%]", "flex-1"]} />
               <SkeletonRow cols={["w-[35.2%]", "flex-1"]} h={18.9} lines={2} />
 
-              {/* TIPO DE CUENTA */}
+              {/* ACCOUNT TYPE */}
               <SkeletonRow cols={["flex-1"]} />
               <SkeletonRow cols={["flex-1"]} />
               <SkeletonRow cols={["flex-1"]} h={18.9} lines={2} />
 
-              {/* DÍAS Y HORAS DE USO */}
+              {/* DAYS AND HOURS OF USE */}
               <SkeletonRow cols={["flex-1"]} />
               <SkeletonRow cols={["flex-1"]} h={16.5} lines={2} />
               <SkeletonRow cols={["w-[42.4%]", "flex-1"]} h={25.1} lines={2} />
 
-              {/* ACCESO POR APN */}
+              {/* APN ACCESS */}
               <SkeletonRow cols={["flex-1"]} />
               <SkeletonRow cols={["flex-1"]} h={14.4} lines={2} />
 
-              {/* Autorización de PC */}
+              {/* PC authorization */}
               <SkeletonRow cols={["w-[36.8%]", "flex-1"]} h={18.9} lines={2} />
               <SkeletonRow cols={["w-[36.8%]", "flex-1"]} h={30.2} lines={2} />
 
-              {/* Firmas: SOLICITADO POR / REVISADO POR / APROBADO POR / EJECUTADO POR */}
-              {/* B1: SOLICITADO POR — labels 9.7, sign 21.2 */}
+              {/* Signatures: REQUESTED BY / REVIEWED BY / APPROVED BY / EXECUTED BY */}
+              {/* B1: REQUESTED BY - labels 9.7, sign 21.2 */}
               <SkeletonRow cols={["flex-1"]} />
               <SkeletonRow cols={["w-[26.4%]", "w-[26.3%]", "w-[14.6%]", "flex-1"]} />
               <SkeletonRow cols={["w-[26.4%]", "w-[26.3%]", "w-[14.6%]", "flex-1"]} h={21.2} />
-              {/* B2: REVISADO POR — labels 21.2, sign 21.2 */}
+              {/* B2: REVIEWED BY - labels 21.2, sign 21.2 */}
               <SkeletonRow cols={["flex-1"]} />
               <SkeletonRow cols={["w-[26.4%]", "w-[26.3%]", "w-[14.6%]", "flex-1"]} h={21.2} />
               <SkeletonRow cols={["w-[26.4%]", "w-[26.3%]", "w-[14.6%]", "flex-1"]} h={21.2} />
-              {/* B3: APROBADO POR — labels 9.7, sign 17.8 */}
+              {/* B3: APPROVED BY - labels 9.7, sign 17.8 */}
               <SkeletonRow cols={["flex-1"]} />
               <SkeletonRow cols={["w-[26.4%]", "w-[26.3%]", "w-[14.6%]", "flex-1"]} />
               <SkeletonRow cols={["w-[26.4%]", "w-[26.3%]", "w-[14.6%]", "flex-1"]} h={17.8} />
-              {/* B4: EJECUTADO POR — labels 17.8, sign 17.8 */}
+              {/* B4: EXECUTED BY - labels 17.8, sign 17.8 */}
               <SkeletonRow cols={["flex-1"]} />
               <SkeletonRow cols={["w-[26.4%]", "w-[26.3%]", "w-[14.6%]", "flex-1"]} h={17.8} />
               <SkeletonRow cols={["w-[26.4%]", "w-[26.3%]", "w-[14.6%]", "flex-1"]} h={17.8} />
 
-              {/* BAJA DE LA ENTIDAD */}
+              {/* DEPROVISIONING */}
               <SkeletonRow
                 cols={["w-[26.4%]", "w-[40.9%]", "flex-1"]}
                 h={33.9}

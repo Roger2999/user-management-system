@@ -27,21 +27,21 @@ export const THEMES = [
 ];
 
 export const REQUEST_OPTIONS = [
-  { value: "ALTA", label: "Alta" },
-  { value: "ACTUALIZACION", label: "Actualización" },
-  { value: "BAJA", label: "Baja" },
+  { value: "NEW", label: "Alta" },
+  { value: "UPDATE", label: "Actualización" },
+  { value: "DEPROVISIONING", label: "Baja" },
 ] as const;
 
 export const PERSONAL_OPTIONS = [
-  { value: "DIRECTIVO", label: "Directivo" },
-  { value: "ESPECIALISTA_PRINCIPAL", label: "Especialista Principal" },
-  { value: "TECNICO", label: "Técnico" },
-  { value: "OTRO", label: "Otro" },
+  { value: "EXECUTIVE", label: "Directivo" },
+  { value: "SENIOR_SPECIALIST", label: "Especialista Principal" },
+  { value: "TECHNICIAN", label: "Técnico" },
+  { value: "OTHER", label: "Otro" },
 ] as const;
 
 export const ACCOUNT_OPTIONS = [
-  { value: "PERMANENTE", label: "Permanente" },
-  { value: "TEMPORAL", label: "Temporal" },
+  { value: "PERMANENT", label: "Permanente" },
+  { value: "TEMPORARY", label: "Temporal" },
 ] as const;
 export const DASHBOARD_CARDS: {
   title: string;

@@ -19,26 +19,24 @@ export async function createUserAccountAction(
   await requireAdmin();
 
   const fields = {
-    tipoSolicitud: (formData.get("tipoSolicitud") as string) || undefined,
+    requestType: (formData.get("requestType") as string) || undefined,
     folio: (formData.get("folio") as string)?.trim().toUpperCase() ?? "",
-    nombreApellidos: formData.get("nombreApellidos") as string,
-    telefonoExtension:
-      (formData.get("telefonoExtension") as string) || undefined,
-    cargoOcupa: formData.get("cargoOcupa") as string,
-    departamentoArea: formData.get("departamentoArea") as string,
-    tipoPersonal: (formData.get("tipoPersonal") as string) || undefined,
-    identificadorCuentaUsuario:
-      (formData.get("identificadorCuentaUsuario") as string) || undefined,
+    fullName: formData.get("fullName") as string,
+    phoneExtension: (formData.get("phoneExtension") as string) || undefined,
+    currentPosition: formData.get("currentPosition") as string,
+    department: formData.get("department") as string,
+    staffType: (formData.get("staffType") as string) || undefined,
+    username: (formData.get("username") as string) || undefined,
 
-    correoNacional: formData.get("correoNacional") === "on",
-    correoInternacional: formData.get("correoInternacional") === "on",
-    correoInternet: formData.get("correoInternet") === "on",
+    nationalEmail: formData.get("nationalEmail") === "on",
+    internationalEmail: formData.get("internationalEmail") === "on",
+    internetEmail: formData.get("internetEmail") === "on",
 
     intranetUNE: formData.get("intranetUNE") === "on",
-    intranetNacional: formData.get("intranetNacional") === "on",
+    nationalIntranet: formData.get("nationalIntranet") === "on",
     internet: formData.get("internet") === "on",
 
-    mensajeriaCorporativa: formData.get("mensajeriaCorporativa") === "on",
+    corporateMessaging: formData.get("corporateMessaging") === "on",
 
     facebook: formData.get("facebook") === "on",
     twitter: formData.get("twitter") === "on",
@@ -46,67 +44,67 @@ export async function createUserAccountAction(
     whatsapp: formData.get("whatsapp") === "on",
     telegram: formData.get("telegram") === "on",
     instagram: formData.get("instagram") === "on",
-    otrasRedes: (formData.get("otrasRedes") as string) || undefined,
+    otherNetworks: (formData.get("otherNetworks") as string) || undefined,
 
-    usuario: formData.get("usuario") === "on",
-    usuarioAvanzado: formData.get("usuarioAvanzado") === "on",
-    adminLocal: formData.get("adminLocal") === "on",
-    adminRed: formData.get("adminRed") === "on",
+    userAccount: formData.get("userAccount") === "on",
+    advancedUserAccount: formData.get("advancedUserAccount") === "on",
+    localAdmin: formData.get("localAdmin") === "on",
+    networkAdmin: formData.get("networkAdmin") === "on",
 
-    accesoNubeLectura: formData.get("accesoNubeLectura") === "on",
-    accesoNubeModificar: formData.get("accesoNubeModificar") === "on",
-    accesoNubeBorrar: formData.get("accesoNubeBorrar") === "on",
-    accesoNubeControlTotal: formData.get("accesoNubeControlTotal") === "on",
+    cloudAccessRead: formData.get("cloudAccessRead") === "on",
+    cloudAccessModify: formData.get("cloudAccessModify") === "on",
+    cloudAccessDelete: formData.get("cloudAccessDelete") === "on",
+    cloudAccessFullControl: formData.get("cloudAccessFullControl") === "on",
 
-    tipoCuenta: (formData.get("tipoCuenta") as string) || undefined,
-    fechaExpiracion: (formData.get("fechaExpiracion") as string) || undefined,
+    accountType: (formData.get("accountType") as string) || undefined,
+    expiresAt: (formData.get("expiresAt") as string) || undefined,
 
-    horarioExtralaboral: formData.get("horarioExtralaboral") === "on",
-    horario24Horas: formData.get("horario24Horas") === "on",
-    extraDesde: (formData.get("extraDesde") as string) || undefined,
-    extraHasta: (formData.get("extraHasta") as string) || undefined,
-    sabadoDesde: (formData.get("sabadoDesde") as string) || undefined,
-    sabadoHasta: (formData.get("sabadoHasta") as string) || undefined,
-    domingoDesde: (formData.get("domingoDesde") as string) || undefined,
-    domingoHasta: (formData.get("domingoHasta") as string) || undefined,
+    overtimeSchedule: formData.get("overtimeSchedule") === "on",
+    aroundTheClockSchedule: formData.get("aroundTheClockSchedule") === "on",
+    overtimeFrom: (formData.get("overtimeFrom") as string) || undefined,
+    overtimeTo: (formData.get("overtimeTo") as string) || undefined,
+    saturdayFrom: (formData.get("saturdayFrom") as string) || undefined,
+    saturdayTo: (formData.get("saturdayTo") as string) || undefined,
+    sundayFrom: (formData.get("sundayFrom") as string) || undefined,
+    sundayTo: (formData.get("sundayTo") as string) || undefined,
 
-    apnCorreoNacional: formData.get("apnCorreoNacional") === "on",
-    apnCorreoInternacional: formData.get("apnCorreoInternacional") === "on",
+    apnNationalEmail: formData.get("apnNationalEmail") === "on",
+    apnInternationalEmail: formData.get("apnInternationalEmail") === "on",
     apnInternet: formData.get("apnInternet") === "on",
-    telefonoCelular: (formData.get("telefonoCelular") as string) || undefined,
+    mobilePhone: (formData.get("mobilePhone") as string) || undefined,
 
-    pcNombre: (formData.get("pcNombre") as string) || undefined,
-    pcInventario: (formData.get("pcInventario") as string) || undefined,
-    pcAdicionalNombre:
-      (formData.get("pcAdicionalNombre") as string) || undefined,
-    pcAdicionalInventario:
-      (formData.get("pcAdicionalInventario") as string) || undefined,
+    pcName: (formData.get("pcName") as string) || undefined,
+    pcAssetTag: (formData.get("pcAssetTag") as string) || undefined,
+    additionalPcName: (formData.get("additionalPcName") as string) || undefined,
+    additionalPcAssetTag:
+      (formData.get("additionalPcAssetTag") as string) || undefined,
 
-    softwareAutorizado:
-      (formData.get("softwareAutorizado") as string) || undefined,
-    motivosBaja: (formData.get("motivosBaja") as string) || undefined,
-    fechaBaja: (formData.get("fechaBaja") as string) || undefined,
+    authorizedSoftware:
+      (formData.get("authorizedSoftware") as string) || undefined,
+    deprovisioningReasons:
+      (formData.get("deprovisioningReasons") as string) || undefined,
+    deprovisionedAt: (formData.get("deprovisionedAt") as string) || undefined,
   };
 
   const repopulateData = {
-    tipoSolicitud: fields.tipoSolicitud,
+    requestType: fields.requestType,
     folio: fields.folio,
-    nombreApellidos: fields.nombreApellidos,
-    telefonoExtension: fields.telefonoExtension,
-    cargoOcupa: fields.cargoOcupa,
-    departamentoArea: fields.departamentoArea,
-    tipoPersonal: fields.tipoPersonal,
-    identificadorCuentaUsuario: fields.identificadorCuentaUsuario,
+    fullName: fields.fullName,
+    phoneExtension: fields.phoneExtension,
+    currentPosition: fields.currentPosition,
+    department: fields.department,
+    staffType: fields.staffType,
+    username: fields.username,
 
-    correoNacional: fields.correoNacional,
-    correoInternacional: fields.correoInternacional,
-    correoInternet: fields.correoInternet,
+    nationalEmail: fields.nationalEmail,
+    internationalEmail: fields.internationalEmail,
+    internetEmail: fields.internetEmail,
 
     intranetUNE: fields.intranetUNE,
-    intranetNacional: fields.intranetNacional,
+    nationalIntranet: fields.nationalIntranet,
     internet: fields.internet,
 
-    mensajeriaCorporativa: fields.mensajeriaCorporativa,
+    corporateMessaging: fields.corporateMessaging,
 
     facebook: fields.facebook,
     twitter: fields.twitter,
@@ -114,43 +112,43 @@ export async function createUserAccountAction(
     whatsapp: fields.whatsapp,
     telegram: fields.telegram,
     instagram: fields.instagram,
-    otrasRedes: fields.otrasRedes,
+    otherNetworks: fields.otherNetworks,
 
-    usuario: fields.usuario,
-    usuarioAvanzado: fields.usuarioAvanzado,
-    adminLocal: fields.adminLocal,
-    adminRed: fields.adminRed,
+    userAccount: fields.userAccount,
+    advancedUserAccount: fields.advancedUserAccount,
+    localAdmin: fields.localAdmin,
+    networkAdmin: fields.networkAdmin,
 
-    accesoNubeLectura: fields.accesoNubeLectura,
-    accesoNubeModificar: fields.accesoNubeModificar,
-    accesoNubeBorrar: fields.accesoNubeBorrar,
-    accesoNubeControlTotal: fields.accesoNubeControlTotal,
+    cloudAccessRead: fields.cloudAccessRead,
+    cloudAccessModify: fields.cloudAccessModify,
+    cloudAccessDelete: fields.cloudAccessDelete,
+    cloudAccessFullControl: fields.cloudAccessFullControl,
 
-    tipoCuenta: fields.tipoCuenta,
-    fechaExpiracion: fields.fechaExpiracion,
+    accountType: fields.accountType,
+    expiresAt: fields.expiresAt,
 
-    horarioExtralaboral: fields.horarioExtralaboral,
-    horario24Horas: fields.horario24Horas,
-    extraDesde: fields.extraDesde,
-    extraHasta: fields.extraHasta,
-    sabadoDesde: fields.sabadoDesde,
-    sabadoHasta: fields.sabadoHasta,
-    domingoDesde: fields.domingoDesde,
-    domingoHasta: fields.domingoHasta,
+    overtimeSchedule: fields.overtimeSchedule,
+    aroundTheClockSchedule: fields.aroundTheClockSchedule,
+    overtimeFrom: fields.overtimeFrom,
+    overtimeTo: fields.overtimeTo,
+    saturdayFrom: fields.saturdayFrom,
+    saturdayTo: fields.saturdayTo,
+    sundayFrom: fields.sundayFrom,
+    sundayTo: fields.sundayTo,
 
-    apnCorreoNacional: fields.apnCorreoNacional,
-    apnCorreoInternacional: fields.apnCorreoInternacional,
+    apnNationalEmail: fields.apnNationalEmail,
+    apnInternationalEmail: fields.apnInternationalEmail,
     apnInternet: fields.apnInternet,
-    telefonoCelular: fields.telefonoCelular,
+    mobilePhone: fields.mobilePhone,
 
-    pcNombre: fields.pcNombre,
-    pcInventario: fields.pcInventario,
-    pcAdicionalNombre: fields.pcAdicionalNombre,
-    pcAdicionalInventario: fields.pcAdicionalInventario,
+    pcName: fields.pcName,
+    pcAssetTag: fields.pcAssetTag,
+    additionalPcName: fields.additionalPcName,
+    additionalPcAssetTag: fields.additionalPcAssetTag,
 
-    softwareAutorizado: fields.softwareAutorizado,
-    motivosBaja: fields.motivosBaja,
-    fechaBaja: fields.fechaBaja,
+    authorizedSoftware: fields.authorizedSoftware,
+    deprovisioningReasons: fields.deprovisioningReasons,
+    deprovisionedAt: fields.deprovisionedAt,
   };
 
   const validatedFields = AccountRequestSchema.safeParse(fields);
@@ -186,8 +184,8 @@ export async function createUserAccountAction(
     await prisma.accountRequest.create({
       data: {
         ...data,
-        fechaExpiracion: toDate(data.fechaExpiracion),
-        fechaBaja: toDate(data.fechaBaja),
+        expiresAt: toDate(data.expiresAt),
+        deprovisionedAt: toDate(data.deprovisionedAt),
       },
     });
   } catch (error) {

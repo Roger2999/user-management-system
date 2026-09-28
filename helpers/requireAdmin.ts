@@ -2,8 +2,8 @@ import { getSession } from "./getSession";
 import { redirect } from "next/navigation";
 
 /**
- * Gate de autorización para acciones y rutas de administración.
- * Sin sesión -> /signin. Sesión sin rol ADMIN -> /dashboard.
+ * Authorization gate for administrative actions and routes.
+ * No session -> /signin. Session without the ADMIN role -> /dashboard.
  */
 export async function requireAdmin() {
   const session = await getSession();

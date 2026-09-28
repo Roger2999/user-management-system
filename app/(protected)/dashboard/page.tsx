@@ -18,25 +18,23 @@ export default async function Dashboard() {
           Bienvenido de vuelta, {username ?? "usuario"}
         </h2>
       </header>
-      {isAdmin && (
-        <section className="grid w-full max-w-md gap-10">
-          {DASHBOARD_CARDS.map((card) => (
-            <Link href={card.href} key={card.title}>
-              <Card className="hover:bg-card-hover gap-4 py-8 text-center">
-                <CardHeader>
-                  {<card.icon className="text-brand mx-auto my-1 size-6" />}
-                  <CardTitle className="text-xl font-bold">
-                    {card.title}{" "}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">{card.description}</p>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </section>
-      )}
+      <section className="grid w-full max-w-md gap-10">
+        {DASHBOARD_CARDS.map((card) => (
+          <Link href={isAdmin ? card.href : ""} key={card.title}>
+            <Card className="hover:bg-card-hover gap-4 py-8 text-center">
+              <CardHeader>
+                {<card.icon className="text-brand mx-auto my-1 size-6" />}
+                <CardTitle className="text-xl font-bold">
+                  {card.title}{" "}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">{card.description}</p>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </section>
     </div>
   );
 }

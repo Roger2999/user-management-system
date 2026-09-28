@@ -12,38 +12,38 @@ export const filtersByAllUsers: FilterConfig[] = [
 
 export const filtersByRequestType: FilterConfig[] = [
   {
-    value: "alta",
+    value: "new",
     label: "Alta",
-    where: { tipoSolicitud: "ALTA" },
+    where: { requestType: "NEW" },
   },
   {
-    value: "actualizacion",
+    value: "update",
     label: "Actualización",
-    where: { tipoSolicitud: "ACTUALIZACION" },
+    where: { requestType: "UPDATE" },
   },
   {
-    value: "bajaEntidad",
+    value: "deprovisioning",
     label: "Baja",
-    where: { tipoSolicitud: "BAJA" },
+    where: { requestType: "DEPROVISIONING" },
   },
 ];
 
 export const filtersByAccountType: FilterConfig[] = [
   {
-    value: "permanente",
+    value: "permanent",
     label: "Cuentas permanentes",
-    where: { tipoCuenta: "PERMANENTE" },
+    where: { accountType: "PERMANENT" },
   },
   {
-    value: "temporal",
+    value: "temporary",
     label: "Cuentas temporales",
-    where: { tipoCuenta: "TEMPORAL" },
+    where: { accountType: "TEMPORARY" },
   },
 ];
 
 export const pendingSignatureFilter: FilterConfig[] = [
   {
-    value: "pendientesFirma",
+    value: "pendingSignature",
     label: "Pendientes de firma",
     where: {
       signatures: { none: {} },
@@ -56,8 +56,8 @@ export function getExpiredFilter(): FilterConfig {
     value: "expired",
     label: "Cuentas expiradas",
     where: {
-      tipoCuenta: "TEMPORAL",
-      fechaExpiracion: { lte: new Date() },
+      accountType: "TEMPORARY",
+      expiresAt: { lte: new Date() },
     },
   };
 }
@@ -69,8 +69,8 @@ export function getExpiringIn7DaysFilter(): FilterConfig {
     value: "expiredIn7",
     label: "Expiran en <=7 dias",
     where: {
-      tipoCuenta: "TEMPORAL",
-      fechaExpiracion: { gte: now, lte: in7Days },
+      accountType: "TEMPORARY",
+      expiresAt: { gte: now, lte: in7Days },
     },
   };
 }
@@ -82,8 +82,8 @@ export function getExpiringIn1DayFilter(): FilterConfig {
     value: "expiredIn1",
     label: "Expiran en <=1 dias",
     where: {
-      tipoCuenta: "TEMPORAL",
-      fechaExpiracion: { gte: now, lte: in1Day },
+      accountType: "TEMPORARY",
+      expiresAt: { gte: now, lte: in1Day },
     },
   };
 }

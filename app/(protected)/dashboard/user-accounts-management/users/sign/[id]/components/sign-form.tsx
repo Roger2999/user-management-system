@@ -11,23 +11,23 @@ import { CheckCheck } from "lucide-react";
 
 export interface SignValues {
   requested: boolean;
-  requestedNombre: string;
-  requestedCargo: string;
+  requestedName: string;
+  requestedPosition: string;
   revised: boolean;
-  revisedNombre: string;
-  revisedCargo: string;
+  revisedName: string;
+  revisedPosition: string;
   approved: boolean;
-  approvedNombre: string;
-  approvedCargo: string;
+  approvedName: string;
+  approvedPosition: string;
   executed: boolean;
-  executedNombre: string;
-  executedCargo: string;
+  executedName: string;
+  executedPosition: string;
 }
 
 interface Props {
   id: string;
   initial?: SignValues;
-  currentUser?: { name: string; charge: string | null };
+  currentUser?: { name: string; position: string | null };
 }
 
 const initialState: SignFormState = {
@@ -49,38 +49,38 @@ const FIELDS: { key: keyof SignValues; label: string }[] = [
   },
 ];
 
-// Etapa que firma el propio operador desde su sesión: no admite texto
-// libre, su nombre/cargo provienen de la cuenta autenticada.
-const ETAPAS_PROPIAS: (keyof SignValues)[] = ["revised"];
+// Stage the operator signs themselves from their session: no free text,
+// name/position come from the authenticated account.
+const OWN_STAGES: (keyof SignValues)[] = ["revised"];
 
-// Reconstruye un SignValues completo a partir de una fuente parcial
-// (el `initial` de la página o el `state.data` del último envío).
+// Rebuilds a complete SignValues from a partial source
+// (the page `initial` or the `state.data` of the last submit).
 function resolveValues(
   source: Partial<SignValues> | null | undefined,
 ): SignValues {
   return {
     requested: source?.requested ?? false,
-    requestedNombre: source?.requestedNombre ?? "",
-    requestedCargo: source?.requestedCargo ?? "",
+    requestedName: source?.requestedName ?? "",
+    requestedPosition: source?.requestedPosition ?? "",
     revised: source?.revised ?? false,
-    revisedNombre: source?.revisedNombre ?? "",
-    revisedCargo: source?.revisedCargo ?? "",
+    revisedName: source?.revisedName ?? "",
+    revisedPosition: source?.revisedPosition ?? "",
     approved: source?.approved ?? false,
-    approvedNombre: source?.approvedNombre ?? "",
-    approvedCargo: source?.approvedCargo ?? "",
+    approvedName: source?.approvedName ?? "",
+    approvedPosition: source?.approvedPosition ?? "",
     executed: source?.executed ?? false,
-    executedNombre: source?.executedNombre ?? "",
-    executedCargo: source?.executedCargo ?? "",
+    executedName: source?.executedName ?? "",
+    executedPosition: source?.executedPosition ?? "",
   };
 }
 
 export default function SignForm({ id, initial, currentUser }: Props) {
   const [state, action, pending] = useActionState(signAction, initialState);
 
-  // Estado local de los checkboxes de las etapas propias: permite mostrar
-  // la vista previa "Firmará" apenas el operador marca el checkbox, sin
-  // esperar a que el formulario se envíe.
-  const [checksPropios, setChecksPropios] = useState<
+  // Local state of the checkboxes for the operator's own stages: lets the
+  // "Will sign" preview show as soon as the operator ticks the checkbox,
+  // without waiting for the form to be submitted.
+  const [ownChecks, setOwnChecks] = useState<
     Partial<Record<keyof SignValues, boolean>>
   >({});
 
@@ -90,37 +90,37 @@ export default function SignForm({ id, initial, currentUser }: Props) {
     }
   }, [state]);
 
-  // Lo que el usuario intentó en el último envío (para no perder lo escrito
-  // cuando la validación falla).
+  // What the user tried to submit last time (so nothing typed is lost
+  // when validation fails).
   const attempted = resolveValues(state.data);
 
-  // Qué hay realmente persistido en la DB: solo esto bloquea la edición.
-  // Un fallo de validación o negocio no escribió nada; usar el intento como
-  // "firmado" congelaba la etapa sin permitir corregir los errores.
+  // What is actually persisted in the DB: only this blocks editing.
+  // A validation or business failure wrote nothing; using the attempt as
+  // "signed" froze the stage without allowing errors to be corrected.
   const persisted: SignValues = state.success
     ? attempted
     : resolveValues(initial);
 
-  // Valores a mostrar: si el último envío falló por validación, el intento;
-  // en cualquier otro caso (éxito, error de negocio, primera carga), lo que
-  // realmente está en la DB vía `initial`.
+  // Values to show: if the last submit failed validation, the attempt;
+  // otherwise (success, business error, first load), what is really
+  // in the DB via `initial`.
   const shown: SignValues =
     state.data && !state.dbErrors ? attempted : persisted;
 
-  // Una etapa solo se puede firmar si la anterior ya está firmada en la DB.
+  // A stage can only be signed if the previous one is already signed in the DB.
   const canSign: Record<keyof SignValues, boolean> = {
     requested: !persisted.requested,
-    requestedNombre: false,
-    requestedCargo: false,
+    requestedName: false,
+    requestedPosition: false,
     revised: !persisted.revised && persisted.requested,
-    revisedNombre: false,
-    revisedCargo: false,
+    revisedName: false,
+    revisedPosition: false,
     approved: !persisted.approved && persisted.revised,
-    approvedNombre: false,
-    approvedCargo: false,
+    approvedName: false,
+    approvedPosition: false,
     executed: !persisted.executed && persisted.approved,
-    executedNombre: false,
-    executedCargo: false,
+    executedName: false,
+    executedPosition: false,
   };
 
   return (
@@ -128,21 +128,21 @@ export default function SignForm({ id, initial, currentUser }: Props) {
       <input type="hidden" name="id" value={id} />
       {FIELDS.map(({ key, label }) => {
         const signed = Boolean(persisted[key]);
-        // Los inputs quedan editables mientras la etapa sea alcanzable
-        // (la anterior firmada) o ya esté firmada: las etapas externas
-        // admiten corrección de errores de tipeo, sin poder desfirmar.
+        // Inputs stay editable while the stage is reachable (the previous one
+        // signed) or already signed: external stages accept typo corrections
+        // without being able to be unsigned.
         const stageReady = canSign[key] || signed;
         const inputsDisabled = !stageReady;
-        const esPropia = ETAPAS_PROPIAS.includes(key as keyof SignValues);
-        const nombreKey = `${key}Nombre` as keyof SignValues;
-        const cargoKey = `${key}Cargo` as keyof SignValues;
-        const nombreValue = shown[nombreKey] as string;
-        const cargoValue = shown[cargoKey] as string;
-        const marcadoHoy =
-          !signed && (checksPropios[key] || Boolean(shown[key]));
-        const errorPropio =
-          state.validationErrors?.[`${key}Nombre`]?.[0] ??
-          state.validationErrors?.[`${key}Cargo`]?.[0];
+        const isOwn = OWN_STAGES.includes(key as keyof SignValues);
+        const nameKey = `${key}Name` as keyof SignValues;
+        const positionKey = `${key}Position` as keyof SignValues;
+        const nameValue = shown[nameKey] as string;
+        const positionValue = shown[positionKey] as string;
+        const markedToday =
+          !signed && (ownChecks[key] || Boolean(shown[key]));
+        const ownError =
+          state.validationErrors?.[`${key}Name`]?.[0] ??
+          state.validationErrors?.[`${key}Position`]?.[0];
         return (
           <div
             key={key}
@@ -170,42 +170,43 @@ export default function SignForm({ id, initial, currentUser }: Props) {
                   name={key}
                   disabled={!stageReady}
                   onChange={(checked) =>
-                    setChecksPropios((prev) => ({ ...prev, [key]: checked }))
+                    setOwnChecks((prev) => ({ ...prev, [key]: checked }))
                   }
                 />
               )}
             </div>
-            {esPropia ? (
+            {isOwn ? (
               <div>
                 {signed ? (
                   <p className="text-muted-foreground text-sm">
-                    Firmado por: {nombreValue} — {cargoValue}
+                    Firmado por: {nameValue} — {positionValue}
                   </p>
-                ) : marcadoHoy ? (
+                ) : markedToday ? (
                   <p className="text-muted-foreground text-sm">
                     Firmará: {currentUser?.name} —{" "}
-                    {currentUser?.charge ?? "sin cargo (configuralo en Ajustes)"}
+                    {currentUser?.position ??
+                      "sin cargo (configuralo en Ajustes)"}
                   </p>
                 ) : null}
-                {!signed && errorPropio && (
-                  <p className="text-destructive text-sm">{errorPropio}</p>
+                {!signed && ownError && (
+                  <p className="text-destructive text-sm">{ownError}</p>
                 )}
               </div>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field
                   label="Nombre y apellidos"
-                  name={`${key}Nombre`}
-                  defaultValue={nombreValue}
+                  name={`${key}Name`}
+                  defaultValue={nameValue}
                   disabled={inputsDisabled}
-                  errors={state.validationErrors?.[`${key}Nombre`]}
+                  errors={state.validationErrors?.[`${key}Name`]}
                 />
                 <Field
                   label="Cargo"
-                  name={`${key}Cargo`}
-                  defaultValue={cargoValue}
+                  name={`${key}Position`}
+                  defaultValue={positionValue}
                   disabled={inputsDisabled}
-                  errors={state.validationErrors?.[`${key}Cargo`]}
+                  errors={state.validationErrors?.[`${key}Position`]}
                 />
               </div>
             )}

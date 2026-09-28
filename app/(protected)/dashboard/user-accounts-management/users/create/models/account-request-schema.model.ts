@@ -2,8 +2,8 @@ import { z } from "zod";
 
 export const AccountRequestSchema = z
   .object({
-    // Encabezado
-    tipoSolicitud: z.enum(["ALTA", "ACTUALIZACION", "BAJA"], {
+    // Header
+    requestType: z.enum(["NEW", "UPDATE", "DEPROVISIONING"], {
       message: "Requerido",
     }),
     folio: z
@@ -12,162 +12,162 @@ export const AccountRequestSchema = z
       .regex(/^[A-Z]+-[A-Z]+-\d+$/, "Formato inválido. Ejemplo: EE-CAR-016")
       .max(100, "Máximo 100 caracteres"),
 
-    // Datos personales
-    nombreApellidos: z
+    // Personal details
+    fullName: z
       .string()
       .min(1, "Requerido")
       .max(100, "Máximo 100 caracteres"),
-    telefonoExtension: z.string().max(50, "Máximo 50 caracteres").optional(),
-    cargoOcupa: z
+    phoneExtension: z.string().max(50, "Máximo 50 caracteres").optional(),
+    currentPosition: z
       .string()
       .min(1, "Requerido")
       .max(100, "Máximo 100 caracteres"),
-    departamentoArea: z
+    department: z
       .string()
       .min(1, "Requerido")
       .max(100, "Máximo 100 caracteres"),
-    tipoPersonal: z.enum(
-      ["DIRECTIVO", "ESPECIALISTA_PRINCIPAL", "TECNICO", "OTRO"],
+    staffType: z.enum(
+      ["EXECUTIVE", "SENIOR_SPECIALIST", "TECHNICIAN", "OTHER"],
       { message: "Requerido" },
     ),
-    identificadorCuentaUsuario: z
+    username: z
       .string()
       .min(1, "Requerido")
       .max(50, "Máximo 50 caracteres"),
 
-    // Correo
-    correoNacional: z.boolean().default(false),
-    correoInternacional: z.boolean().default(false),
-    correoInternet: z.boolean().default(false),
+    // Email
+    nationalEmail: z.boolean().default(false),
+    internationalEmail: z.boolean().default(false),
+    internetEmail: z.boolean().default(false),
 
-    // Navegación
+    // Web browsing
     intranetUNE: z.boolean().default(false),
-    intranetNacional: z.boolean().default(false),
+    nationalIntranet: z.boolean().default(false),
     internet: z.boolean().default(false),
 
-    // Mensajería
-    mensajeriaCorporativa: z.boolean().default(false),
+    // Messaging
+    corporateMessaging: z.boolean().default(false),
 
-    // Redes sociales
+    // Social media
     facebook: z.boolean().default(false),
     twitter: z.boolean().default(false),
     youtube: z.boolean().default(false),
     whatsapp: z.boolean().default(false),
     telegram: z.boolean().default(false),
     instagram: z.boolean().default(false),
-    otrasRedes: z.string().max(500, "Máximo 500 caracteres").optional(),
+    otherNetworks: z.string().max(500, "Máximo 500 caracteres").optional(),
 
-    // Privilegios
-    usuario: z.boolean().default(false),
-    usuarioAvanzado: z.boolean().default(false),
-    adminLocal: z.boolean().default(false),
-    adminRed: z.boolean().default(false),
+    // Privileges
+    userAccount: z.boolean().default(false),
+    advancedUserAccount: z.boolean().default(false),
+    localAdmin: z.boolean().default(false),
+    networkAdmin: z.boolean().default(false),
 
-    // Acceso Nube UNE
-    accesoNubeLectura: z.boolean().default(false),
-    accesoNubeModificar: z.boolean().default(false),
-    accesoNubeBorrar: z.boolean().default(false),
-    accesoNubeControlTotal: z.boolean().default(false),
+    // UNE cloud access
+    cloudAccessRead: z.boolean().default(false),
+    cloudAccessModify: z.boolean().default(false),
+    cloudAccessDelete: z.boolean().default(false),
+    cloudAccessFullControl: z.boolean().default(false),
 
-    // Tipo cuenta
-    tipoCuenta: z.enum(["PERMANENTE", "TEMPORAL"], { message: "Requerido" }),
-    fechaExpiracion: z.string().max(50, "Máximo 50 caracteres").optional(),
+    // Account type
+    accountType: z.enum(["PERMANENT", "TEMPORARY"], { message: "Requerido" }),
+    expiresAt: z.string().max(50, "Máximo 50 caracteres").optional(),
 
-    // Horarios
-    horarioExtralaboral: z.boolean().default(false),
-    horario24Horas: z.boolean().default(false),
-    extraDesde: z.string().max(50, "Máximo 50 caracteres").optional(),
-    extraHasta: z.string().max(50, "Máximo 50 caracteres").optional(),
-    sabadoDesde: z.string().max(50, "Máximo 50 caracteres").optional(),
-    sabadoHasta: z.string().max(50, "Máximo 50 caracteres").optional(),
-    domingoDesde: z.string().max(50, "Máximo 50 caracteres").optional(),
-    domingoHasta: z.string().max(50, "Máximo 50 caracteres").optional(),
+    // Schedules
+    overtimeSchedule: z.boolean().default(false),
+    aroundTheClockSchedule: z.boolean().default(false),
+    overtimeFrom: z.string().max(50, "Máximo 50 caracteres").optional(),
+    overtimeTo: z.string().max(50, "Máximo 50 caracteres").optional(),
+    saturdayFrom: z.string().max(50, "Máximo 50 caracteres").optional(),
+    saturdayTo: z.string().max(50, "Máximo 50 caracteres").optional(),
+    sundayFrom: z.string().max(50, "Máximo 50 caracteres").optional(),
+    sundayTo: z.string().max(50, "Máximo 50 caracteres").optional(),
 
     // APN
-    apnCorreoNacional: z.boolean().default(false),
-    apnCorreoInternacional: z.boolean().default(false),
+    apnNationalEmail: z.boolean().default(false),
+    apnInternationalEmail: z.boolean().default(false),
     apnInternet: z.boolean().default(false),
-    telefonoCelular: z.string().max(50, "Máximo 50 caracteres").optional(),
+    mobilePhone: z.string().max(50, "Máximo 50 caracteres").optional(),
 
     // PC
-    pcNombre: z
+    pcName: z
       .string()
       .min(1, "Requerido")
       .max(50, "Máximo 50 caracteres"),
-    pcInventario: z
+    pcAssetTag: z
       .string()
       .min(1, "Requerido")
       .max(50, "Máximo 50 caracteres"),
-    pcAdicionalNombre: z
+    additionalPcName: z
       .string()
       .max(100, "Máximo 100 caracteres")
       .optional(),
-    pcAdicionalInventario: z
+    additionalPcAssetTag: z
       .string()
       .max(100, "Máximo 100 caracteres")
       .optional(),
 
     // Software
-    softwareAutorizado: z.string().max(500, "Máximo 500 caracteres").optional(),
+    authorizedSoftware: z.string().max(500, "Máximo 500 caracteres").optional(),
 
-    // Baja
-    motivosBaja: z.string().max(500, "Máximo 500 caracteres").optional(),
-    fechaBaja: z.string().max(50, "Máximo 50 caracteres").optional(),
+    // Deprovisioning
+    deprovisioningReasons: z.string().max(500, "Máximo 500 caracteres").optional(),
+    deprovisionedAt: z.string().max(50, "Máximo 50 caracteres").optional(),
   })
   .superRefine((data, ctx) => {
-    if (data.tipoCuenta === "TEMPORAL" && !data.fechaExpiracion) {
+    if (data.accountType === "TEMPORARY" && !data.expiresAt) {
       ctx.addIssue({
         code: "custom",
         message: "Requerido para cuentas temporales",
-        path: ["fechaExpiracion"],
+        path: ["expiresAt"],
       });
     }
 
-    if (data.horarioExtralaboral) {
-      if (!data.extraDesde) {
+    if (data.overtimeSchedule) {
+      if (!data.overtimeFrom) {
         ctx.addIssue({
           code: "custom",
           message: "Requerido cuando horario extralaboral está activo",
-          path: ["extraDesde"],
+          path: ["overtimeFrom"],
         });
       }
-      if (!data.extraHasta) {
+      if (!data.overtimeTo) {
         ctx.addIssue({
           code: "custom",
           message: "Requerido cuando horario extrlaboral está activo",
-          path: ["extraHasta"],
+          path: ["overtimeTo"],
         });
       }
     }
 
-    if (data.tipoSolicitud === "BAJA") {
-      if (!data.motivosBaja) {
+    if (data.requestType === "DEPROVISIONING") {
+      if (!data.deprovisioningReasons) {
         ctx.addIssue({
           code: "custom",
           message: "Requerido para solicitudes de baja",
-          path: ["motivosBaja"],
+          path: ["deprovisioningReasons"],
         });
       }
-      if (!data.fechaBaja) {
+      if (!data.deprovisionedAt) {
         ctx.addIssue({
           code: "custom",
           message: "Requerido para solicitudes de baja",
-          path: ["fechaBaja"],
+          path: ["deprovisionedAt"],
         });
       }
     }
 
     const timeRanges = [
-      { desde: data.extraDesde, hasta: data.extraHasta, field: "extraHasta" },
+      { desde: data.overtimeFrom, hasta: data.overtimeTo, field: "overtimeTo" },
       {
-        desde: data.sabadoDesde,
-        hasta: data.sabadoHasta,
-        field: "sabadoHasta",
+        desde: data.saturdayFrom,
+        hasta: data.saturdayTo,
+        field: "saturdayTo",
       },
       {
-        desde: data.domingoDesde,
-        hasta: data.domingoHasta,
-        field: "domingoHasta",
+        desde: data.sundayFrom,
+        hasta: data.sundayTo,
+        field: "sundayTo",
       },
     ] as const;
     for (const { desde, hasta, field } of timeRanges) {

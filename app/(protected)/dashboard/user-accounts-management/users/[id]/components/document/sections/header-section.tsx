@@ -32,11 +32,11 @@ export function HeaderSection({ user }: { user: AccountRequest }) {
         </Cell>
         <Cell w="w-[11.6%]" className="justify-center gap-1">
           <span className="font-bold">ALTA</span>
-          <CB checked={user.tipoSolicitud === "ALTA"} />
+          <CB checked={user.requestType === "NEW"} />
         </Cell>
         <Cell w="w-[18.6%]" className="justify-center gap-1">
           <span className="font-bold">ACTUALIZACIÓN</span>
-          <CB checked={user.tipoSolicitud === "ACTUALIZACION"} />
+          <CB checked={user.requestType === "UPDATE"} />
         </Cell>
         <Cell end className="justify-center gap-1">
           <span className="font-bold">MODIFICACIÓN</span>

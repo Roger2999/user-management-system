@@ -11,7 +11,7 @@ export function AccountTypeSection({ user }: { user: AccountRequest }) {
         <Cell end className="gap-2">
           <span className="flex items-center gap-1">
             <span>Permanente</span>
-            <CB checked={user.tipoCuenta === "PERMANENTE"} />
+            <CB checked={user.accountType === "PERMANENT"} />
           </span>
           <span>
             Valida por 2 años a partir de su creación o actualización.
@@ -24,12 +24,12 @@ export function AccountTypeSection({ user }: { user: AccountRequest }) {
           <span className="flex items-center gap-2">
             <span className="flex items-center gap-1">
               <span>Temporal</span>
-              <CB checked={user.tipoCuenta === "TEMPORAL"} />
+              <CB checked={user.accountType === "TEMPORARY"} />
             </span>
             <span className="flex items-center gap-[4pt]">
               <span>Fecha de expiración</span>
               <span className="min-w-[70pt] border-b border-black text-center">
-                {formatDate(user.fechaExpiracion) || "____/______/202___"}
+                {formatDate(user.expiresAt) || "____/______/202___"}
               </span>
             </span>
           </span>

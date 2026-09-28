@@ -8,25 +8,25 @@ const getExpiringAccounts = cache(async () => {
   const in1Day = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
   const whereBase = {
-    tipoCuenta: "TEMPORAL" as const,
-    fechaExpiracion: { gte: now },
+    accountType: "TEMPORARY" as const,
+    expiresAt: { gte: now },
   };
 
   const [count7, count1, accounts] = await Promise.all([
     prisma.accountRequest.count({
-      where: { ...whereBase, fechaExpiracion: { gte: now, lte: in7Days } },
+      where: { ...whereBase, expiresAt: { gte: now, lte: in7Days } },
     }),
     prisma.accountRequest.count({
-      where: { ...whereBase, fechaExpiracion: { gte: now, lte: in1Day } },
+      where: { ...whereBase, expiresAt: { gte: now, lte: in1Day } },
     }),
     prisma.accountRequest.findMany({
-      where: { ...whereBase, fechaExpiracion: { gte: now, lte: in7Days } },
+      where: { ...whereBase, expiresAt: { gte: now, lte: in7Days } },
       select: {
         id: true,
-        nombreApellidos: true,
-        fechaExpiracion: true,
+        fullName: true,
+        expiresAt: true,
       },
-      orderBy: { fechaExpiracion: "asc" },
+      orderBy: { expiresAt: "asc" },
       take: 20,
     }),
   ]);
@@ -36,7 +36,7 @@ const getExpiringAccounts = cache(async () => {
     count1,
     accounts: accounts.map((a) => ({
       ...a,
-      fechaExpiracion: a.fechaExpiracion?.toISOString() ?? "",
+      expiresAt: a.expiresAt?.toISOString() ?? "",
     })),
   };
 });

@@ -8,13 +8,13 @@ type DbError = {
 } | null;
 
 export type SignupFormState = {
-  data?: { username?: string; email: string; fullName: string; charge: string };
+  data?: { username?: string; email: string; fullName: string; position: string };
   success?: boolean;
   dbErrors?: DbError;
   validationErrors?: {
     username?: string[];
     fullName?: string[];
-    charge?: string[];
+    position?: string[];
     email?: string[];
     password?: string[];
     confirmPassword?: string[];
@@ -66,14 +66,14 @@ export type ResetPasswordState = {
 };
 
 export type UpdateUserState = {
-  data?: { username: string; displayName?: string; charge?: string };
+  data?: { username: string; displayName?: string; position?: string };
   message?: string;
   success?: boolean;
   dbErrors?: DbError;
   validationErrors?: {
     username?: string[];
     displayName?: string[];
-    charge?: string[];
+    position?: string[];
   } | null;
 };
 
@@ -91,57 +91,57 @@ export type ChangePasswordState = {
 export type CreateUserAccountState = {
   data?: {
     id?: string;
-    tipoSolicitud?: string;
+    requestType?: string;
     folio?: string;
-    nombreApellidos?: string;
-    telefonoExtension?: string;
-    cargoOcupa?: string;
-    departamentoArea?: string;
-    tipoPersonal?: string;
-    identificadorCuentaUsuario?: string;
-    correoNacional?: boolean;
-    correoInternacional?: boolean;
-    correoInternet?: boolean;
+    fullName?: string;
+    phoneExtension?: string;
+    currentPosition?: string;
+    department?: string;
+    staffType?: string;
+    username?: string;
+    nationalEmail?: boolean;
+    internationalEmail?: boolean;
+    internetEmail?: boolean;
     intranetUNE?: boolean;
-    intranetNacional?: boolean;
+    nationalIntranet?: boolean;
     internet?: boolean;
-    mensajeriaCorporativa?: boolean;
+    corporateMessaging?: boolean;
     facebook?: boolean;
     twitter?: boolean;
     youtube?: boolean;
     whatsapp?: boolean;
     telegram?: boolean;
     instagram?: boolean;
-    otrasRedes?: string;
-    usuario?: boolean;
-    usuarioAvanzado?: boolean;
-    adminLocal?: boolean;
-    adminRed?: boolean;
-    accesoNubeLectura?: boolean;
-    accesoNubeModificar?: boolean;
-    accesoNubeBorrar?: boolean;
-    accesoNubeControlTotal?: boolean;
-    tipoCuenta?: string;
-    fechaExpiracion?: string;
-    horarioExtralaboral?: boolean;
-    horario24Horas?: boolean;
-    extraDesde?: string;
-    extraHasta?: string;
-    sabadoDesde?: string;
-    sabadoHasta?: string;
-    domingoDesde?: string;
-    domingoHasta?: string;
-    apnCorreoNacional?: boolean;
-    apnCorreoInternacional?: boolean;
+    otherNetworks?: string;
+    userAccount?: boolean;
+    advancedUserAccount?: boolean;
+    localAdmin?: boolean;
+    networkAdmin?: boolean;
+    cloudAccessRead?: boolean;
+    cloudAccessModify?: boolean;
+    cloudAccessDelete?: boolean;
+    cloudAccessFullControl?: boolean;
+    accountType?: string;
+    expiresAt?: string;
+    overtimeSchedule?: boolean;
+    aroundTheClockSchedule?: boolean;
+    overtimeFrom?: string;
+    overtimeTo?: string;
+    saturdayFrom?: string;
+    saturdayTo?: string;
+    sundayFrom?: string;
+    sundayTo?: string;
+    apnNationalEmail?: boolean;
+    apnInternationalEmail?: boolean;
     apnInternet?: boolean;
-    telefonoCelular?: string;
-    pcNombre?: string;
-    pcInventario?: string;
-    pcAdicionalNombre?: string;
-    pcAdicionalInventario?: string;
-    softwareAutorizado?: string;
-    motivosBaja?: string;
-    fechaBaja?: string;
+    mobilePhone?: string;
+    pcName?: string;
+    pcAssetTag?: string;
+    additionalPcName?: string;
+    additionalPcAssetTag?: string;
+    authorizedSoftware?: string;
+    deprovisioningReasons?: string;
+    deprovisionedAt?: string;
   };
   success?: boolean;
   dbErrors?: DbError;
@@ -150,17 +150,17 @@ export type CreateUserAccountState = {
 export type SignFormState = {
   data?: {
     requested?: boolean;
-    requestedNombre?: string;
-    requestedCargo?: string;
+    requestedName?: string;
+    requestedPosition?: string;
     revised?: boolean;
-    revisedNombre?: string;
-    revisedCargo?: string;
+    revisedName?: string;
+    revisedPosition?: string;
     approved?: boolean;
-    approvedNombre?: string;
-    approvedCargo?: string;
+    approvedName?: string;
+    approvedPosition?: string;
     executed?: boolean;
-    executedNombre?: string;
-    executedCargo?: string;
+    executedName?: string;
+    executedPosition?: string;
   } | null;
   success?: boolean;
   dbErrors?: DbError;

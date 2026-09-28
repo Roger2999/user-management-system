@@ -15,7 +15,7 @@ export const UpdateUserAction = async (
   const fields = {
     username: formData.get("username") as string,
     displayName: formData.get("displayName") as string,
-    charge: formData.get("charge") as string,
+    position: formData.get("position") as string,
   };
   const validatedFields = UpdateUserSchema.safeParse(fields);
   if (!validatedFields.success) {
@@ -23,22 +23,22 @@ export const UpdateUserAction = async (
       data: {
         username: fields.username,
         displayName: fields.displayName,
-        charge: fields.charge,
+        position: fields.position,
       },
       success: false,
       dbErrors: null,
       validationErrors: z.flattenError(validatedFields.error).fieldErrors,
     };
   }
-  const { username, displayName, charge } = validatedFields.data;
+  const { username, displayName, position } = validatedFields.data;
   try {
     await auth.api.updateUser({
       body: {
         username,
         ...(displayName?.trim() ? { displayUsername: displayName.trim() } : {}),
-        // `charge` es NOT NULL en la DB y Zod ya garantiza que no llegue vacío,
-        // así que siempre se escribe.
-        charge: charge.trim(),
+        // `position` is NOT NULL in the DB and Zod already guarantees it is
+        // never empty, so it is always written.
+        position: position.trim(),
       },
       headers: await headers(),
     });
@@ -46,7 +46,7 @@ export const UpdateUserAction = async (
     revalidatePath("/dashboard/settings");
     return {
       success: true,
-      data: { username, displayName, charge },
+      data: { username, displayName, position },
       dbErrors: null,
       validationErrors: null,
       message: "Usuario actualizado con éxito",
@@ -54,7 +54,7 @@ export const UpdateUserAction = async (
   } catch (error) {
     if (error instanceof APIError) {
       return {
-        data: { username, displayName, charge },
+        data: { username, displayName, position },
         success: false,
         dbErrors: {
           name: error.name,
@@ -65,7 +65,7 @@ export const UpdateUserAction = async (
       };
     }
     return {
-      data: { username, displayName, charge },
+      data: { username, displayName, position },
       success: false,
       dbErrors: { message: "Error inesperado" },
       validationErrors: null,

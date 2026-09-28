@@ -10,7 +10,7 @@ import { ScheduleSection } from "./document/sections/schedule-section";
 import { ApnSection } from "./document/sections/apn-section";
 import { PcSection } from "./document/sections/pc-section";
 import { SignaturesSection } from "./document/sections/signatures-section";
-import { BajaSection } from "./document/sections/baja-section";
+import { DeprovisioningSection } from "./document/sections/deprovisioning-section";
 
 export type UserWithSignatures = AccountRequest & {
   signatures: AccountRequestSignature[];
@@ -36,7 +36,7 @@ export default function UserAccountDocument({ user }: Props) {
         <ApnSection user={user} />
         <PcSection user={user} />
         <SignaturesSection user={user} />
-        <BajaSection user={user} />
+        <DeprovisioningSection user={user} />
       </div>
     </div>
   );
