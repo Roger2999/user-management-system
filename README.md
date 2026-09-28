@@ -82,8 +82,8 @@ lib/
 prisma/
 ├── schema.prisma               # Modelos: User, Session, Account, Verification, AccountRequest, AccountRequestSignature
 ├── migrations/                 # Migraciones de Prisma
-├── seed.ts                     # Datos de ejemplo (⚠️ borra solicitudes existentes)
-└── promote-admin.ts            # Promueve un usuario a ADMIN por username
+├── promote-admin.ts            # Promueve un usuario a ADMIN por username
+└── wipe-requests.ts            # Borra solicitudes y firmas, conserva la autenticación
 generated/prisma/               # Cliente Prisma generado (se commitea)
 ```
 
@@ -154,10 +154,10 @@ Abrí [http://localhost:3000](http://localhost:3000).
 | `pnpm lint` | ESLint |
 | `pnpm db:migrate` | Crear/aplicar migraciones en desarrollo |
 | `pnpm db:generate` | Regenerar el cliente Prisma |
-| `pnpm db:seed` | Cargar datos de ejemplo |
 | `pnpm exec prisma migrate deploy` | Aplicar migraciones pendientes (producción, no interactivo) |
 | `pnpm exec prisma studio` | Prisma Studio (editor visual de la DB) |
 | `pnpm exec tsx prisma/promote-admin.ts <username>` | Promover administrador |
+| `pnpm exec tsx prisma/wipe-requests.ts` | Vaciar solicitudes y firmas, conservando usuarios, sesiones y cuentas |
 
 > El cliente Prisma **no está versionado**: vive en `generated/` y lo
 > regeneran `pnpm install` (`postinstall`), `pnpm dev` (`predev`) y
@@ -165,7 +165,9 @@ Abrí [http://localhost:3000](http://localhost:3000).
 > `postinstall` cuando `pnpm install` no cambia nada; `predev` y `prebuild`
 > corren siempre, así que el cliente nunca queda viejo.
 
-> **⚠️ Seed:** `pnpm db:seed` borra todas las solicitudes de cuenta existentes antes de insertar los ejemplos. No lo corras sobre datos reales.
+> **⚠️ Wipe:** `pnpm exec tsx prisma/wipe-requests.ts` borra **todas** las
+> solicitudes y firmas. Los datos de autenticación (`user`, `session`,
+> `account`, `verification`) no se tocan. No lo corras sobre datos reales.
 
 ## Desarrollo local sin conexión a Prisma Postgres
 
