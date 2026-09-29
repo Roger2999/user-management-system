@@ -1,4 +1,4 @@
-import { LucideIcon, Settings, UsersIcon } from "lucide-react";
+import { LucideIcon, Settings } from "lucide-react";
 
 export const PUBLIC_ROUTES: {
   name: string;
@@ -43,16 +43,3 @@ export const ACCOUNT_OPTIONS = [
   { value: "PERMANENT", label: "Permanente" },
   { value: "TEMPORARY", label: "Temporal" },
 ] as const;
-export const DASHBOARD_CARDS: {
-  title: string;
-  description: string;
-  href: string;
-  icon: LucideIcon;
-}[] = [
-  {
-    title: "Gestionar cuentas de usuario",
-    description: "Registra, firma, actualiza y da de baja cuentas de usuario",
-    href: "/dashboard/user-accounts-management/",
-    icon: UsersIcon,
-  },
-];

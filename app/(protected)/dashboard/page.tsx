@@ -1,7 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getSession } from "@/helpers/getSession";
-import Link from "next/link";
-import { DASHBOARD_CARDS } from "@/lib/constants";
+import { UsersIcon } from "lucide-react";
+import { DashboardCard } from "./components/DashboardCard";
 
 export default async function Dashboard() {
   const session = await getSession();
@@ -19,21 +18,15 @@ export default async function Dashboard() {
         </h2>
       </header>
       <section className="grid w-full max-w-md gap-10">
-        {DASHBOARD_CARDS.map((card) => (
-          <Link href={isAdmin ? card.href : ""} key={card.title}>
-            <Card className="hover:bg-card-hover gap-4 py-8 text-center">
-              <CardHeader>
-                {<card.icon className="text-brand mx-auto my-1 size-6" />}
-                <CardTitle className="text-xl font-bold">
-                  {card.title}{" "}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">{card.description}</p>
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
+        <DashboardCard
+          isAdmin={isAdmin}
+          icon={<UsersIcon className="text-brand mx-auto my-1 size-6" />}
+          card={{
+            title: "Gestionar cuentas de usuario",
+            description: "Registra, firma, actualiza y da de baja cuentas de usuario",
+            href: "/dashboard/user-accounts-management/",
+          }}
+        />
       </section>
     </div>
   );
