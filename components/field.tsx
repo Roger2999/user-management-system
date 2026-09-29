@@ -35,8 +35,12 @@ export default function Field({
   const inputId = useId();
   const errorsId = `${inputId}-errors`;
   return (
-    <div className={cn("min-h-26 space-y-2", className)} {...props}>
-      {label && <Label htmlFor={inputId}>{label}</Label>}
+    <div className={cn("space-y-2", className)} {...props}>
+      {label && (
+        <Label className="min-h-6" htmlFor={inputId}>
+          {label}
+        </Label>
+      )}
       <div className="relative">
         <Input
           defaultValue={defaultValue}

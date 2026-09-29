@@ -29,7 +29,9 @@ export default function SelectField({
 
   return (
     <div className="min-h-21 space-y-2">
-      <Label htmlFor={inputId}>{label}</Label>
+      <Label className="min-h-6" htmlFor={inputId}>
+        {label}
+      </Label>
       <select
         id={inputId}
         name={name}
