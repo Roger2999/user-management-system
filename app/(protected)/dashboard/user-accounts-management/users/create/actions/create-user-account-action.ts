@@ -8,6 +8,7 @@ import {
 } from "../models/unique-account-request";
 import prisma from "@/lib/prisma";
 import { CreateUserAccountState } from "@/lib/types";
+import { checkboxField, optionalTextField, textField } from "@/lib/form-data";
 import { requireAdmin } from "@/helpers/requireAdmin";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -19,71 +20,68 @@ export async function createUserAccountAction(
   await requireAdmin();
 
   const fields = {
-    requestType: (formData.get("requestType") as string) || undefined,
-    folio: (formData.get("folio") as string)?.trim().toUpperCase() ?? "",
-    fullName: formData.get("fullName") as string,
-    phoneExtension: (formData.get("phoneExtension") as string) || undefined,
-    currentPosition: formData.get("currentPosition") as string,
-    department: formData.get("department") as string,
-    staffType: (formData.get("staffType") as string) || undefined,
-    username: (formData.get("username") as string) || undefined,
+    requestType: optionalTextField(formData, "requestType"),
+    folio: textField(formData, "folio").trim().toUpperCase(),
+    fullName: textField(formData, "fullName"),
+    phoneExtension: optionalTextField(formData, "phoneExtension"),
+    currentPosition: textField(formData, "currentPosition"),
+    department: textField(formData, "department"),
+    staffType: optionalTextField(formData, "staffType"),
+    username: textField(formData, "username"),
 
-    nationalEmail: formData.get("nationalEmail") === "on",
-    internationalEmail: formData.get("internationalEmail") === "on",
-    internetEmail: formData.get("internetEmail") === "on",
+    nationalEmail: checkboxField(formData, "nationalEmail"),
+    internationalEmail: checkboxField(formData, "internationalEmail"),
+    internetEmail: checkboxField(formData, "internetEmail"),
 
-    intranetUNE: formData.get("intranetUNE") === "on",
-    nationalIntranet: formData.get("nationalIntranet") === "on",
-    internet: formData.get("internet") === "on",
+    intranetUNE: checkboxField(formData, "intranetUNE"),
+    nationalIntranet: checkboxField(formData, "nationalIntranet"),
+    internet: checkboxField(formData, "internet"),
 
-    corporateMessaging: formData.get("corporateMessaging") === "on",
+    corporateMessaging: checkboxField(formData, "corporateMessaging"),
 
-    facebook: formData.get("facebook") === "on",
-    twitter: formData.get("twitter") === "on",
-    youtube: formData.get("youtube") === "on",
-    whatsapp: formData.get("whatsapp") === "on",
-    telegram: formData.get("telegram") === "on",
-    instagram: formData.get("instagram") === "on",
-    otherNetworks: (formData.get("otherNetworks") as string) || undefined,
+    facebook: checkboxField(formData, "facebook"),
+    twitter: checkboxField(formData, "twitter"),
+    youtube: checkboxField(formData, "youtube"),
+    whatsapp: checkboxField(formData, "whatsapp"),
+    telegram: checkboxField(formData, "telegram"),
+    instagram: checkboxField(formData, "instagram"),
+    otherNetworks: optionalTextField(formData, "otherNetworks"),
 
-    userAccount: formData.get("userAccount") === "on",
-    advancedUserAccount: formData.get("advancedUserAccount") === "on",
-    localAdmin: formData.get("localAdmin") === "on",
-    networkAdmin: formData.get("networkAdmin") === "on",
+    userAccount: checkboxField(formData, "userAccount"),
+    advancedUserAccount: checkboxField(formData, "advancedUserAccount"),
+    localAdmin: checkboxField(formData, "localAdmin"),
+    networkAdmin: checkboxField(formData, "networkAdmin"),
 
-    cloudAccessRead: formData.get("cloudAccessRead") === "on",
-    cloudAccessModify: formData.get("cloudAccessModify") === "on",
-    cloudAccessDelete: formData.get("cloudAccessDelete") === "on",
-    cloudAccessFullControl: formData.get("cloudAccessFullControl") === "on",
+    cloudAccessRead: checkboxField(formData, "cloudAccessRead"),
+    cloudAccessModify: checkboxField(formData, "cloudAccessModify"),
+    cloudAccessDelete: checkboxField(formData, "cloudAccessDelete"),
+    cloudAccessFullControl: checkboxField(formData, "cloudAccessFullControl"),
 
-    accountType: (formData.get("accountType") as string) || undefined,
-    expiresAt: (formData.get("expiresAt") as string) || undefined,
+    accountType: optionalTextField(formData, "accountType"),
+    expiresAt: optionalTextField(formData, "expiresAt"),
 
-    overtimeSchedule: formData.get("overtimeSchedule") === "on",
-    aroundTheClockSchedule: formData.get("aroundTheClockSchedule") === "on",
-    overtimeFrom: (formData.get("overtimeFrom") as string) || undefined,
-    overtimeTo: (formData.get("overtimeTo") as string) || undefined,
-    saturdayFrom: (formData.get("saturdayFrom") as string) || undefined,
-    saturdayTo: (formData.get("saturdayTo") as string) || undefined,
-    sundayFrom: (formData.get("sundayFrom") as string) || undefined,
-    sundayTo: (formData.get("sundayTo") as string) || undefined,
+    overtimeSchedule: checkboxField(formData, "overtimeSchedule"),
+    aroundTheClockSchedule: checkboxField(formData, "aroundTheClockSchedule"),
+    overtimeFrom: optionalTextField(formData, "overtimeFrom"),
+    overtimeTo: optionalTextField(formData, "overtimeTo"),
+    saturdayFrom: optionalTextField(formData, "saturdayFrom"),
+    saturdayTo: optionalTextField(formData, "saturdayTo"),
+    sundayFrom: optionalTextField(formData, "sundayFrom"),
+    sundayTo: optionalTextField(formData, "sundayTo"),
 
-    apnNationalEmail: formData.get("apnNationalEmail") === "on",
-    apnInternationalEmail: formData.get("apnInternationalEmail") === "on",
-    apnInternet: formData.get("apnInternet") === "on",
-    mobilePhone: (formData.get("mobilePhone") as string) || undefined,
+    apnNationalEmail: checkboxField(formData, "apnNationalEmail"),
+    apnInternationalEmail: checkboxField(formData, "apnInternationalEmail"),
+    apnInternet: checkboxField(formData, "apnInternet"),
+    mobilePhone: optionalTextField(formData, "mobilePhone"),
 
-    pcName: (formData.get("pcName") as string) || undefined,
-    pcAssetTag: (formData.get("pcAssetTag") as string) || undefined,
-    additionalPcName: (formData.get("additionalPcName") as string) || undefined,
-    additionalPcAssetTag:
-      (formData.get("additionalPcAssetTag") as string) || undefined,
+    pcName: textField(formData, "pcName"),
+    pcAssetTag: textField(formData, "pcAssetTag"),
+    additionalPcName: optionalTextField(formData, "additionalPcName"),
+    additionalPcAssetTag: optionalTextField(formData, "additionalPcAssetTag"),
 
-    authorizedSoftware:
-      (formData.get("authorizedSoftware") as string) || undefined,
-    deprovisioningReasons:
-      (formData.get("deprovisioningReasons") as string) || undefined,
-    deprovisionedAt: (formData.get("deprovisionedAt") as string) || undefined,
+    authorizedSoftware: optionalTextField(formData, "authorizedSoftware"),
+    deprovisioningReasons: optionalTextField(formData, "deprovisioningReasons"),
+    deprovisionedAt: optionalTextField(formData, "deprovisionedAt"),
   };
 
   const repopulateData = {

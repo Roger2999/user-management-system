@@ -8,7 +8,7 @@ interface Props {
   label: string;
   name: string;
   options: readonly { readonly value: string; readonly label: string }[];
-  defaultValue?: string;
+  value: string;
   errors?: string[];
   onChange?: (value: string) => void;
   disabledValues?: string[];
@@ -18,7 +18,7 @@ export default function SelectField({
   label,
   name,
   options,
-  defaultValue,
+  value,
   errors,
   onChange,
   disabledValues,
@@ -35,7 +35,7 @@ export default function SelectField({
       <select
         id={inputId}
         name={name}
-        defaultValue={defaultValue}
+        value={value}
         onChange={(e) => onChange?.(e.target.value)}
         aria-invalid={hasErrors}
         aria-describedby={hasErrors ? errorsId : undefined}

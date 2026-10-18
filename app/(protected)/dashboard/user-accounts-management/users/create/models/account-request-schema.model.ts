@@ -7,23 +7,23 @@ export const AccountRequestSchema = z
       message: "Requerido",
     }),
     folio: z
-      .string()
+      .string({ error: "Requerido" })
       .min(1, "Requerido")
       .regex(/^[A-Z]+-[A-Z]+-\d+$/, "Formato inválido. Ejemplo: EE-CAR-016")
       .max(100, "Máximo 100 caracteres"),
 
     // Personal details
     fullName: z
-      .string()
+      .string({ error: "Requerido" })
       .min(1, "Requerido")
       .max(100, "Máximo 100 caracteres"),
     phoneExtension: z.string().max(50, "Máximo 50 caracteres").optional(),
     currentPosition: z
-      .string()
+      .string({ error: "Requerido" })
       .min(1, "Requerido")
       .max(100, "Máximo 100 caracteres"),
     department: z
-      .string()
+      .string({ error: "Requerido" })
       .min(1, "Requerido")
       .max(100, "Máximo 100 caracteres"),
     staffType: z.enum(
@@ -31,7 +31,7 @@ export const AccountRequestSchema = z
       { message: "Requerido" },
     ),
     username: z
-      .string()
+      .string({ error: "Requerido" })
       .min(1, "Requerido")
       .max(50, "Máximo 50 caracteres"),
 
@@ -91,17 +91,14 @@ export const AccountRequestSchema = z
 
     // PC
     pcName: z
-      .string()
+      .string({ error: "Requerido" })
       .min(1, "Requerido")
       .max(50, "Máximo 50 caracteres"),
     pcAssetTag: z
-      .string()
+      .string({ error: "Requerido" })
       .min(1, "Requerido")
       .max(50, "Máximo 50 caracteres"),
-    additionalPcName: z
-      .string()
-      .max(100, "Máximo 100 caracteres")
-      .optional(),
+    additionalPcName: z.string().max(100, "Máximo 100 caracteres").optional(),
     additionalPcAssetTag: z
       .string()
       .max(100, "Máximo 100 caracteres")
@@ -111,7 +108,10 @@ export const AccountRequestSchema = z
     authorizedSoftware: z.string().max(500, "Máximo 500 caracteres").optional(),
 
     // Deprovisioning
-    deprovisioningReasons: z.string().max(500, "Máximo 500 caracteres").optional(),
+    deprovisioningReasons: z
+      .string()
+      .max(500, "Máximo 500 caracteres")
+      .optional(),
     deprovisionedAt: z.string().max(50, "Máximo 50 caracteres").optional(),
   })
   .superRefine((data, ctx) => {

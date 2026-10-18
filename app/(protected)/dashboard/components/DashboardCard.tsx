@@ -13,10 +13,6 @@ interface Props {
     description: string;
     href: string;
   };
-  /**
-   * Rendered as a ReactNode, never as a component reference.
-   * Function props cannot cross the RSC -> client serialization boundary.
-   */
   icon: ReactNode;
 }
 

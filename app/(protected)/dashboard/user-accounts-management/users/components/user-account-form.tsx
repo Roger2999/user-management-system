@@ -35,14 +35,17 @@ export default function UserAccountForm({
   };
   const [state, formAction, pending] = useActionState(action, initialState);
 
-  const [requestType, setTipoSolicitud] = useState(
-    initialData?.requestType ?? "",
+  const [requestType, setRequestType] = useState(
+    initialData?.requestType ?? (mode === "create" ? "NEW" : ""),
   );
-  const [accountType, setTipoCuenta] = useState(initialData?.accountType ?? "");
-  const [overtimeSchedule, setHorarioExtralaboral] = useState(
+  const [accountType, setAccountType] = useState(
+    initialData?.accountType ?? "",
+  );
+  const [staffType, setStaffType] = useState(initialData?.staffType ?? "");
+  const [overtimeSchedule, setOvertimeSchedule] = useState(
     !!initialData?.overtimeSchedule,
   );
-  const [aroundTheClockSchedule, setHorario24Horas] = useState(
+  const [aroundTheClockSchedule, setAroundTheClockSchedule] = useState(
     !!initialData?.aroundTheClockSchedule,
   );
 
@@ -66,12 +69,9 @@ export default function UserAccountForm({
               label="Tipo de solicitud"
               name="requestType"
               options={REQUEST_OPTIONS}
-              defaultValue={
-                state.data?.requestType ??
-                (mode === "create" ? "NEW" : undefined)
-              }
+              value={requestType}
               errors={state.validationErrors?.requestType}
-              onChange={setTipoSolicitud}
+              onChange={setRequestType}
               disabledValues={
                 mode === "create" ? ["DEPROVISIONING", "UPDATE"] : ["NEW"]
               }
@@ -135,8 +135,9 @@ export default function UserAccountForm({
               label="Tipo de personal"
               name="staffType"
               options={PERSONAL_OPTIONS}
-              defaultValue={state.data?.staffType}
+              value={staffType}
               errors={state.validationErrors?.staffType}
+              onChange={setStaffType}
             />
             <Field
               label="Identificador de cuenta de usuario"
@@ -156,17 +157,17 @@ export default function UserAccountForm({
               <CheckboxField
                 label="Correo Nacional"
                 name="nationalEmail"
-                defaultChecked={!!state.data?.nationalEmail}
+                defaultChecked={!!initialData?.nationalEmail}
               />
               <CheckboxField
                 label="Correo Internacional"
                 name="internationalEmail"
-                defaultChecked={!!state.data?.internationalEmail}
+                defaultChecked={!!initialData?.internationalEmail}
               />
               <CheckboxField
                 label="Correo Internet"
                 name="internetEmail"
-                defaultChecked={!!state.data?.internetEmail}
+                defaultChecked={!!initialData?.internetEmail}
               />
             </div>
           </CardContent>
@@ -181,17 +182,17 @@ export default function UserAccountForm({
               <CheckboxField
                 label="Intranet UNE"
                 name="intranetUNE"
-                defaultChecked={!!state.data?.intranetUNE}
+                defaultChecked={!!initialData?.intranetUNE}
               />
               <CheckboxField
                 label="Intranet Nacional"
                 name="nationalIntranet"
-                defaultChecked={!!state.data?.nationalIntranet}
+                defaultChecked={!!initialData?.nationalIntranet}
               />
               <CheckboxField
                 label="Internet"
                 name="internet"
-                defaultChecked={!!state.data?.internet}
+                defaultChecked={!!initialData?.internet}
               />
             </div>
           </CardContent>
@@ -205,7 +206,7 @@ export default function UserAccountForm({
             <CheckboxField
               label="Mensajería Corporativa"
               name="corporateMessaging"
-              defaultChecked={!!state.data?.corporateMessaging}
+              defaultChecked={!!initialData?.corporateMessaging}
             />
           </CardContent>
         </Card>
@@ -219,34 +220,34 @@ export default function UserAccountForm({
               <CheckboxField
                 label="Facebook"
                 name="facebook"
-                defaultChecked={!!state.data?.facebook}
+                defaultChecked={!!initialData?.facebook}
               />
               <CheckboxField
                 label="Twitter"
                 name="twitter"
-                defaultChecked={!!state.data?.twitter}
+                defaultChecked={!!initialData?.twitter}
               />
               <CheckboxField
                 label="Youtube"
                 name="youtube"
-                defaultChecked={!!state.data?.youtube}
+                defaultChecked={!!initialData?.youtube}
               />
             </div>
             <div className="grid grid-cols-3 gap-3">
               <CheckboxField
                 label="WhatsApp"
                 name="whatsapp"
-                defaultChecked={!!state.data?.whatsapp}
+                defaultChecked={!!initialData?.whatsapp}
               />
               <CheckboxField
                 label="Telegram"
                 name="telegram"
-                defaultChecked={!!state.data?.telegram}
+                defaultChecked={!!initialData?.telegram}
               />
               <CheckboxField
                 label="Instagram"
                 name="instagram"
-                defaultChecked={!!state.data?.instagram}
+                defaultChecked={!!initialData?.instagram}
               />
             </div>
             <Field
@@ -267,22 +268,22 @@ export default function UserAccountForm({
               <CheckboxField
                 label="Usuario"
                 name="userAccount"
-                defaultChecked={!!state.data?.userAccount}
+                defaultChecked={!!initialData?.userAccount}
               />
               <CheckboxField
                 label="Usuario Avanzado"
                 name="advancedUserAccount"
-                defaultChecked={!!state.data?.advancedUserAccount}
+                defaultChecked={!!initialData?.advancedUserAccount}
               />
               <CheckboxField
                 label="Admin Local"
                 name="localAdmin"
-                defaultChecked={!!state.data?.localAdmin}
+                defaultChecked={!!initialData?.localAdmin}
               />
               <CheckboxField
                 label="Admin Red"
                 name="networkAdmin"
-                defaultChecked={!!state.data?.networkAdmin}
+                defaultChecked={!!initialData?.networkAdmin}
               />
             </div>
           </CardContent>
@@ -297,22 +298,22 @@ export default function UserAccountForm({
               <CheckboxField
                 label="Solo lectura"
                 name="cloudAccessRead"
-                defaultChecked={!!state.data?.cloudAccessRead}
+                defaultChecked={!!initialData?.cloudAccessRead}
               />
               <CheckboxField
                 label="Modificar"
                 name="cloudAccessModify"
-                defaultChecked={!!state.data?.cloudAccessModify}
+                defaultChecked={!!initialData?.cloudAccessModify}
               />
               <CheckboxField
                 label="Borrar"
                 name="cloudAccessDelete"
-                defaultChecked={!!state.data?.cloudAccessDelete}
+                defaultChecked={!!initialData?.cloudAccessDelete}
               />
               <CheckboxField
                 label="Control total"
                 name="cloudAccessFullControl"
-                defaultChecked={!!state.data?.cloudAccessFullControl}
+                defaultChecked={!!initialData?.cloudAccessFullControl}
               />
             </div>
           </CardContent>
@@ -327,9 +328,9 @@ export default function UserAccountForm({
               label="Tipo de cuenta"
               name="accountType"
               options={ACCOUNT_OPTIONS}
-              defaultValue={state.data?.accountType}
+              value={accountType}
               errors={state.validationErrors?.accountType}
-              onChange={setTipoCuenta}
+              onChange={setAccountType}
             />
             {accountType === "TEMPORARY" && (
               <Field
@@ -352,15 +353,15 @@ export default function UserAccountForm({
               <CheckboxField
                 label="Horario Extralaboral"
                 name="overtimeSchedule"
-                defaultChecked={!!state.data?.overtimeSchedule}
-                onChange={setHorarioExtralaboral}
+                defaultChecked={!!initialData?.overtimeSchedule}
+                onChange={setOvertimeSchedule}
                 disabled={disableHorarios}
               />
               <CheckboxField
                 label="24 horas"
                 name="aroundTheClockSchedule"
-                defaultChecked={!!state.data?.aroundTheClockSchedule}
-                onChange={setHorario24Horas}
+                defaultChecked={!!initialData?.aroundTheClockSchedule}
+                onChange={setAroundTheClockSchedule}
               />
             </div>
             {overtimeSchedule && !disableHorarios && (
@@ -429,17 +430,17 @@ export default function UserAccountForm({
               <CheckboxField
                 label="Correo Nacional"
                 name="apnNationalEmail"
-                defaultChecked={!!state.data?.apnNationalEmail}
+                defaultChecked={!!initialData?.apnNationalEmail}
               />
               <CheckboxField
                 label="Correo Internacional"
                 name="apnInternationalEmail"
-                defaultChecked={!!state.data?.apnInternationalEmail}
+                defaultChecked={!!initialData?.apnInternationalEmail}
               />
               <CheckboxField
                 label="Internet"
                 name="apnInternet"
-                defaultChecked={!!state.data?.apnInternet}
+                defaultChecked={!!initialData?.apnInternet}
               />
             </div>
             <Field

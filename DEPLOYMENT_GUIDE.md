@@ -1,756 +1,768 @@
-# Guía de Implementación en Proxmox
+# Guía de Implementación en Proxmox (LXC) con TLS interno
 
-Este documento describe los pasos para implementar el Sistema de Gestión de Usuarios en un servidor Proxmox con PostgreSQL local en la red empresarial.
+Versión 2 — Arquitectura revisada para despliegue en LAN empresarial.
 
-## 📋 Tabla de Contenidos
 
-1. [Requisitos Previos](#requisitos-previos)
-2. [Paso 1: Preparar VM en Proxmox](#paso-1-preparar-vm-en-proxmox)
-3. [Paso 2: Instalar Dependencias](#paso-2-instalar-dependencias)
-4. [Paso 3: Clonar Repositorio](#paso-3-clonar-repositorio)
-5. [Paso 4: Configurar PostgreSQL](#paso-4-configurar-postgresql)
-6. [Paso 5: Configurar Variables de Entorno](#paso-5-configurar-variables-de-entorno)
-7. [Paso 6: Ejecutar Migraciones](#paso-6-ejecutar-migraciones)
-8. [Paso 7: Configurar Reverse Proxy (Nginx)](#paso-7-configurar-reverse-proxy-nginx)
-9. [Paso 8: Compilar y Ejecutar la Aplicación](#paso-8-compilar-y-ejecutar-la-aplicación)
-10. [Paso 9: Automatizar con PM2](#paso-9-automatizar-con-pm2)
-11. [Paso 10: Configurar Red Empresarial](#paso-10-configurar-red-empresarial)
-12. [Verificación Final](#verificación-final)
-13. [Troubleshooting](#troubleshooting)
+- **Contenedor LXC** (Ubuntu 24.04) en lugar de VM completa.
+- **HTTPS obligatorio** mediante una **CA interna (step-ca)**: la aplicación (Next.js 16 + Better Auth) exige TLS en producción. Sin HTTPS, el login falla silenciosamente (cookies `Secure`), los assets no cargan (CSP `upgrade-insecure-requests`) y Better Auth rechaza orígenes no declarados.
+- **systemd** en lugar de PM2: menos capas, un solo proceso.
+- Backups y actualizaciones documentados.
+
+## Arquitectura objetivo
+
+```
+Proxmox VE
+└── LXC 100 (Ubuntu 24.04, 2 vCPU / 4 GB / 30 GB)
+    ├── PostgreSQL 16          base de datos (solo localhost)
+    ├── Node.js 22 LTS         runtime Next.js
+    ├── step-ca (127.0.0.1:8443)  CA interna, emite cert TLS
+    ├── ums-app (127.0.0.1:3000)  app Next.js (servicio systemd)
+    ├── cert-renew (daemon)       renueva el cert y recarga nginx
+    └── Nginx (443 TLS)           proxy reverso, termina HTTPS
+        ▲
+ DNS interno:  elecmtz.une.cu  →  IP del LXC
+ Clientela:    navegadores confían en el root de la CA interna (GPO)
+```
+
+- Dominio: `elecmtz.une.cu` (resolución **solo interna**; la zona pública la administra el nivel nacional y no se toca).
+- Certificado: emitido por nuestra propia CA interna → ninguna dependencia del DNS nacional ni de internet.
+- Renovación: automática (daemon de `step ca renew`).
 
 ---
 
-## Requisitos Previos
+## 1. Requisitos previos
 
-✅ **Hardware mínimo en Proxmox:**
-- CPU: 2 cores
-- RAM: 4 GB (recomendado 8 GB)
-- Disco: 50 GB
+| Requisito | Detalle |
+|---|---|
+| Servidor Proxmox | Acceso root o usuario con permisos sobre el nodo |
+| Plantilla Ubuntu 24.04 | Descargable desde Proxmox (`pveam`) |
+| IP estática libre en la LAN | P. ej. `192.168.1.100/24` |
+| DNS interno | Registrar `elecmtz.une.cu` → IP del LXC |
+| Acceso de escritura a `lib/auth.ts` | Un cambio de una línea (sección 3) |
+| GPO o admin local en los clientes | Para confiar el root de la CA (sección 14) |
 
-✅ **Acceso a Proxmox** con permisos de administrador
-
-✅ **IP estática** para la VM
-
----
-
-## Paso 1: Preparar VM en Proxmox
-
-### 1.1 Crear la Máquina Virtual
-
-**En el panel de Proxmox:**
-
-1. Click en **"Create VM"** o **"Crear VM"**
-2. **Básico:**
-   - Node: Selecciona tu nodo Proxmox
-   - VM ID: 100 (o el siguiente disponible)
-   - Nombre: `user-management-system`
-3. **SO:**
-   - Selecciona ISO: Ubuntu Server 22.04 LTS (descargable desde Proxmox)
-4. **Disco:**
-   - Tamaño: 50 GB
-   - Almacenamiento: local o tu storage
-5. **CPU:**
-   - Cores: 2
-6. **Memoria:**
-   - RAM: 4096 MB (4 GB)
-7. **Red:**
-   - Bridge: vmbr0 (o tu bridge)
-   - VLAN: (si lo requiere tu red)
-
-**Inicia la VM y completa la instalación de Ubuntu.**
-
-### 1.2 Configurar IP Estática
-
-Una vez dentro de Ubuntu:
-
-```bash
-# Editar netplan
-sudo nano /etc/netplan/01-netcfg.yaml
-```
-
-**Contenido:**
-
-```yaml
-network:
-  version: 2
-  ethernets:
-    eth0:
-      dhcp4: false
-      addresses:
-        - 192.168.1.100/24  # Ajusta a tu red empresarial
-      gateway4: 192.168.1.1
-      nameservers:
-        addresses:
-          - 8.8.8.8
-          - 8.8.4.4
-```
-
-```bash
-# Aplicar cambios
-sudo netplan apply
-
-# Verificar
-ip addr show
-```
+> **Importante:** la app **no** funciona por HTTP en producción. El acceso siempre será `https://elecmtz.une.cu` (o por IP con warning, solo para pruebas).
 
 ---
 
-## Paso 2: Instalar Dependencias
+## 2. Decisiones de esta arquitectura (por qué)
 
-### 2.1 Actualizar Sistema
+1. **HTTPS sí o sí.** `lib/auth.ts:42-47` activa cookies `Secure` cuando `NODE_ENV=production`; `next.config.ts:24` fuerza `upgrade-insecure-requests`; `lib/auth.ts:74` valida `trustedOrigins`. Sin TLS, el login parece funcionar pero no persiste, y los assets se rompen.
+2. **CA interna y no Let's Encrypt.** La zona `elecmtz.une.cu` es respondida públicamente por `ns.unionelectrica.cu` / `ns1.unionelectrica.cu` (SOA `admin.une.cu`), fuera de nuestro control. Let's Encrypt leería el desafío DNS-01 de esos servidores, no de nuestro DNS interno → dependeríamos del nivel nacional. Una CA interna (step-ca) elimina esa dependencia.
+3. **LXC en vez de VM.** Menos recursos, backups nativos `vzdump` más rápidos, suficiente aislamiento para una herramienta interna.
+4. **systemd en vez de PM2.** Un solo proceso, unidad declarativa, logs con `journalctl`.
 
-```bash
-sudo apt update && sudo apt upgrade -y
+---
+
+## 3. Cambio previo en el código
+
+Antes de desplegar, agregar el origen de producción a los orígenes permitidos por Better Auth.
+
+Archivo: `lib/auth.ts` (línea ~74)
+
+```diff
+  trustedOrigins: [
+    "http://localhost:3000",
+    "https://sigel-eemtz.vercel.app",
++   "https://elecmtz.une.cu",
+  ],
 ```
 
-### 2.2 Instalar Node.js 20 LTS
+Guardar y commitear el cambio antes de generar el build:
 
 ```bash
-# Agregar repositorio de NodeSource
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-
-# Instalar Node.js
-sudo apt install -y nodejs
-
-# Verificar
-node --version  # v20.x.x
-npm --version   # 10.x.x
+git add lib/auth.ts
+git commit -m "feat: agregar origen de produccion interno a trustedOrigins"
+git push origin main
 ```
 
-### 2.3 Instalar pnpm (Gestor de Paquetes)
+> Si el dominio o el puerto cambian, actualizar también `BETTER_AUTH_URL` y `NEXT_PUBLIC_BETTER_AUTH_URL` (sección 8) y repetir este cambio.
+
+---
+
+## 4. Crear el contenedor LXC en Proxmox
+
+Ejecutar en el **shell del nodo Proxmox** (host, no dentro de ningún contenedor).
+
+### 4.1 Descargar la plantilla
 
 ```bash
-sudo npm install -g pnpm
+pveam update
+pveam available --section system | grep ubuntu-24.04
+pveam download local ubuntu-24.04-standard_24.04-2_amd64.tar.zst
+```
 
-# Verificar
+> Si la versión exacta difiere, usar la que muestre `pveam list local`.
+
+### 4.2 Crear el contenedor (CLI)
+
+Reemplazar `localhost:local-lvm:30` por tu storage (`pvesm status` para listarlos), la IP y el gateway por los de tu red, y el DNS interno por el de la empresa.
+
+```bash
+pct create 100 local:vztmpl/ubuntu-24.04-standard_24.04-2_amd64.tar.zst \
+  --hostname ums-app \
+  --cores 2 \
+  --memory 4096 \
+  --swap 1024 \
+  --rootfs local-lvm:30 \
+  --net0 name=eth0,bridge=vmbr0,ip=192.168.1.100/24,gw=192.168.1.1,firewall=1 \
+  --unprivileged 1 \
+  --features nesting=0 \
+  --ostype ubuntu \
+  --nameserver 192.168.1.10 \
+  --start 1
+```
+
+> `--nameserver` debe apuntar al **DNS interno de la empresa**, no a `8.8.8.8`: `elecmtz.une.cu` solo resuelve adentro.
+
+### 4.3 Alternativa por WebUI
+
+`Datacenter → local(pveam) → Templates → Download` y luego `Create CT` con los mismos valores (Unprivileged: sí; Nesting: no; IP estática + gateway; DNS interno en la parte de red).
+
+### 4.4 Entrar al contenedor
+
+```bash
+pct enter 100
+```
+
+> Dentro del contenedor sos `root`. Los comandos de esta guía asumen ese usuario; si entrás por SSH con otro usuario, anteponé `sudo` a todo.
+
+---
+
+## 5. Configuración base del contenedor
+
+```bash
+apt update && apt upgrade -y
+apt install -y curl git ca-certificates gnupg build-essential
+timedatectl set-timezone America/Havana   # ajustar si aplica
+```
+
+### 5.1 Node.js 22 LTS (NodeSource)
+
+```bash
+curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+apt install -y nodejs
+node --version   # v22.x.x
+npm --version    # 10.x.x
+```
+
+### 5.2 pnpm
+
+```bash
+npm install -g pnpm
 pnpm --version
 ```
 
-### 2.4 Instalar Git
-
-```bash
-sudo apt install -y git
-
-# Configurar Git (opcional pero recomendado)
-git config --global user.name "Tu Nombre"
-git config --global user.email "tu@empresa.com"
-```
-
-### 2.5 Instalar PostgreSQL 15
-
-```bash
-sudo apt install -y postgresql postgresql-contrib
-
-# Iniciar y habilitar servicio
-sudo systemctl start postgresql
-sudo systemctl enable postgresql
-
-# Verificar estado
-sudo systemctl status postgresql
-```
+> Verificar dónde queda el binario (`which pnpm`) porque se usa en las unidades de systemd (normalmente `/usr/local/bin/pnpm`).
 
 ---
 
-## Paso 3: Clonar Repositorio
+## 6. PostgreSQL 16
 
-### 3.1 Crear Directorio de Aplicación
+Ubuntu 24.04 trae PostgreSQL 16 por defecto. La base se queda **solo en localhost** (la app corre en el mismo contenedor).
+
+### 6.1 Instalar y arrancar
 
 ```bash
-# Crear directorio
-sudo mkdir -p /opt/user-management-system
-cd /opt/user-management-system
-
-# Cambiar permisos (opcional para desarrollo)
-sudo chown $USER:$USER /opt/user-management-system
+apt install -y postgresql postgresql-contrib
+systemctl enable --now postgresql
+systemctl status postgresql
 ```
 
-### 3.2 Clonar Repositorio
+### 6.2 Crear usuario y base de datos
+
+Generar una contraseña fuerte:
 
 ```bash
-cd /opt/user-management-system
-
-git clone https://github.com/Roger2999/user-management-system.git .
-
-# Verificar que se clonó correctamente
-ls -la
+openssl rand -base64 24
 ```
 
-### 3.3 Instalar Dependencias del Proyecto
+Luego:
 
 ```bash
-pnpm install
-
-# Esto descargará todas las dependencias (puede tardar 2-5 minutos)
-```
-
----
-
-## Paso 4: Configurar PostgreSQL
-
-### 4.1 Crear Base de Datos y Usuario
-
-```bash
-# Acceder a PostgreSQL
 sudo -u postgres psql
+```
 
-# Crear usuario (en el prompt de PostgreSQL):
-CREATE USER user_management WITH PASSWORD 'contraseña_segura_aqui';
+Dentro de `psql`:
 
-# Crear base de datos
+```sql
+CREATE USER user_management WITH PASSWORD '<CONTRASEÑA_FUERTE>';
 CREATE DATABASE user_management OWNER user_management;
-
-# Habilitar extensión citext (requerida por Prisma)
 \c user_management
 CREATE EXTENSION IF NOT EXISTS citext;
-
-# Salir
 \q
 ```
 
-### 4.2 Verificar Conexión
+### 6.3 Verificar conexión (método TCP, igual que usará la app)
 
 ```bash
-# Probar conexión desde la terminal
-psql -h localhost -U user_management -d user_management -c "SELECT version();"
-
-# Ingresa la contraseña cuando se pida
+psql "postgresql://user_management:<CONTRASEÑA_FUERTE>@127.0.0.1:5432/user_management" -c "SELECT 1;"
 ```
+
+> No hace falta tocar `pg_hba.conf`: el default de Ubuntu ya habilita `scram-sha-256` para `127.0.0.1/32`, que es lo que usamos. No exponer PostgreSQL a la red (default: solo escucha en localhost).
 
 ---
 
-## Paso 5: Configurar Variables de Entorno
+## 7. Clonar la aplicación y preparar el entorno
 
-### 5.1 Crear Archivo .env
+### 7.1 Usuario de la aplicación
 
 ```bash
-cd /opt/user-management-system
-
-# Crear archivo
-nano .env
+useradd --system --home /opt/user-management-system --shell /usr/sbin/nologin ums
+mkdir -p /opt/user-management-system
+chown -R ums:ums /opt/user-management-system
 ```
 
-### 5.2 Contenido del .env
+### 7.2 Clonar
+
+```bash
+git clone https://github.com/Roger2999/user-management-system.git /opt/user-management-system
+chown -R ums:ums /opt/user-management-system
+```
+
+### 7.3 Archivo `.env` de producción
+
+Crear `/opt/user-management-system/.env` con estos valores (reemplazar los `<...>`):
 
 ```env
+# ====== BD ======
+DATABASE_URL="postgresql://user_management:<CONTRASEÑA_FUERTE>@127.0.0.1:5432/user_management"
+
 # ====== AUTENTICACIÓN ======
-# Genera un secreto aleatorio con: openssl rand -base64 32
-BETTER_AUTH_SECRET=TuSecretoAleatorioGenerado==
-
-# URL de acceso desde los clientes (en la red local)
-BETTER_AUTH_URL=http://192.168.1.100:3000
-NEXT_PUBLIC_BETTER_AUTH_URL=http://192.168.1.100:3000
-
-# ====== BASE DE DATOS ======
-DATABASE_URL="postgresql://user_management:contraseña_segura_aqui@localhost:5432/user_management"
-
-# ====== EMAIL (RESEND) ======
-# Opcional: Descomenta solo si tienes API key de Resend
-# RESEND_API_KEY=re_xxxxxxxxxxxxx
+# Generar con: openssl rand -base64 32
+BETTER_AUTH_SECRET=<SECRETO_ALEATORIO>
+BETTER_AUTH_URL=https://elecmtz.une.cu
+NEXT_PUBLIC_BETTER_AUTH_URL=https://elecmtz.une.cu
 
 # ====== ENTORNO ======
 NODE_ENV=production
+
+# ====== EMAIL (RESEND) — OPCIONAL ======
+# Sin esta clave, la recuperación de contraseña falla silenciosamente.
+# El remitente actual (onboarding@resend.dev) es de prueba; para producción
+# se necesita un dominio verificado en Resend.
+# RESEND_API_KEY=re_xxxxxxxxxxxxx
 ```
 
-**Generar secreto seguro:**
+Proteger y dar propiedad:
 
 ```bash
-openssl rand -base64 32
+chown ums:ums /opt/user-management-system/.env
+chmod 600 /opt/user-management-system/.env
 ```
 
-**Copiar el resultado al .env en `BETTER_AUTH_SECRET`**
+> **Importante:** las variables `NEXT_PUBLIC_*` se incrustan en el bundle en tiempo de **build**. Por eso el `.env` debe existir **antes** de `pnpm build`. Las variables de servidor (`DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`) se leen en tiempo de ejecución.
 
-### 5.3 Proteger el Archivo
-
-```bash
-chmod 600 .env
-```
-
----
-
-## Paso 6: Ejecutar Migraciones
-
-### 6.1 Generar Cliente de Prisma
+### 7.4 Instalar dependencias
 
 ```bash
 cd /opt/user-management-system
-
-pnpm dlx prisma generate
+sudo -u ums pnpm install
 ```
 
-### 6.2 Ejecutar Migraciones
+> `postinstall` regenera el cliente Prisma (`generated/`). No necesita la base de datos para generarse.
+
+### 7.5 Aplicar migraciones
 
 ```bash
-pnpm dlx prisma migrate deploy
+cd /opt/user-management-system
+sudo -u ums bash -lc 'set -a; . ./.env; set +a; pnpm exec prisma migrate deploy'
 ```
 
-### 6.3 Verificar Base de Datos
+> `prisma migrate deploy` (no interactivo) aplica las migraciones pendientes. La extensión `citext` ya está creada.
+
+### 7.6 Compilar
 
 ```bash
-# Abrir Prisma Studio (opcional)
-pnpm dlx prisma studio
+cd /opt/user-management-system
+sudo -u ums bash -lc 'set -a; . ./.env; set +a; pnpm build'
+```
 
-# Se abrirá en http://localhost:5555
-# Verifica que las tablas se crearon correctamente
+> `prebuild` regenera el cliente Prisma. El build debe hacerse con el `.env` cargado para que `NEXT_PUBLIC_BETTER_AUTH_URL` quede incrustado.
+
+---
+
+## 8. Servicio systemd de la aplicación
+
+Crear `/etc/systemd/system/ums-app.service`:
+
+```ini
+[Unit]
+Description=User Management System (Next.js 16)
+After=network-online.target postgresql.service
+Wants=network-online.target postgresql.service
+
+[Service]
+Type=simple
+User=ums
+Group=ums
+WorkingDirectory=/opt/user-management-system
+EnvironmentFile=/opt/user-management-system/.env
+ExecStart=/opt/user-management-system/node_modules/.bin/next start -H 127.0.0.1 -p 3000
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Activar y verificar:
+
+```bash
+systemctl daemon-reload
+systemctl enable --now ums-app
+systemctl status ums-app
+curl -s http://127.0.0.1:3000 | head -c 200
 ```
 
 ---
 
-## Paso 7: Configurar Reverse Proxy (Nginx)
+## 9. CA interna con step-ca
 
-### 7.1 Instalar Nginx
+Instalamos la CA **dentro del mismo LXC** (solo escucha en `127.0.0.1:8443`). Su único trabajo: emitir y renovar el certificado TLS del servidor.
 
-```bash
-sudo apt install -y nginx
-
-# Habilitar al inicio
-sudo systemctl enable nginx
-sudo systemctl start nginx
-```
-
-### 7.2 Crear Configuración de Nginx
+### 9.1 Instalar `step-cli` y `step-ca`
 
 ```bash
-sudo nano /etc/nginx/sites-available/user-management
+cd /tmp
+curl -LO https://dl.smallstep.com/gh-release/cli/docs-ca-install/step-cli_amd64.tar.gz
+tar -xzf step-cli_amd64.tar.gz
+cp step-cli_amd64/bin/step /usr/local/bin/
+
+curl -LO https://dl.smallstep.com/gh-release/ca/docs-ca-install/step-ca_amd64.tar.gz
+tar -xzf step-ca_amd64.tar.gz
+cp step-ca_amd64/bin/step-ca /usr/local/bin/
+
+step version && step-ca version
 ```
 
-**Contenido:**
+> Si las URLs dejan de funcionar por cambios de versión, buscar la URL actual en https://smallstep.com/docs/step-ca/installation/.
+
+### 9.2 Usuario y carpeta de la CA
+
+```bash
+useradd --system --home /etc/step-ca --shell /usr/sbin/nologin step
+install -d -o step -g step -m 0750 /etc/step-ca
+install -d -o step -g step -m 0750 /etc/step-ca/secrets
+```
+
+Generar dos contraseñas (una para la clave raíz de la CA, otra para el provisioner admin) con `openssl rand -base64 24` y escribirlas en archivos:
+
+```bash
+openssl rand -base64 24 > /etc/step-ca/secrets/ca-password
+openssl rand -base64 24 > /etc/step-ca/secrets/provisioner-password
+chown step:step /etc/step-ca/secrets/ca-password /etc/step-ca/secrets/provisioner-password
+chmod 600 /etc/step-ca/secrets/ca-password /etc/step-ca/secrets/provisioner-password
+```
+
+> Ajustar nombres/permisos si se usaron otros archivos: los secretos deben ser legibles solo por el usuario `step`.
+
+### 9.3 Inicializar la CA (no interactivo)
+
+```bash
+sudo -u step STEPPATH=/etc/step-ca step ca init \
+  --name "UMS CA Interna" \
+  --dns elecmtz.une.cu \
+  --dns localhost \
+  --address 127.0.0.1:8443 \
+  --provisioner admin \
+  --password-file /etc/step-ca/secrets/ca-password \
+  --provisioner-password-file /etc/step-ca/secrets/provisioner-password \
+  --with-ca-url https://127.0.0.1:8443
+```
+
+Esto crea en `/etc/step-ca/`:
+- `config/ca.json` — configuración
+- `certs/root_ca.crt` — certificado raíz (para distribuir)
+- `secrets/root_ca_key`, `intermediate_ca_key` — **claves privadas: críticas**
+- `db/` — base de datos interna de la CA
+
+### 9.4 Servicio systemd de la CA
+
+Crear `/etc/systemd/system/step-ca.service`:
+
+```ini
+[Unit]
+Description=step-ca (CA interna UMS)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=step
+Group=step
+Environment=STEPPATH=/etc/step-ca
+ExecStart=/usr/local/bin/step-ca /etc/step-ca/config/ca.json
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Activar:
+
+```bash
+systemctl daemon-reload
+systemctl enable --now step-ca
+systemctl status step-ca
+journalctl -u step-ca -n 20 --no-pager
+```
+
+---
+
+## 10. Emitir el certificado TLS del servidor
+
+### 10.1 Emitir leaf con SAN `elecmtz.une.cu`, validez 1 año
+
+```bash
+install -d -o root -g ssl-cert -m 0750 /etc/ssl/private/step
+usermod -aG ssl-cert www-data
+
+STEPPATH=/etc/step-ca step ca certificate \
+  --provisioner admin \
+  --provisioner-password-file /etc/step-ca/secrets/provisioner-password \
+  --not-after 8760h \
+  elecmtz.une.cu \
+  /etc/ssl/private/step/elecmtz.crt \
+  /etc/ssl/private/step/elecmtz.key
+```
+
+> `8760h` = 1 año. El SAN (DNS: elecmtz.une.cu) se toma del subject automáticamente.
+
+### 10.2 Armar la cadena (leaf + root) para Nginx
+
+```bash
+cp /etc/step-ca/certs/root_ca.crt /etc/ssl/private/step/root_ca.crt
+cat /etc/step-ca/certs/root_ca.crt >> /etc/ssl/private/step/elecmtz.crt
+```
+
+> La renovación automática (sección 11) reescribe `elecmtz.crt` con la cadena completa de la CA, así que no hay que volver a concatenar.
+
+### 10.3 Permisos
+
+```bash
+chown root:ssl-cert /etc/ssl/private/step/elecmtz.key
+chmod 640 /etc/ssl/private/step/elecmtz.key
+chmod 644 /etc/ssl/private/step/elecmtz.crt /etc/ssl/private/step/root_ca.crt
+```
+
+### 10.4 Verificar el certificado
+
+```bash
+step certificate inspect /etc/ssl/private/step/elecmtz.crt | head -25
+```
+
+Confirmar: `Not After` ≈ 1 año, SAN `elecmtz.une.cu`, issuer = `UMS CA Interna`.
+
+---
+
+## 11. Renovación automática del certificado
+
+Usamos `step ca renew --daemon`: se autentica contra la CA con **mTLS** (el propio certificado + clave), sin necesidad de contraseñas en cada renovación, y recarga Nginx cuando renueva.
+
+Crear `/etc/systemd/system/ums-cert-renew.service`:
+
+```ini
+[Unit]
+Description=Renovacion automatica del certificado TLS de UMS
+After=step-ca.service nginx.service
+Wants=step-ca.service
+
+[Service]
+Type=simple
+Environment=STEPPATH=/etc/step-ca
+ExecStart=/usr/local/bin/step ca renew --daemon --exec "/usr/bin/systemctl reload nginx" /etc/ssl/private/step/elecmtz.crt /etc/ssl/private/step/elecmtz.key
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Activar:
+
+```bash
+systemctl daemon-reload
+systemctl enable --now ums-cert-renew
+systemctl status ums-cert-renew
+```
+
+> El daemon renueva cuando falta 1/3 de la vida del cert (con 1 año, ~mes 8) y vuelve a planificar solo. Tras renovar, ejecuta `systemctl reload nginx`. Si la CA está caída, reintenta y Nginx sigue sirviendo el cert vigente.
+
+---
+
+## 12. Nginx (proxy reverso + TLS)
+
+### 12.1 Instalar
+
+```bash
+apt install -y nginx
+```
+
+### 12.2 Configuración del sitio
+
+Crear `/etc/nginx/sites-available/user-management`:
 
 ```nginx
-upstream app {
-    server 127.0.0.1:3000;
+# Redirigir HTTP → HTTPS
+server {
+    listen 80;
+    server_name elecmtz.une.cu;
+    return 301 https://$host$request_uri;
 }
 
 server {
-    listen 80;
-    server_name 192.168.1.100 user-management.local user-management;
-    
-    # Aumentar límite de tamaño de cuerpo para formularios grandes
+    listen 443 ssl http2;
+    server_name elecmtz.une.cu;
+
+    ssl_certificate     /etc/ssl/private/step/elecmtz.crt;
+    ssl_certificate_key /etc/ssl/private/step/elecmtz.key;
+    ssl_protocols       TLSv1.2 TLSv1.3;
+    ssl_ciphers         ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305;
+    ssl_prefer_server_ciphers off;
+
     client_max_body_size 50M;
 
     location / {
-        proxy_pass http://app;
+        proxy_pass http://127.0.0.1:3000;
         proxy_http_version 1.1;
-        
-        # Headers necesarios para Next.js
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        
-        # Evitar problemas de caché
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
         proxy_cache_bypass $http_upgrade;
-        
-        # Timeouts para aplicaciones lentas
         proxy_connect_timeout 60s;
         proxy_send_timeout 60s;
         proxy_read_timeout 60s;
     }
-
-    # Health check
-    location /health {
-        access_log off;
-        return 200 "healthy\n";
-        add_header Content-Type text/plain;
-    }
 }
 ```
 
-### 7.3 Habilitar Sitio
+> Nota: en `listen 443 ssl http2;`, la forma `http2` inline es la compatible con el Nginx de Ubuntu 24.04 (1.24). En Nginx ≥ 1.25.1 se puede usar `http2 on;` dentro del server.
+
+Activar y verificar:
 
 ```bash
-# Crear enlace simbólico
-sudo ln -s /etc/nginx/sites-available/user-management /etc/nginx/sites-enabled/
+ln -s /etc/nginx/sites-available/user-management /etc/nginx/sites-enabled/
+# Eliminar el sitio por defecto si no se usa
+rm -f /etc/nginx/sites-enabled/default
+nginx -t
+systemctl enable --now nginx
+systemctl reload nginx
+```
 
-# Verificar sintaxis
-sudo nginx -t
+### 12.3 Prueba local con el root confiado (opcional, en el LXC)
 
-# Reiniciar Nginx
-sudo systemctl restart nginx
+```bash
+STEPPATH=/etc/step-ca step certificate install /etc/step-ca/certs/root_ca.crt
+curl -sS https://elecmtz.une.cu | head -c 200
 ```
 
 ---
 
-## Paso 8: Compilar y Ejecutar la Aplicación
+## 13. DNS interno
 
-### 8.1 Compilar para Producción
+En el **servidor DNS interno de la empresa**, crear el registro:
+
+```
+elecmtz.une.cu.    IN    A    <IP_DEL_LXC>
+```
+
+Opcional (recomendado): reverse `PTR` si la empresa lo administra.
+
+Verificar desde una PC de la red:
+
+```bash
+nslookup elecmtz.une.cu
+# debe devolver la IP del LXC
+```
+
+---
+
+## 14. Confiar el root de la CA en toda la empresa
+
+El navegador solo mostrará el candado sin advertencias si confía en el **root** de la CA interna. El archivo es `/etc/ssl/private/step/root_ca.crt` (del LXC).
+
+### 14.1 Distribución masiva por GPO (recomendado, clientes Windows)
+
+1. Copiar `root_ca.crt` a un recurso accesible en la red (share o GPO).
+2. `gpmc.msc` → crear/editar un GPO que aplique al OU de las PC.
+3. `Computer Configuration → Policies → Windows Settings → Security Settings → Public Key Policies → Trusted Root Certification Authorities`.
+4. Botón derecho → `Import...` → seleccionar `root_ca.crt` → `Trusted Root Certification Authorities`.
+5. En cada PC: `gpupdate /force`. Verificar con `certlm.msc` que el root aparece en “Entidades de certificación raíz de confianza”.
+
+### 14.2 Manual (Windows)
+
+En la PC, consola administrativa:
+
+```powershell
+step certificate install root_ca.crt
+```
+
+o: `certlm.msc` → Entidades de certificación raíz de confianza → Importar → `root_ca.crt`.
+
+### 14.3 Linux (clientes)
+
+```bash
+sudo cp root_ca.crt /usr/local/share/ca-certificates/ums-root.crt
+sudo update-ca-certificates
+```
+
+### 14.4 macOS
+
+Doble clic en `root_ca.crt` → Llavero del sistema → `Siempre confiar`.
+
+> **Esperado:** hasta que el root esté distribuido, el navegador mostrará un aviso “no se pudo verificar”. Eso se corrige con la instalación del root, no es un problema del certificado.
+
+---
+
+## 15. Verificación final end-to-end
+
+Desde una PC de la red (con el root confiado):
+
+| # | Paso | Comando/acción | Esperado |
+|---|---|---|---|
+| 1 | DNS | `nslookup elecmtz.une.cu` | IP del LXC |
+| 2 | TLS | `curl -v https://elecmtz.une.cu` | handshake OK, cadena leaf→root |
+| 3 | App | Abrir `https://elecmtz.une.cu` | Página de login, sin warning |
+| 4 | Login | Crear/entrar con un usuario | Redirige a `/dashboard` y **se mantiene** logueado |
+| 5 | Cookie | DevTools → Application → Cookies | `better-auth.session_token`: flag `Secure`, `SameSite=Lax` |
+| 6 | HTTP | Abrir `http://elecmtz.une.cu` | Redirige a `https://` |
+| 7 | Servicios | `systemctl status ums-app step-ca ums-cert-renew nginx postgresql` | todos `active (running)` |
+
+### 15.1 Primer administrador
+
+El alta inicial es por el formulario `signup`. Para promover al primer administrador:
 
 ```bash
 cd /opt/user-management-system
-
-pnpm build
-
-# Esto genera la carpeta .next/
-```
-
-### 8.2 Prueba Inicial
-
-```bash
-# Inicia en modo producción
-pnpm start
-
-# Deberías ver algo como:
-# > user-managment-system@0.1.0 start
-# > next start
-# ▲ Next.js 16.2.6
-#   - Local:        http://localhost:3000
-```
-
-**En otra terminal, prueba la conexión:**
-
-```bash
-curl http://localhost:3000
-```
-
-**Presiona Ctrl+C para detener la aplicación de prueba**
-
----
-
-## Paso 9: Automatizar con PM2
-
-### 9.1 Instalar PM2 Globalmente
-
-```bash
-sudo npm install -g pm2
-```
-
-### 9.2 Crear Archivo de Configuración
-
-```bash
-cd /opt/user-management-system
-
-nano ecosystem.config.js
-```
-
-**Contenido:**
-
-```javascript
-module.exports = {
-  apps: [
-    {
-      name: "user-management",
-      script: "pnpm",
-      args: "start",
-      cwd: "/opt/user-management-system",
-      instances: 1,
-      exec_mode: "cluster",
-      env: {
-        NODE_ENV: "production",
-        PORT: 3000,
-      },
-      // Reiniciar si usa más de 1 GB de RAM
-      max_memory_restart: "1G",
-      // Logs
-      out_file: "/var/log/user-management/out.log",
-      error_file: "/var/log/user-management/error.log",
-      log_file: "/var/log/user-management/combined.log",
-      time_format: "YYYY-MM-DD HH:mm:ss Z",
-      // Reinicio automático
-      watch: false,
-      ignore_watch: ["node_modules", ".next", "public"],
-      // Health check
-      listen_timeout: 3000,
-      kill_timeout: 5000,
-    },
-  ],
-};
-```
-
-### 9.3 Crear Directorio de Logs
-
-```bash
-sudo mkdir -p /var/log/user-management
-sudo chown $USER:$USER /var/log/user-management
-```
-
-### 9.4 Iniciar la Aplicación con PM2
-
-```bash
-cd /opt/user-management-system
-
-# Iniciar la aplicación
-pm2 start ecosystem.config.js
-
-# Verificar estado
-pm2 status
-
-# Ver logs
-pm2 logs user-management
-
-# Configurar para que inicie al reiniciar la VM
-pm2 startup
-pm2 save
-
-# (Ejecuta el comando que te muestra pm2 startup)
-```
-
-### 9.5 Verificar que Está Corriendo
-
-```bash
-# En navegador o curl
-curl http://localhost:3000
-
-# O accede desde otra máquina
-curl http://192.168.1.100
+sudo -u ums bash -lc 'set -a; . ./.env; set +a; pnpm exec tsx prisma/promote-admin.ts <username>'
 ```
 
 ---
 
-## Paso 10: Configurar Red Empresarial
+## 16. Backups y restauración
 
-### 10.1 Configurar DNS Local (Opcional pero Recomendado)
+### 16.1 Base de datos (diaria)
 
-Si tienes un servidor DNS en tu red empresarial:
-
-**Agregar registro:**
-
-```dns
-user-management.empresa.local  A  192.168.1.100
-```
-
-### 10.2 Abrir Puertos en Firewall
+Crear `/usr/local/sbin/backup-ums-db.sh`:
 
 ```bash
-# Si Ubuntu tiene UFW habilitado
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
-sudo ufw allow 22/tcp   # SSH
-
-# Recargar UFW
-sudo ufw reload
-```
-
-### 10.3 Configurar Acceso desde Otros Equipos
-
-**En el archivo .env, ajusta la URL:**
-
-```env
-# Si el servidor tiene un nombre de dominio
-BETTER_AUTH_URL=http://user-management.empresa.local
-NEXT_PUBLIC_BETTER_AUTH_URL=http://user-management.empresa.local
-
-# O usa la IP
-BETTER_AUTH_URL=http://192.168.1.100
-NEXT_PUBLIC_BETTER_AUTH_URL=http://192.168.1.100
-```
-
-**Reinicia la aplicación:**
-
-```bash
-pm2 restart user-management
-```
-
----
-
-## Verificación Final
-
-### 11.1 Checklist de Verificación
-
-```bash
-# 1. Verificar que Node.js está instalado
-node --version
-
-# 2. Verificar PostgreSQL
-sudo systemctl status postgresql
-
-# 3. Verificar conexión a BD
-psql -h localhost -U user_management -d user_management -c "SELECT COUNT(*) FROM \"user\";"
-
-# 4. Verificar Nginx
-sudo systemctl status nginx
-curl http://localhost
-
-# 5. Verificar PM2
-pm2 status
-
-# 6. Ver logs de la aplicación
-pm2 logs user-management
-
-# 7. Ver logs de Nginx
-sudo tail -f /var/log/nginx/access.log
-```
-
-### 11.2 Acceder a la Aplicación
-
-**Desde tu navegador:**
-
-- **Local (VM):** http://localhost:3000
-- **Desde otro PC en la red:** http://192.168.1.100
-- **Si configuraste DNS:** http://user-management.empresa.local
-
-### 11.3 Crear Primer Usuario
-
-1. Ve a `/signup`
-2. Completa el formulario:
-   - **Username:** admin
-   - **Email:** admin@empresa.com
-   - **Password:** Contraseña segura
-3. Click en "Registrarse"
-4. Accede al dashboard
-
----
-
-## Troubleshooting
-
-### Problema: "Connection refused" en la BD
-
-```bash
-# Verificar que PostgreSQL está corriendo
-sudo systemctl status postgresql
-
-# Reiniciar PostgreSQL
-sudo systemctl restart postgresql
-
-# Ver logs
-sudo tail -f /var/log/postgresql/postgresql-*.log
-```
-
-### Problema: Puertos ya en uso
-
-```bash
-# Buscar qué está usando el puerto 3000
-sudo lsof -i :3000
-
-# O el 80 (Nginx)
-sudo lsof -i :80
-
-# Matar proceso (si es necesario)
-sudo kill -9 PID
-```
-
-### Problema: PM2 no inicia automáticamente
-
-```bash
-# Regenerar script de inicio
-pm2 unstartup
-pm2 startup
-pm2 save
-
-# O ejecuta el comando sugerido manualmente
-```
-
-### Problema: Nginx devuelve 502 Bad Gateway
-
-```bash
-# Verificar que la app está corriendo en 3000
-pm2 status
-
-# Reiniciar app
-pm2 restart user-management
-
-# Ver logs de Nginx
-sudo tail -f /var/log/nginx/error.log
-```
-
-### Problema: Base de datos vacía después de migrar
-
-```bash
-# Ejecutar migraciones nuevamente
-pnpm dlx prisma migrate deploy
-
-# O si algo salió mal, resetear (cuidado: borra datos)
-pnpm dlx prisma migrate reset
-```
-
-### Problema: Emails no se envían
-
-**Si no tienes Resend configurado:**
-
-1. Abre `lib/auth.ts`
-2. Busca `sendResetPassword`
-3. Comenta o desactiva esa sección (para desarrollo)
-4. Redeploy:
-   ```bash
-   pnpm build
-   pm2 restart user-management
-   ```
-
----
-
-## Mantenimiento
-
-### Backup Automático de BD
-
-```bash
-# Crear script de backup
-sudo nano /usr/local/bin/backup-user-management.sh
-```
-
-**Contenido:**
-
-```bash
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 BACKUP_DIR="/var/backups/user-management"
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 DB_NAME="user_management"
 DB_USER="user_management"
-
-mkdir -p $BACKUP_DIR
-
-pg_dump -h localhost -U $DB_USER $DB_NAME | gzip > "$BACKUP_DIR/backup_$TIMESTAMP.sql.gz"
-
-# Mantener solo últimos 7 backups
-find $BACKUP_DIR -name "backup_*.sql.gz" -mtime +7 -delete
-
-echo "Backup completado: $BACKUP_DIR/backup_$TIMESTAMP.sql.gz"
+DB_HOST="127.0.0.1"
+export PGPASSWORD='<CONTRASEÑA_FUERTE>'
+mkdir -p "$BACKUP_DIR"
+pg_dump -h "$DB_HOST" -U "$DB_USER" "$DB_NAME" | gzip > "$BACKUP_DIR/backup_$(date +%Y%m%d_%H%M%S).sql.gz"
+find "$BACKUP_DIR" -name "backup_*.sql.gz" -mtime +7 -delete
 ```
 
 ```bash
-# Hacer ejecutable
-sudo chmod +x /usr/local/bin/backup-user-management.sh
-
-# Agregar a cron (diariamente a las 2 AM)
-sudo crontab -e
-
+chmod +x /usr/local/sbin/backup-ums-db.sh
+crontab -e
 # Agregar línea:
-# 0 2 * * * /usr/local/bin/backup-user-management.sh
+# 0 2 * * * /usr/local/sbin/backup-ums-db.sh >/dev/null 2>&1
 ```
 
-### Actualizar Aplicación
+### 16.2 CA interna (crítico)
 
-```bash
-cd /opt/user-management-system
+**Si se pierden las claves de `/etc/step-ca`, todos los certificados emitidos dejan de ser confiables.** Incluir una copia de:
 
-# Obtener últimos cambios
-git pull origin main
+- `/etc/step-ca/` (config, `secrets/`, `certs/`, `db/`)
+- `/etc/ssl/private/step/`
 
-# Reinstalar dependencias (si hay cambios)
-pnpm install
+en un destino externo al LXC (otro contenedor/VM, NAS o el backup `vzdump`). Las contraseñas de `secrets/` también deben guardarse fuera.
 
-# Compilar
-pnpm build
+### 16.3 Contenedor completo (Proxmox)
 
-# Ejecutar migraciones (si hay cambios en BD)
-pnpm dlx prisma migrate deploy
+Programar backup del CT 100 en Proxmox:
 
-# Reiniciar
-pm2 restart user-management
+```
+Datacenter → <nodo> → Backup → Add
+   Schedule: 02:00 daily
+   Storage: <destino>
+   Vzdump options: Compression: ZSTD, Mode: Snapshot
+   Include: CT 100
 ```
 
-### Monitorear Recursos
+### 16.4 Restauración de la BD
 
 ```bash
-# Ver consumo de recursos de PM2
-pm2 monit
-
-# Ver estado de PostgreSQL
-sudo systemctl status postgresql
-
-# Espacio en disco
-df -h
-
-# Procesos corriendo
-pm2 status
+gunzip -c /var/backups/user-management/backup_YYYYMMDD_HHMMSS.sql.gz | \
+  psql "postgresql://user_management:<CONTRASEÑA_FUERTE>@127.0.0.1:5432/user_management"
 ```
 
 ---
 
-## Información de Contacto y Soporte
+## 17. Actualización de la aplicación
 
-Si tienes problemas:
+Crear `/usr/local/sbin/update-ums.sh`:
 
-1. Verifica los logs: `pm2 logs user-management`
-2. Revisa el archivo de configuración `.env`
-3. Consulta la documentación de Better Auth: https://better-auth.com
-4. Abre un issue en: https://github.com/Roger2999/user-management-system/issues
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+APP="/opt/user-management-system"
+cd "$APP"
+sudo -u ums git pull --ff-only
+sudo -u ums pnpm install
+sudo -u ums bash -lc 'set -a; . ./.env; set +a; pnpm exec prisma migrate deploy'
+sudo -u ums bash -lc 'set -a; . ./.env; set +a; pnpm build'
+systemctl restart ums-app
+echo "OK: ums-app actualizado"
+```
+
+Ejecutar:
+
+```bash
+sudo /usr/local/sbin/update-ums.sh
+```
+
+> Un cambio en `trustedOrigins` o en cualquier `NEXT_PUBLIC_*` exige **rebuild** (ya lo hace el script). Un cambio solo de migraciones no requiere rebuild, pero el script es seguro para ambos casos.
+
+---
+
+## 18. Troubleshooting
+
+| Síntoma | Causa probable | Solución |
+|---|---|---|
+| Login no persiste (vuelve a `/signin`) | Se accedió por HTTP o por IP, o falta `trustedOrigins` | Acceder siempre por `https://elecmtz.une.cu`; verificar `elecmtz.une.cu` en `trustedOrigins` (sección 3) y rebuild |
+| Navegador: “no se pudo verificar el certificado” | Root de la CA no instalado en ese equipo | Sección 14 (GPO o manual) |
+| Error `502 Bad Gateway` en Nginx | App caída | `systemctl status ums-app`; `journalctl -u ums-app -n 50`; revisar `.env` |
+| `Connection refused` a la BD | PostgreSQL caído o `DATABASE_URL` mal | `systemctl status postgresql`; probar conexión con `psql` (sección 6.3) |
+| El certificado no se renueva | `step-ca` o `ums-cert-renew` caídos | `systemctl status step-ca ums-cert-renew`; `journalctl -u ums-cert-renew -n 50` |
+| Prisma: extension `citext` no existe | No se creó la extensión | `sudo -u postgres psql -d user_management -c "CREATE EXTENSION IF NOT EXISTS citext;"` |
+| Emails de reset no llegan | Sin `RESEND_API_KEY` o dominio no verificado en Resend | Agregar clave y verificar dominio remitente |
+| Cambié la URL y no toma | `NEXT_PUBLIC_*` se incrusta en build | Rebuild + restart (sección 17) |
+
+---
+
+## 19. Resumen de archivos y servicios
+
+| Elemento | Ruta / servicio |
+|---|---|
+| App (código) | `/opt/user-management-system` (usuario `ums`) |
+| Variables de entorno | `/opt/user-management-system/.env` (modo 600) |
+| Servicio de la app | `ums-app.service` (Next.js en `127.0.0.1:3000`) |
+| CA interna | `/etc/step-ca` (usuario `step`), servicio `step-ca.service` |
+| Certificado TLS | `/etc/ssl/private/step/elecmtz.crt` + `.key` |
+| Root de la CA | `/etc/ssl/private/step/root_ca.crt` |
+| Renovación | `ums-cert-renew.service` |
+| Proxy / TLS | Nginx `user-management` (443/80) |
+| Base de datos | PostgreSQL 16, `user_management` (solo localhost) |
+| Backups | `/var/backups/user-management` (BD), `vzdump` del CT 100 |
+
+---
+
+## 20. Notas finales
+
+- El despliegue es 100% interno: **no se expone nada a internet** y no depende del nivel nacional para emitir ni renovar certificados.
+- La renovación de un cert de 1 año ocurre ~al mes 8 automáticamente; verificar de vez en cuando con `step certificate inspect /etc/ssl/private/step/elecmtz.crt | grep -A1 "Not After"`.
+- Si más adelante se necesita emitir certificados para otros servicios (Wi-Fi, otros servidores), la misma CA interna puede usarse con `step ca certificate`; en ese caso evalúa exponer la CA en `8443` detrás de Nginx con autenticación.

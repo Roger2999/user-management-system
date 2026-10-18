@@ -8,7 +8,7 @@ allowBuilds:
   prisma: true
   sharp: true
   unrs-resolver: true
-ignoredBuiltDependencies:
-  - sharp
-  - unrs-resolver
-shamefully-hoist: true
+shamefullyHoist: true
+permissions:
+  dotenv:
+    skills: true
