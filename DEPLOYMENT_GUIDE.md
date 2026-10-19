@@ -20,11 +20,11 @@ Proxmox VE
     ├── cert-renew (daemon)       renueva el cert y recarga nginx
     └── Nginx (443 TLS)           proxy reverso, termina HTTPS
         ▲
- DNS interno:  elecmtz.une.cu  →  IP del LXC
+ DNS interno:  ums.elecmtz.une.cu  →  IP del LXC
  Clientela:    navegadores confían en el root de la CA interna (GPO)
 ```
 
-- Dominio: `elecmtz.une.cu` (resolución **solo interna**; la zona pública la administra el nivel nacional y no se toca).
+- Dominio: `ums.elecmtz.une.cu` (resolución **solo interna**; la zona pública la administra el nivel nacional y no se toca).
 - Certificado: emitido por nuestra propia CA interna → ninguna dependencia del DNS nacional ni de internet.
 - Renovación: automática (daemon de `step ca renew`).
 
@@ -37,38 +37,38 @@ Proxmox VE
 | Servidor Proxmox | Acceso root o usuario con permisos sobre el nodo |
 | Plantilla Ubuntu 24.04 | Descargable desde Proxmox (`pveam`) |
 | IP estática libre en la LAN | P. ej. `192.168.1.100/24` |
-| DNS interno | Registrar `elecmtz.une.cu` → IP del LXC |
+| DNS interno | Registrar `ums.elecmtz.une.cu` → IP del LXC |
 | Acceso de escritura a `lib/auth.ts` | Un cambio de una línea (sección 3) |
 | GPO o admin local en los clientes | Para confiar el root de la CA (sección 14) |
 
-> **Importante:** la app **no** funciona por HTTP en producción. El acceso siempre será `https://elecmtz.une.cu` (o por IP con warning, solo para pruebas).
+> **Importante:** la app **no** funciona por HTTP en producción. El acceso siempre será `https://ums.elecmtz.une.cu` (o por IP con warning, solo para pruebas).
 
 ---
 
 ## 2. Decisiones de esta arquitectura (por qué)
 
 1. **HTTPS sí o sí.** `lib/auth.ts:42-47` activa cookies `Secure` cuando `NODE_ENV=production`; `next.config.ts:24` fuerza `upgrade-insecure-requests`; `lib/auth.ts:74` valida `trustedOrigins`. Sin TLS, el login parece funcionar pero no persiste, y los assets se rompen.
-2. **CA interna y no Let's Encrypt.** La zona `elecmtz.une.cu` es respondida públicamente por `ns.unionelectrica.cu` / `ns1.unionelectrica.cu` (SOA `admin.une.cu`), fuera de nuestro control. Let's Encrypt leería el desafío DNS-01 de esos servidores, no de nuestro DNS interno → dependeríamos del nivel nacional. Una CA interna (step-ca) elimina esa dependencia.
+2. **CA interna y no Let's Encrypt.** La zona `ums.elecmtz.une.cu` es respondida públicamente por `ns.unionelectrica.cu` / `ns1.unionelectrica.cu` (SOA `admin.une.cu`), fuera de nuestro control. Let's Encrypt leería el desafío DNS-01 de esos servidores, no de nuestro DNS interno → dependeríamos del nivel nacional. Una CA interna (step-ca) elimina esa dependencia.
 3. **LXC en vez de VM.** Menos recursos, backups nativos `vzdump` más rápidos, suficiente aislamiento para una herramienta interna.
 4. **systemd en vez de PM2.** Un solo proceso, unidad declarativa, logs con `journalctl`.
 
 ---
 
-## 3. Cambio previo en el código
+## 3. Origen permitido en Better Auth
 
-Antes de desplegar, agregar el origen de producción a los orígenes permitidos por Better Auth.
+El repositorio ya incluye el origen de producción. Verificar que `lib/auth.ts` (~línea 74) tenga exactamente:
 
-Archivo: `lib/auth.ts` (línea ~74)
-
-```diff
+```ts
   trustedOrigins: [
     "http://localhost:3000",
     "https://sigel-eemtz.vercel.app",
-+   "https://elecmtz.une.cu",
+    "https://ums.elecmtz.une.cu",
   ],
 ```
 
-Guardar y commitear el cambio antes de generar el build:
+> No agregar `http://ums.elecmtz.une.cu`: en producción se accede solo por HTTPS y las cookies son `Secure`. Un origen `http` solo agrega superficie sin aportar nada.
+
+Si el archivo cambió, commitear antes de generar el build:
 
 ```bash
 git add lib/auth.ts
@@ -76,7 +76,7 @@ git commit -m "feat: agregar origen de produccion interno a trustedOrigins"
 git push origin main
 ```
 
-> Si el dominio o el puerto cambian, actualizar también `BETTER_AUTH_URL` y `NEXT_PUBLIC_BETTER_AUTH_URL` (sección 8) y repetir este cambio.
+> Si el dominio o el puerto cambian, actualizar también `BETTER_AUTH_URL` y `NEXT_PUBLIC_BETTER_AUTH_URL` (sección 7.3), el `server_name` de Nginx (sección 12), el SAN del certificado (sección 10), el `--dns` de la CA (sección 9.3) y el registro DNS (sección 13).
 
 ---
 
@@ -113,7 +113,7 @@ pct create 100 local:vztmpl/ubuntu-24.04-standard_24.04-2_amd64.tar.zst \
   --start 1
 ```
 
-> `--nameserver` debe apuntar al **DNS interno de la empresa**, no a `8.8.8.8`: `elecmtz.une.cu` solo resuelve adentro.
+> `--nameserver` debe apuntar al **DNS interno de la empresa**, no a `8.8.8.8`: `ums.elecmtz.une.cu` solo resuelve adentro.
 
 ### 4.3 Alternativa por WebUI
 
@@ -149,10 +149,11 @@ npm --version    # 10.x.x
 ### 5.2 pnpm
 
 ```bash
-npm install -g pnpm
+npm install -g pnpm@12
 pnpm --version
 ```
 
+> Pinear la major 12: `pnpm-workspace.yaml` usa opciones nuevas (`allowBuilds`, `permissions`) que versiones viejas de pnpm pueden rechazar.
 > Verificar dónde queda el binario (`which pnpm`) porque se usa en las unidades de systemd (normalmente `/usr/local/bin/pnpm`).
 
 ---
@@ -231,17 +232,19 @@ DATABASE_URL="postgresql://user_management:<CONTRASEÑA_FUERTE>@127.0.0.1:5432/u
 # ====== AUTENTICACIÓN ======
 # Generar con: openssl rand -base64 32
 BETTER_AUTH_SECRET=<SECRETO_ALEATORIO>
-BETTER_AUTH_URL=https://elecmtz.une.cu
-NEXT_PUBLIC_BETTER_AUTH_URL=https://elecmtz.une.cu
+BETTER_AUTH_URL=https://ums.elecmtz.une.cu
+NEXT_PUBLIC_BETTER_AUTH_URL=https://ums.elecmtz.une.cu
 
 # ====== ENTORNO ======
 NODE_ENV=production
 
-# ====== EMAIL (RESEND) — OPCIONAL ======
-# Sin esta clave, la recuperación de contraseña falla silenciosamente.
+# ====== EMAIL (RESEND) ======
+# Recomendada. Sin una clave válida, la recuperación de contraseña falla
+# (el error queda en el log) pero el build y el resto de la app funcionan:
+# `lib/resend.ts` usa un placeholder para no romper el import.
 # El remitente actual (onboarding@resend.dev) es de prueba; para producción
 # se necesita un dominio verificado en Resend.
-# RESEND_API_KEY=re_xxxxxxxxxxxxx
+RESEND_API_KEY=re_xxxxxxxxxxxxx
 ```
 
 Proteger y dar propiedad:
@@ -262,6 +265,10 @@ sudo -u ums pnpm install
 
 > `postinstall` regenera el cliente Prisma (`generated/`). No necesita la base de datos para generarse.
 
+> **⚠️ No cargar el `.env` antes de `pnpm install`.** El `.env` define `NODE_ENV=production`; si lo hacés con `set -a; . ./.env`, pnpm omite las `devDependencies` (`prisma`, `tsx`, `typescript`) y el build posterior falla. Instalá sin sourcear el `.env`.
+
+> **Registry:** el repo trae `.npmrc` apuntando a `https://registry.npmmirror.com/`. El contenedor necesita salida a ese mirror; si la red de la empresa lo bloquea, cambiá el registry (por ejemplo a `https://registry.npmjs.org/`) antes de instalar.
+
 ### 7.5 Aplicar migraciones
 
 ```bash
@@ -279,6 +286,8 @@ sudo -u ums bash -lc 'set -a; . ./.env; set +a; pnpm build'
 ```
 
 > `prebuild` regenera el cliente Prisma. El build debe hacerse con el `.env` cargado para que `NEXT_PUBLIC_BETTER_AUTH_URL` quede incrustado.
+
+> **Fuentes:** `app/layout.tsx` usa `next/font/google` (Geist), que descarga las fuentes **durante el build**. El LXC necesita salida a `fonts.googleapis.com` al compilar (o migrar a `next/font/local`). En runtime no hay dependencia externa: Next autoaloja las fuentes y el CSP ya permite `font-src 'self'`.
 
 ---
 
@@ -364,7 +373,7 @@ chmod 600 /etc/step-ca/secrets/ca-password /etc/step-ca/secrets/provisioner-pass
 ```bash
 sudo -u step STEPPATH=/etc/step-ca step ca init \
   --name "UMS CA Interna" \
-  --dns elecmtz.une.cu \
+  --dns ums.elecmtz.une.cu \
   --dns localhost \
   --address 127.0.0.1:8443 \
   --provisioner admin \
@@ -415,7 +424,7 @@ journalctl -u step-ca -n 20 --no-pager
 
 ## 10. Emitir el certificado TLS del servidor
 
-### 10.1 Emitir leaf con SAN `elecmtz.une.cu`, validez 1 año
+### 10.1 Emitir leaf con SAN `ums.elecmtz.une.cu`, validez 1 año
 
 ```bash
 install -d -o root -g ssl-cert -m 0750 /etc/ssl/private/step
@@ -425,12 +434,12 @@ STEPPATH=/etc/step-ca step ca certificate \
   --provisioner admin \
   --provisioner-password-file /etc/step-ca/secrets/provisioner-password \
   --not-after 8760h \
-  elecmtz.une.cu \
+  ums.elecmtz.une.cu \
   /etc/ssl/private/step/elecmtz.crt \
   /etc/ssl/private/step/elecmtz.key
 ```
 
-> `8760h` = 1 año. El SAN (DNS: elecmtz.une.cu) se toma del subject automáticamente.
+> `8760h` = 1 año. El SAN (DNS: ums.elecmtz.une.cu) se toma del subject automáticamente.
 
 ### 10.2 Armar la cadena (leaf + root) para Nginx
 
@@ -455,7 +464,7 @@ chmod 644 /etc/ssl/private/step/elecmtz.crt /etc/ssl/private/step/root_ca.crt
 step certificate inspect /etc/ssl/private/step/elecmtz.crt | head -25
 ```
 
-Confirmar: `Not After` ≈ 1 año, SAN `elecmtz.une.cu`, issuer = `UMS CA Interna`.
+Confirmar: `Not After` ≈ 1 año, SAN `ums.elecmtz.une.cu`, issuer = `UMS CA Interna`.
 
 ---
 
@@ -510,13 +519,13 @@ Crear `/etc/nginx/sites-available/user-management`:
 # Redirigir HTTP → HTTPS
 server {
     listen 80;
-    server_name elecmtz.une.cu;
+    server_name ums.elecmtz.une.cu;
     return 301 https://$host$request_uri;
 }
 
 server {
     listen 443 ssl http2;
-    server_name elecmtz.une.cu;
+    server_name ums.elecmtz.une.cu;
 
     ssl_certificate     /etc/ssl/private/step/elecmtz.crt;
     ssl_certificate_key /etc/ssl/private/step/elecmtz.key;
@@ -560,7 +569,7 @@ systemctl reload nginx
 
 ```bash
 STEPPATH=/etc/step-ca step certificate install /etc/step-ca/certs/root_ca.crt
-curl -sS https://elecmtz.une.cu | head -c 200
+curl -sS https://ums.elecmtz.une.cu | head -c 200
 ```
 
 ---
@@ -570,7 +579,7 @@ curl -sS https://elecmtz.une.cu | head -c 200
 En el **servidor DNS interno de la empresa**, crear el registro:
 
 ```
-elecmtz.une.cu.    IN    A    <IP_DEL_LXC>
+ums.elecmtz.une.cu.    IN    A    <IP_DEL_LXC>
 ```
 
 Opcional (recomendado): reverse `PTR` si la empresa lo administra.
@@ -578,7 +587,7 @@ Opcional (recomendado): reverse `PTR` si la empresa lo administra.
 Verificar desde una PC de la red:
 
 ```bash
-nslookup elecmtz.une.cu
+nslookup ums.elecmtz.une.cu
 # debe devolver la IP del LXC
 ```
 
@@ -627,12 +636,12 @@ Desde una PC de la red (con el root confiado):
 
 | # | Paso | Comando/acción | Esperado |
 |---|---|---|---|
-| 1 | DNS | `nslookup elecmtz.une.cu` | IP del LXC |
-| 2 | TLS | `curl -v https://elecmtz.une.cu` | handshake OK, cadena leaf→root |
-| 3 | App | Abrir `https://elecmtz.une.cu` | Página de login, sin warning |
+| 1 | DNS | `nslookup ums.elecmtz.une.cu` | IP del LXC |
+| 2 | TLS | `curl -v https://ums.elecmtz.une.cu` | handshake OK, cadena leaf→root |
+| 3 | App | Abrir `https://ums.elecmtz.une.cu` | Página de login, sin warning |
 | 4 | Login | Crear/entrar con un usuario | Redirige a `/dashboard` y **se mantiene** logueado |
 | 5 | Cookie | DevTools → Application → Cookies | `better-auth.session_token`: flag `Secure`, `SameSite=Lax` |
-| 6 | HTTP | Abrir `http://elecmtz.une.cu` | Redirige a `https://` |
+| 6 | HTTP | Abrir `http://ums.elecmtz.une.cu` | Redirige a `https://` |
 | 7 | Servicios | `systemctl status ums-app step-ca ums-cert-renew nginx postgresql` | todos `active (running)` |
 
 ### 15.1 Primer administrador
@@ -733,13 +742,13 @@ sudo /usr/local/sbin/update-ums.sh
 
 | Síntoma | Causa probable | Solución |
 |---|---|---|
-| Login no persiste (vuelve a `/signin`) | Se accedió por HTTP o por IP, o falta `trustedOrigins` | Acceder siempre por `https://elecmtz.une.cu`; verificar `elecmtz.une.cu` en `trustedOrigins` (sección 3) y rebuild |
+| Login no persiste (vuelve a `/signin`) | Se accedió por HTTP o por IP, o falta `trustedOrigins` | Acceder siempre por `https://ums.elecmtz.une.cu`; verificar `ums.elecmtz.une.cu` en `trustedOrigins` (sección 3) y rebuild |
 | Navegador: “no se pudo verificar el certificado” | Root de la CA no instalado en ese equipo | Sección 14 (GPO o manual) |
 | Error `502 Bad Gateway` en Nginx | App caída | `systemctl status ums-app`; `journalctl -u ums-app -n 50`; revisar `.env` |
 | `Connection refused` a la BD | PostgreSQL caído o `DATABASE_URL` mal | `systemctl status postgresql`; probar conexión con `psql` (sección 6.3) |
 | El certificado no se renueva | `step-ca` o `ums-cert-renew` caídos | `systemctl status step-ca ums-cert-renew`; `journalctl -u ums-cert-renew -n 50` |
 | Prisma: extension `citext` no existe | No se creó la extensión | `sudo -u postgres psql -d user_management -c "CREATE EXTENSION IF NOT EXISTS citext;"` |
-| Emails de reset no llegan | Sin `RESEND_API_KEY` o dominio no verificado en Resend | Agregar clave y verificar dominio remitente |
+| Emails de reset no llegan | Sin `RESEND_API_KEY` (se usa el placeholder), clave inválida o dominio no verificado en Resend | Configurar una clave real y verificar el dominio remitente; revisar el log de `ums-app` |
 | Cambié la URL y no toma | `NEXT_PUBLIC_*` se incrusta en build | Rebuild + restart (sección 17) |
 
 ---

@@ -141,9 +141,9 @@ Abrí [http://localhost:3000](http://localhost:3000).
 | `CONNECTION_STRING_ACCELERATE` | No | Connection string de Prisma Accelerate |
 | `GITHUB_CLIENT_ID` | No | Client ID de GitHub OAuth (login social) |
 | `GITHUB_CLIENT_SECRET` | No | Secret de GitHub OAuth (login social) |
-| `RESEND_API_KEY` | No* | Clave de Resend para emails (necesaria para recuperar contraseña) |
+| `RESEND_API_KEY` | Recomendada | Clave de Resend para emails. Sin clave válida, la recuperación de contraseña falla (queda en el log) pero el build y el resto de la app funcionan |
 
-\* Si no configurás `RESEND_API_KEY`, el envío de emails de recuperación falla silenciosamente en el servidor.
+\* `lib/resend.ts` usa un placeholder cuando `RESEND_API_KEY` no está definida, para no romper el import ni el build. La recuperación de contraseña solo funciona con una clave real y un dominio verificado en Resend.
 
 ## Comandos útiles
 
@@ -186,6 +186,8 @@ Cuando uses `prisma dev`, actualizá el `DATABASE_URL` en `.env` con el connecti
 ## Deploy
 
 La app está configurada para Vercel. En el dashboard configurá las variables de entorno de la tabla anterior, con `BETTER_AUTH_URL` y `NEXT_PUBLIC_BETTER_AUTH_URL` apuntando a la URL de producción.
+
+> Para el despliegue interno en Proxmox/LXC con TLS propio, seguí `DEPLOYMENT_GUIDE.md`.
 
 > **Importante:** `lib/auth.ts` define `trustedOrigins` con las URLs permitidas (localhost y producción). Si cambiás de dominio, agregalo ahí y en `BETTER_AUTH_URL` antes de desplegar.
 

@@ -71,7 +71,11 @@ export const auth = betterAuth({
     },
   },
 
-  trustedOrigins: ["http://localhost:3000", "https://sigel-eemtz.vercel.app"],
+  trustedOrigins: [
+    "http://localhost:3000",
+    "https://sigel-eemtz.vercel.app",
+    "https://ums.elecmtz.une.cu",
+  ],
   // username() plugin of better-auth for username-password authentication
   // the prisma schema must add username @unique @db.Citext and displayName
   // migrate the db and generate the client
