@@ -56,7 +56,7 @@ export default function SignupForm() {
         type="password"
         errors={state.validationErrors?.confirmPassword}
       />
-      <Button className="w-full" disabled={pending}>
+      <Button className="mt-8 w-full" disabled={pending}>
         {pending ? "Cargando..." : "Registrarse"}
       </Button>
       {state.dbErrors && (

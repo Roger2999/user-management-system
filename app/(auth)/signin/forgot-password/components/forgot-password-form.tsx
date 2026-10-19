@@ -20,7 +20,7 @@ export default function ForgotPasswordForm() {
   return (
     <form
       action={action}
-      className="w-sm max-w-[80%] space-y-2 rounded-xl border p-10"
+      className="w-sm max-w-[80%] space-y-6 rounded-xl border p-10"
     >
       <Field
         label="Correo electrónico"
