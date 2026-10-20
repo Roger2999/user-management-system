@@ -13,7 +13,7 @@ export default async function SettingsPage() {
   return (
     <div className="flex flex-col items-center gap-10">
       <h1 className="text-2xl font-semibold">Configuración</h1>
-      <section className="grid w-7xl max-w-full grid-cols-1 gap-10 md:grid-cols-2">
+      <section className="grid w-7xl max-w-full grid-cols-1 gap-x-10 gap-y-20 md:grid-cols-2">
         <UpdateUserForm
           initialUser={{
             username: user?.username ?? "",

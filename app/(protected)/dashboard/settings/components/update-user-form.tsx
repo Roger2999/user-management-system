@@ -7,7 +7,11 @@ import { UpdateUserState } from "@/lib/types";
 import { UpdateUserAction } from "../actions/update-user-action";
 
 type Props = {
-  initialUser: { username: string; displayName: string; position: string | null };
+  initialUser: {
+    username: string;
+    displayName: string;
+    position: string | null;
+  };
 };
 
 export default function UpdateUserForm({ initialUser }: Props) {
@@ -23,10 +27,10 @@ export default function UpdateUserForm({ initialUser }: Props) {
     initialState,
   );
   return (
-    <div className="h-full space-y-4">
+    <div className="flex h-full flex-col gap-4">
       <h2 className="text-xl font-semibold">Datos de la cuenta</h2>
       <form
-        className="flex h-full flex-col space-y-2 rounded-xl border p-6"
+        className="flex flex-1 flex-col space-y-2 rounded-xl border p-6"
         action={action}
       >
         <Field

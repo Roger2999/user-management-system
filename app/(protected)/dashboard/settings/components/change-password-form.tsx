@@ -18,10 +18,10 @@ export default function ChangePasswordForm() {
     initialState,
   );
   return (
-    <div className="h-full space-y-4">
+    <div className="flex h-full flex-col gap-4">
       <h2 className="text-xl font-semibold">Cambiar contraseña</h2>
       <form
-        className="flex h-full flex-col space-y-2 rounded-xl border p-6"
+        className="flex flex-1 flex-col space-y-2 rounded-xl border p-6"
         action={action}
       >
         <Field

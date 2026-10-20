@@ -5,9 +5,9 @@ export default function Loading() {
     <div className="flex flex-col items-center gap-10">
       <Skeleton className="h-8 w-40" />
       <section className="grid w-7xl max-w-full grid-cols-1 gap-10 md:grid-cols-2">
-        <div className="h-full space-y-4">
+        <div className="flex h-full flex-col gap-4">
           <Skeleton className="h-7 w-48" />
-          <div className="flex h-full flex-col rounded-xl border p-6">
+          <div className="flex flex-1 flex-col rounded-xl border p-6">
             <div className="space-y-2">
               {Array.from({ length: 2 }).map((_, i) => (
                 <div key={i} className="min-h-26 space-y-2">
@@ -21,9 +21,9 @@ export default function Loading() {
             </div>
           </div>
         </div>
-        <div className="h-full space-y-4">
+        <div className="flex h-full flex-col gap-4">
           <Skeleton className="h-7 w-44" />
-          <div className="flex h-full flex-col rounded-xl border p-6">
+          <div className="flex flex-1 flex-col rounded-xl border p-6">
             <div className="space-y-2">
               {Array.from({ length: 3 }).map((_, i) => (
                 <div key={i} className="min-h-26 space-y-2">
