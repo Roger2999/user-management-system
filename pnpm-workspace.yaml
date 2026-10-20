@@ -1,6 +1,28 @@
 overrides:
   zod: ">=3.25"
 
+# Store de pnpm fuera del directorio del proyecto: el store por defecto caia
+# en /opt/user-management-system/.local (867 MB) y no estaba en .gitignore.
+storeDir: /opt/pnpm-store
+
+# Cache de pnpm fuera del directorio del proyecto (por defecto caia en
+# /opt/user-management-system/.cache, que no estaba en .gitignore).
+cacheDir: /opt/pnpm-cache
+
+# Directorios de agent skills donde pnpm enlaza las skills que publican las
+# dependencias (dotenv). Sin esto, `pnpm install` falla con
+# ERR_PNPM_NO_AGENT_SKILLS_DIR cuando no detecta un agente por variables de
+# entorno (CLAUDE_CODE, CURSOR_AGENT, AI_AGENT, ...).
+skills:
+  dirs:
+    - .claude/skills
+
+# `pnpm exec` / `pnpm run` no deben disparar un `pnpm install` implicito.
+# El .env define NODE_ENV=production y ese install podaria las devDependencies
+# (prisma, tsx, typescript), rompiendo `prisma migrate deploy` y el build.
+# Las dependencias se instalan de forma explicita y separada.
+verifyDepsBeforeRun: false
+
 allowBuilds:
   '@prisma/engines': true
   esbuild: true
