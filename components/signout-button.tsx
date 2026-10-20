@@ -15,7 +15,10 @@ export default function SignoutButton() {
     <form action={action}>
       <Button
         variant={"outline"}
-        className={cn("w-full", state.dbErrors && "border-destructive border")}
+        className={cn(
+          "w-full cursor-pointer",
+          state.dbErrors && "border-destructive border",
+        )}
       >
         {pending ? "Cerrando sesión..." : "Cerrar sesión"}
       </Button>

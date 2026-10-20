@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import BackButton from "./components/back-button";
 import Breadcrumbs from "./components/breadcrumbs";
 
-
 export default async function DashboardLayout({
   children,
 }: Readonly<{

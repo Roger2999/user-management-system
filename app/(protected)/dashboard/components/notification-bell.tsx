@@ -37,7 +37,7 @@ export default function NotificationBell({ count7, count1, accounts }: Props) {
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className="hover:bg-accent relative inline-flex size-10 items-center justify-center rounded-md transition-colors"
+          className="hover:bg-accent relative inline-flex size-10 cursor-pointer items-center justify-center rounded-md transition-colors"
           aria-label="Notificaciones de expiración"
         >
           <Bell className="text-brand size-6" />
@@ -96,9 +96,7 @@ export default function NotificationBell({ count7, count1, accounts }: Props) {
                       href={`/dashboard/user-accounts-management/users/edit/${account.id}`}
                       className="flex w-full items-center justify-between gap-2"
                     >
-                      <span className="truncate">
-                        {account.fullName}
-                      </span>
+                      <span className="truncate">{account.fullName}</span>
                       <span
                         className={cn(
                           "shrink-0 text-xs",

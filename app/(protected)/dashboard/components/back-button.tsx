@@ -16,7 +16,10 @@ export default function BackButton({ className, ...props }: Props) {
       variant={"outline"}
       onClick={() => router.back()}
       {...props}
-      className={cn("flex w-fit items-center justify-around px-5", className)}
+      className={cn(
+        "relative z-30 flex w-fit cursor-pointer items-center justify-around px-5",
+        className,
+      )}
     >
       <ArrowBigLeftDash />
       Atras
