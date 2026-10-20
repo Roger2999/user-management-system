@@ -7,20 +7,6 @@ type DbError = {
   details?: Record<string, string[]>;
 } | null;
 
-export type SignupFormState = {
-  data?: { username?: string; email: string; fullName: string; position: string };
-  success?: boolean;
-  dbErrors?: DbError;
-  validationErrors?: {
-    username?: string[];
-    fullName?: string[];
-    position?: string[];
-    email?: string[];
-    password?: string[];
-    confirmPassword?: string[];
-  } | null;
-};
-
 export type SigninFormState = {
   data?: { username: string };
   success?: boolean;
@@ -74,6 +60,27 @@ export type UpdateUserState = {
     username?: string[];
     displayName?: string[];
     position?: string[];
+  } | null;
+};
+
+export type CreateSystemUserState = {
+  data?: {
+    fullName: string;
+    username: string;
+    email: string;
+    position: string;
+    role: string;
+  };
+  message?: string;
+  success?: boolean;
+  dbErrors?: DbError;
+  validationErrors?: {
+    fullName?: string[];
+    username?: string[];
+    email?: string[];
+    position?: string[];
+    role?: string[];
+    password?: string[];
   } | null;
 };
 

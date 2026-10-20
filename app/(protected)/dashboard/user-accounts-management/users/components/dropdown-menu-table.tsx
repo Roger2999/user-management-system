@@ -19,9 +19,11 @@ import DeleteModal from "./delete-modal";
 export default function DropdownMenuTable({
   id,
   name,
+  hasSignatures,
 }: {
   id?: string;
   name?: string;
+  hasSignatures?: boolean;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -41,15 +43,17 @@ export default function DropdownMenuTable({
           align="end"
           className="flex min-w-40 flex-col gap-4"
         >
-          <DropdownMenuItem asChild>
-            <Link
-              href={`/dashboard/user-accounts-management/users/edit/${id}`}
-              className="flex w-full justify-around text-xl"
-            >
-              <PencilIcon className="size-5" />
-              Editar
-            </Link>
-          </DropdownMenuItem>
+          {!hasSignatures && (
+            <DropdownMenuItem asChild>
+              <Link
+                href={`/dashboard/user-accounts-management/users/edit/${id}`}
+                className="flex w-full justify-around text-xl"
+              >
+                <PencilIcon className="size-5" />
+                Editar
+              </Link>
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem asChild>
             <Link
               href={`/dashboard/user-accounts-management/users/sign/${id}`}
@@ -59,17 +63,19 @@ export default function DropdownMenuTable({
               Firmar
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem
-            className="flex justify-around text-xl"
-            variant="destructive"
-            onSelect={(e) => {
-              e.preventDefault();
-              setOpen(true);
-            }}
-          >
-            <Trash2Icon className="size-5" />
-            Eliminar
-          </DropdownMenuItem>
+          {!hasSignatures && (
+            <DropdownMenuItem
+              className="flex justify-around text-xl"
+              variant="destructive"
+              onSelect={(e) => {
+                e.preventDefault();
+                setOpen(true);
+              }}
+            >
+              <Trash2Icon className="size-5" />
+              Eliminar
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 

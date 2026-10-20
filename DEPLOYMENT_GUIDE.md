@@ -2,7 +2,6 @@
 
 Versión 2 — Arquitectura revisada para despliegue en LAN empresarial.
 
-
 - **Contenedor LXC** (Ubuntu 24.04) en lugar de VM completa.
 - **HTTPS obligatorio** mediante una **CA interna (step-ca)**: la aplicación (Next.js 16 + Better Auth) exige TLS en producción. Sin HTTPS, el login falla silenciosamente (cookies `Secure`), los assets no cargan (CSP `upgrade-insecure-requests`) y Better Auth rechaza orígenes no declarados.
 - **systemd** en lugar de PM2: menos capas, un solo proceso.
@@ -32,14 +31,14 @@ Proxmox VE
 
 ## 1. Requisitos previos
 
-| Requisito | Detalle |
-|---|---|
-| Servidor Proxmox | Acceso root o usuario con permisos sobre el nodo |
-| Plantilla Ubuntu 24.04 | Descargable desde Proxmox (`pveam`) |
-| IP estática libre en la LAN | P. ej. `192.168.1.100/24` |
-| DNS interno | Registrar `ums.elecmtz.une.cu` → IP del LXC |
-| Acceso de escritura a `lib/auth.ts` | Un cambio de una línea (sección 3) |
-| GPO o admin local en los clientes | Para confiar el root de la CA (sección 14) |
+| Requisito                           | Detalle                                          |
+| ----------------------------------- | ------------------------------------------------ |
+| Servidor Proxmox                    | Acceso root o usuario con permisos sobre el nodo |
+| Plantilla Ubuntu 24.04              | Descargable desde Proxmox (`pveam`)              |
+| IP estática libre en la LAN         | P. ej. `192.168.1.100/24`                        |
+| DNS interno                         | Registrar `ums.elecmtz.une.cu` → IP del LXC      |
+| Acceso de escritura a `lib/auth.ts` | Un cambio de una línea (sección 3)               |
+| GPO o admin local en los clientes   | Para confiar el root de la CA (sección 14)       |
 
 > **Importante:** la app **no** funciona por HTTP en producción. El acceso siempre será `https://ums.elecmtz.une.cu` (o por IP con warning, solo para pruebas).
 
@@ -277,6 +276,8 @@ sudo -u ums bash -lc 'set -a; . ./.env; set +a; pnpm exec prisma migrate deploy'
 ```
 
 > `prisma migrate deploy` (no interactivo) aplica las migraciones pendientes. La extensión `citext` ya está creada.
+>
+> En un despliegue nuevo, corré además `pnpm db:seed` para crear el administrador inicial (ver sección 15.1).
 
 ### 7.6 Compilar
 
@@ -383,6 +384,7 @@ sudo -u step STEPPATH=/etc/step-ca step ca init \
 ```
 
 Esto crea en `/etc/step-ca/`:
+
 - `config/ca.json` — configuración
 - `certs/root_ca.crt` — certificado raíz (para distribuir)
 - `secrets/root_ca_key`, `intermediate_ca_key` — **claves privadas: críticas**
@@ -634,22 +636,28 @@ Doble clic en `root_ca.crt` → Llavero del sistema → `Siempre confiar`.
 
 Desde una PC de la red (con el root confiado):
 
-| # | Paso | Comando/acción | Esperado |
-|---|---|---|---|
-| 1 | DNS | `nslookup ums.elecmtz.une.cu` | IP del LXC |
-| 2 | TLS | `curl -v https://ums.elecmtz.une.cu` | handshake OK, cadena leaf→root |
-| 3 | App | Abrir `https://ums.elecmtz.une.cu` | Página de login, sin warning |
-| 4 | Login | Crear/entrar con un usuario | Redirige a `/dashboard` y **se mantiene** logueado |
-| 5 | Cookie | DevTools → Application → Cookies | `better-auth.session_token`: flag `Secure`, `SameSite=Lax` |
-| 6 | HTTP | Abrir `http://ums.elecmtz.une.cu` | Redirige a `https://` |
-| 7 | Servicios | `systemctl status ums-app step-ca ums-cert-renew nginx postgresql` | todos `active (running)` |
+| #   | Paso      | Comando/acción                                                     | Esperado                                                   |
+| --- | --------- | ------------------------------------------------------------------ | ---------------------------------------------------------- |
+| 1   | DNS       | `nslookup ums.elecmtz.une.cu`                                      | IP del LXC                                                 |
+| 2   | TLS       | `curl -v https://ums.elecmtz.une.cu`                               | handshake OK, cadena leaf→root                             |
+| 3   | App       | Abrir `https://ums.elecmtz.une.cu`                                 | Página de login, sin warning                               |
+| 4   | Login     | Crear/entrar con un usuario                                        | Redirige a `/dashboard` y **se mantiene** logueado         |
+| 5   | Cookie    | DevTools → Application → Cookies                                   | `better-auth.session_token`: flag `Secure`, `SameSite=Lax` |
+| 6   | HTTP      | Abrir `http://ums.elecmtz.une.cu`                                  | Redirige a `https://`                                      |
+| 7   | Servicios | `systemctl status ums-app step-ca ums-cert-renew nginx postgresql` | todos `active (running)`                                   |
 
 ### 15.1 Primer administrador
 
-El alta inicial es por el formulario `signup`. Para promover al primer administrador:
+El registro público está deshabilitado. En un despliegue nuevo, creá el admin inicial con:
 
 ```bash
 cd /opt/user-management-system
+sudo -u ums bash -lc 'set -a; . ./.env; set +a; pnpm db:seed'
+```
+
+Crea `admin` / `admin` (configurable con `SEED_ADMIN_*`) **solo si la tabla `user` está vacía**. Después del primer login, cambiá la contraseña desde Configuración. Para promover a un usuario existente:
+
+```bash
 sudo -u ums bash -lc 'set -a; . ./.env; set +a; pnpm exec tsx prisma/promote-admin.ts <username>'
 ```
 
@@ -723,6 +731,7 @@ cd "$APP"
 sudo -u ums git pull --ff-only
 sudo -u ums pnpm install
 sudo -u ums bash -lc 'set -a; . ./.env; set +a; pnpm exec prisma migrate deploy'
+sudo -u ums bash -lc 'set -a; . ./.env; set +a; pnpm db:seed'
 sudo -u ums bash -lc 'set -a; . ./.env; set +a; pnpm build'
 systemctl restart ums-app
 echo "OK: ums-app actualizado"
@@ -740,33 +749,33 @@ sudo /usr/local/sbin/update-ums.sh
 
 ## 18. Troubleshooting
 
-| Síntoma | Causa probable | Solución |
-|---|---|---|
-| Login no persiste (vuelve a `/signin`) | Se accedió por HTTP o por IP, o falta `trustedOrigins` | Acceder siempre por `https://ums.elecmtz.une.cu`; verificar `ums.elecmtz.une.cu` en `trustedOrigins` (sección 3) y rebuild |
-| Navegador: “no se pudo verificar el certificado” | Root de la CA no instalado en ese equipo | Sección 14 (GPO o manual) |
-| Error `502 Bad Gateway` en Nginx | App caída | `systemctl status ums-app`; `journalctl -u ums-app -n 50`; revisar `.env` |
-| `Connection refused` a la BD | PostgreSQL caído o `DATABASE_URL` mal | `systemctl status postgresql`; probar conexión con `psql` (sección 6.3) |
-| El certificado no se renueva | `step-ca` o `ums-cert-renew` caídos | `systemctl status step-ca ums-cert-renew`; `journalctl -u ums-cert-renew -n 50` |
-| Prisma: extension `citext` no existe | No se creó la extensión | `sudo -u postgres psql -d user_management -c "CREATE EXTENSION IF NOT EXISTS citext;"` |
-| Emails de reset no llegan | Sin `RESEND_API_KEY` (se usa el placeholder), clave inválida o dominio no verificado en Resend | Configurar una clave real y verificar el dominio remitente; revisar el log de `ums-app` |
-| Cambié la URL y no toma | `NEXT_PUBLIC_*` se incrusta en build | Rebuild + restart (sección 17) |
+| Síntoma                                          | Causa probable                                                                                 | Solución                                                                                                                   |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Login no persiste (vuelve a `/signin`)           | Se accedió por HTTP o por IP, o falta `trustedOrigins`                                         | Acceder siempre por `https://ums.elecmtz.une.cu`; verificar `ums.elecmtz.une.cu` en `trustedOrigins` (sección 3) y rebuild |
+| Navegador: “no se pudo verificar el certificado” | Root de la CA no instalado en ese equipo                                                       | Sección 14 (GPO o manual)                                                                                                  |
+| Error `502 Bad Gateway` en Nginx                 | App caída                                                                                      | `systemctl status ums-app`; `journalctl -u ums-app -n 50`; revisar `.env`                                                  |
+| `Connection refused` a la BD                     | PostgreSQL caído o `DATABASE_URL` mal                                                          | `systemctl status postgresql`; probar conexión con `psql` (sección 6.3)                                                    |
+| El certificado no se renueva                     | `step-ca` o `ums-cert-renew` caídos                                                            | `systemctl status step-ca ums-cert-renew`; `journalctl -u ums-cert-renew -n 50`                                            |
+| Prisma: extension `citext` no existe             | No se creó la extensión                                                                        | `sudo -u postgres psql -d user_management -c "CREATE EXTENSION IF NOT EXISTS citext;"`                                     |
+| Emails de reset no llegan                        | Sin `RESEND_API_KEY` (se usa el placeholder), clave inválida o dominio no verificado en Resend | Configurar una clave real y verificar el dominio remitente; revisar el log de `ums-app`                                    |
+| Cambié la URL y no toma                          | `NEXT_PUBLIC_*` se incrusta en build                                                           | Rebuild + restart (sección 17)                                                                                             |
 
 ---
 
 ## 19. Resumen de archivos y servicios
 
-| Elemento | Ruta / servicio |
-|---|---|
-| App (código) | `/opt/user-management-system` (usuario `ums`) |
-| Variables de entorno | `/opt/user-management-system/.env` (modo 600) |
-| Servicio de la app | `ums-app.service` (Next.js en `127.0.0.1:3000`) |
-| CA interna | `/etc/step-ca` (usuario `step`), servicio `step-ca.service` |
-| Certificado TLS | `/etc/ssl/private/step/elecmtz.crt` + `.key` |
-| Root de la CA | `/etc/ssl/private/step/root_ca.crt` |
-| Renovación | `ums-cert-renew.service` |
-| Proxy / TLS | Nginx `user-management` (443/80) |
-| Base de datos | PostgreSQL 16, `user_management` (solo localhost) |
-| Backups | `/var/backups/user-management` (BD), `vzdump` del CT 100 |
+| Elemento             | Ruta / servicio                                             |
+| -------------------- | ----------------------------------------------------------- |
+| App (código)         | `/opt/user-management-system` (usuario `ums`)               |
+| Variables de entorno | `/opt/user-management-system/.env` (modo 600)               |
+| Servicio de la app   | `ums-app.service` (Next.js en `127.0.0.1:3000`)             |
+| CA interna           | `/etc/step-ca` (usuario `step`), servicio `step-ca.service` |
+| Certificado TLS      | `/etc/ssl/private/step/elecmtz.crt` + `.key`                |
+| Root de la CA        | `/etc/ssl/private/step/root_ca.crt`                         |
+| Renovación           | `ums-cert-renew.service`                                    |
+| Proxy / TLS          | Nginx `user-management` (443/80)                            |
+| Base de datos        | PostgreSQL 16, `user_management` (solo localhost)           |
+| Backups              | `/var/backups/user-management` (BD), `vzdump` del CT 100    |
 
 ---
 

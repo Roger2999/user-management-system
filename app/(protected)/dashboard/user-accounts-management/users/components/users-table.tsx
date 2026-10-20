@@ -58,28 +58,31 @@ export default async function UsersTable({
   searchParams: Record<string, string>;
   search: string | undefined;
 }) {
-  const usersFiltrated = await prisma.accountRequest.findMany({
-    where: search
-      ? {
-          ...where,
-          fullName: { contains: search, mode: "insensitive" },
-        }
-      : where,
-    include: { signatures: true },
-    skip: (page - 1) * PAGE_SIZE,
-    take: PAGE_SIZE,
-  });
+  const whereFiltered: Prisma.AccountRequestWhereInput = search
+    ? {
+        ...where,
+        OR: [
+          { fullName: { contains: search, mode: "insensitive" } },
+          { username: { contains: search, mode: "insensitive" } },
+          { folio: { contains: search, mode: "insensitive" } },
+        ],
+      }
+    : where;
 
   const totalFiltered = await prisma.accountRequest.count({
-    where: search
-      ? {
-          ...where,
-          fullName: { contains: search, mode: "insensitive" },
-        }
-      : where,
+    where: whereFiltered,
   });
 
-  const totalPages = Math.ceil(totalFiltered / PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(totalFiltered / PAGE_SIZE));
+  const currentPage = Math.min(Math.max(1, page), totalPages);
+
+  const usersFiltrated = await prisma.accountRequest.findMany({
+    where: whereFiltered,
+    include: { signatures: true },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    skip: (currentPage - 1) * PAGE_SIZE,
+    take: PAGE_SIZE,
+  });
 
   return (
     <div className="flex w-full flex-1 flex-col items-center justify-between">
@@ -103,12 +106,8 @@ export default async function UsersTable({
               return (
                 <TableRow key={user.id}>
                   <TableCell className="font-medium">{user.folio}</TableCell>
-                  <TableCell className="font-medium">
-                    {user.fullName}
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    {user.username}
-                  </TableCell>
+                  <TableCell className="font-medium">{user.fullName}</TableCell>
+                  <TableCell className="font-medium">{user.username}</TableCell>
                   <TableCell className="font-medium">
                     {user.department}
                   </TableCell>
@@ -136,6 +135,7 @@ export default async function UsersTable({
                     <DropdownMenuTable
                       id={user.id}
                       name={user.fullName}
+                      hasSignatures={user.signatures.length > 0}
                     />
                   </TableCell>
                 </TableRow>
@@ -154,7 +154,7 @@ export default async function UsersTable({
         </TableBody>
       </Table>
       <Pagination
-        currentPage={page}
+        currentPage={currentPage}
         totalPages={totalPages}
         baseUrl="/dashboard/user-accounts-management/users"
         searchParams={searchParams}

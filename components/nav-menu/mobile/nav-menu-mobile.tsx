@@ -111,22 +111,13 @@ export default function NavMenuMobile({ session }: Props) {
           {session ? (
             <SignoutButton />
           ) : (
-            <>
-              <SignButton
-                href="/signup"
-                className="w-full px-5"
-                onClick={closeMenu}
-              >
-                Registrarse
-              </SignButton>
-              <SignButton
-                href="signin"
-                className="w-full px-5"
-                onClick={closeMenu}
-              >
-                Iniciar sesión
-              </SignButton>
-            </>
+            <SignButton
+              href="/signin"
+              className="w-full px-5"
+              onClick={closeMenu}
+            >
+              Iniciar sesión
+            </SignButton>
           )}
         </div>
         {/* theme switch */}

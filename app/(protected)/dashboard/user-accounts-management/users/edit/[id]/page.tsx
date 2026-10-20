@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import EditUserAccountForm from "../../components/user-account-form";
 import { updateAccountRequestAction } from "./actions/update-account-request-action";
@@ -15,10 +15,18 @@ const opt = (value: string | null): string | undefined => value ?? undefined;
 
 export default async function EditUserAccountPage({ params }: Props) {
   const { id } = await params;
-  const user = await prisma.accountRequest.findUnique({ where: { id } });
+  const user = await prisma.accountRequest.findUnique({
+    where: { id },
+    include: { _count: { select: { signatures: true } } },
+  });
 
   if (!user) {
     notFound();
+  }
+
+  // Una solicitud firmada ya no se edita: se consulta desde el detalle.
+  if (user._count.signatures > 0) {
+    redirect(`/dashboard/user-accounts-management/users/${id}`);
   }
 
   const initialData: CreateUserAccountState["data"] = {

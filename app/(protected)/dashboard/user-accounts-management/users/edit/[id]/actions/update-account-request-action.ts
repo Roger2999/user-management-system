@@ -10,6 +10,9 @@ import prisma from "@/lib/prisma";
 import { CreateUserAccountState } from "@/lib/types";
 import { checkboxField, optionalTextField, textField } from "@/lib/form-data";
 import { requireAdmin } from "@/helpers/requireAdmin";
+import { getSession } from "@/helpers/getSession";
+import { AUDIT_ENTITY, recordAudit } from "@/lib/audit";
+import { AuditAction } from "@/generated/prisma/enums";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -176,32 +179,66 @@ export async function updateAccountRequestAction(
     };
   }
 
+  // Una solicitud firmada es un documento cerrado: editarla dejaria firmas
+  // apuntando a contenido que ya no es el que se aprobo.
+  const signatureCount = await prisma.accountRequestSignature.count({
+    where: { accountRequestId: id },
+  });
+
+  if (signatureCount > 0) {
+    return {
+      data: repopulateData,
+      success: false,
+      dbErrors: {
+        message:
+          "La solicitud ya tiene firmas registradas y no se puede editar.",
+      },
+      validationErrors: null,
+    };
+  }
+
   const toDate = (value: string | undefined) =>
     value ? new Date(value) : null;
+
+  const session = await getSession();
+  const actor = session?.user
+    ? { id: session.user.id, name: session.user.name ?? session.user.username }
+    : null;
 
   try {
     const data = validatedFields.data;
 
-    await prisma.accountRequest.update({
-      where: { id },
-      data: {
-        ...data,
-        expiresAt: toDate(data.expiresAt),
-        deprovisionedAt: toDate(data.deprovisionedAt),
-        phoneExtension: data.phoneExtension ?? null,
-        otherNetworks: data.otherNetworks ?? null,
-        overtimeFrom: data.overtimeFrom ?? null,
-        overtimeTo: data.overtimeTo ?? null,
-        saturdayFrom: data.saturdayFrom ?? null,
-        saturdayTo: data.saturdayTo ?? null,
-        sundayFrom: data.sundayFrom ?? null,
-        sundayTo: data.sundayTo ?? null,
-        mobilePhone: data.mobilePhone ?? null,
-        additionalPcName: data.additionalPcName ?? null,
-        additionalPcAssetTag: data.additionalPcAssetTag ?? null,
-        authorizedSoftware: data.authorizedSoftware ?? null,
-        deprovisioningReasons: data.deprovisioningReasons ?? null,
-      },
+    await prisma.$transaction(async (tx) => {
+      await tx.accountRequest.update({
+        where: { id },
+        data: {
+          ...data,
+          expiresAt: toDate(data.expiresAt),
+          deprovisionedAt: toDate(data.deprovisionedAt),
+          updatedByUserId: actor?.id ?? null,
+          phoneExtension: data.phoneExtension ?? null,
+          otherNetworks: data.otherNetworks ?? null,
+          overtimeFrom: data.overtimeFrom ?? null,
+          overtimeTo: data.overtimeTo ?? null,
+          saturdayFrom: data.saturdayFrom ?? null,
+          saturdayTo: data.saturdayTo ?? null,
+          sundayFrom: data.sundayFrom ?? null,
+          sundayTo: data.sundayTo ?? null,
+          mobilePhone: data.mobilePhone ?? null,
+          additionalPcName: data.additionalPcName ?? null,
+          additionalPcAssetTag: data.additionalPcAssetTag ?? null,
+          authorizedSoftware: data.authorizedSoftware ?? null,
+          deprovisioningReasons: data.deprovisioningReasons ?? null,
+        },
+      });
+
+      await recordAudit(tx, {
+        action: AuditAction.UPDATE,
+        entityType: AUDIT_ENTITY.ACCOUNT_REQUEST,
+        entityId: id,
+        actor,
+        metadata: { folio: data.folio },
+      });
     });
   } catch (error) {
     console.error(

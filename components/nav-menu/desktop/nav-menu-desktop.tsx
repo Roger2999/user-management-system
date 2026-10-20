@@ -46,14 +46,9 @@ export default async function NavMenuDesktop() {
         {session ? (
           <SignoutButton />
         ) : (
-          <>
-            <SignButton href="/signup" className="min-w-44 px-5">
-              Registrarse
-            </SignButton>
-            <SignButton href="/signin" className="min-w-44 px-5">
-              Iniciar sesión
-            </SignButton>
-          </>
+          <SignButton href="/signin" className="min-w-44 px-5">
+            Iniciar sesión
+          </SignButton>
         )}
         {/* theme button */}
         <ThemeModeToggle />

@@ -30,6 +30,9 @@ model User {
   sessions             Session[]
   accounts             Account[]
   registeredSignatures AccountRequestSignature[]
+  createdRequests      AccountRequest[]           @relation("AccountRequestCreatedBy")
+  updatedRequests      AccountRequest[]           @relation("AccountRequestUpdatedBy")
+  auditLogs            AuditLog[]
 
   @@unique([email])
   @@map("user")
@@ -113,10 +116,22 @@ enum AccountRequestStage {
   executed
 }
 
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  SIGN
+}
+
 model AccountRequest {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  createdByUserId String?
+  createdByUser   User?   @relation("AccountRequestCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  updatedByUserId String?
+  updatedByUser   User?   @relation("AccountRequestUpdatedBy", fields: [updatedByUserId], references: [id], onDelete: SetNull)
 
   // Header
   folio       String?     @unique @db.Citext
@@ -222,4 +237,22 @@ model AccountRequestSignature {
   @@unique([accountRequestId, stage])
   @@index([accountRequestId])
   @@index([registeredByUserId])
+}
+
+/// Registro de auditoria de bajo nivel: quien hizo que, sobre que entidad y
+/// cuando. Se escribe en crear, editar, borrar y firmar solicitudes.
+model AuditLog {
+  id          String      @id @default(cuid())
+  action      AuditAction
+  entityType  String
+  entityId    String
+  actorUserId String?
+  actorUser   User?       @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+  actorName   String?
+  metadata    Json?
+  createdAt   DateTime    @default(now())
+
+  @@index([entityType, entityId])
+  @@index([actorUserId])
+  @@index([createdAt])
 }

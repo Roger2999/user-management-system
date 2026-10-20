@@ -11,7 +11,8 @@
     "lint": "eslint",
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:generate": "prisma generate"
+    "db:generate": "prisma generate",
+    "db:seed": "tsx prisma/seed-admin.ts"
   },
   "dependencies": {
     "@better-auth/prisma-adapter": "^1.6.14",

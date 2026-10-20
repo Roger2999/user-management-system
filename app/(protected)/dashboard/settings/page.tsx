@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import UpdateUserForm from "./components/update-user-form";
 import ChangePasswordForm from "./components/change-password-form";
+import CreateUserForm from "./components/create-user-form";
 import SessionsList from "./components/sessions-list";
 
 export default async function SettingsPage() {
@@ -24,6 +25,11 @@ export default async function SettingsPage() {
           }}
         />
         <ChangePasswordForm />
+        {user?.role === "ADMIN" && (
+          <div className="md:col-span-2">
+            <CreateUserForm />
+          </div>
+        )}
         <div className="md:col-span-2">
           <SessionsList
             sessions={sessions}

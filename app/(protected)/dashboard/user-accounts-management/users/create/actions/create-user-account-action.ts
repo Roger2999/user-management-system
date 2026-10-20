@@ -10,6 +10,9 @@ import prisma from "@/lib/prisma";
 import { CreateUserAccountState } from "@/lib/types";
 import { checkboxField, optionalTextField, textField } from "@/lib/form-data";
 import { requireAdmin } from "@/helpers/requireAdmin";
+import { getSession } from "@/helpers/getSession";
+import { AUDIT_ENTITY, recordAudit } from "@/lib/audit";
+import { AuditAction } from "@/generated/prisma/enums";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -176,15 +179,35 @@ export async function createUserAccountAction(
   const toDate = (value: string | undefined) =>
     value ? new Date(value) : null;
 
+  const session = await getSession();
+  const actor = session?.user
+    ? { id: session.user.id, name: session.user.name ?? session.user.username }
+    : null;
+
   try {
     const data = validatedFields.data;
 
-    await prisma.accountRequest.create({
-      data: {
-        ...data,
-        expiresAt: toDate(data.expiresAt),
-        deprovisionedAt: toDate(data.deprovisionedAt),
-      },
+    await prisma.$transaction(async (tx) => {
+      const request = await tx.accountRequest.create({
+        data: {
+          ...data,
+          expiresAt: toDate(data.expiresAt),
+          deprovisionedAt: toDate(data.deprovisionedAt),
+          createdByUserId: actor?.id ?? null,
+          updatedByUserId: actor?.id ?? null,
+        },
+      });
+
+      await recordAudit(tx, {
+        action: AuditAction.CREATE,
+        entityType: AUDIT_ENTITY.ACCOUNT_REQUEST,
+        entityId: request.id,
+        actor,
+        metadata: {
+          folio: request.folio,
+          requestType: request.requestType,
+        },
+      });
     });
   } catch (error) {
     console.error(

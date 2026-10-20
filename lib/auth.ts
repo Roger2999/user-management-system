@@ -48,6 +48,9 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
+    // El alta de usuarios se hace desde Configuracion por un ADMIN. No hay
+    // autoservicio: cualquiera en la red podria crearse una cuenta.
+    disableSignUp: true,
     // requireEmailVerification: true,
     autoSignIn: true,
     maxPasswordLength: 128,
@@ -80,6 +83,6 @@ export const auth = betterAuth({
   // the prisma schema must add username @unique @db.Citext and displayName
   // migrate the db and generate the client
   // adjust the types and zod schemas of the forms
-  // adjust the signin and signup actions
+  // adjust the signin action
   plugins: [nextCookies(), username()],
 });

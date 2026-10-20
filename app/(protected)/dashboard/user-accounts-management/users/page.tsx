@@ -24,6 +24,7 @@ export default async function UsersPage({ searchParams }: Props) {
 
   const plainSearchParams: Record<string, string> = {};
   if (typeof filter === "string") plainSearchParams.filter = filter;
+  if (search) plainSearchParams.search = search;
 
   return (
     <>

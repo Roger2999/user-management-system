@@ -4,9 +4,10 @@ import { SignFormState } from "@/lib/types";
 import prisma from "@/lib/prisma";
 import { requireAdmin } from "@/helpers/requireAdmin";
 import { getSession } from "@/helpers/getSession";
+import { AUDIT_ENTITY, recordAudit } from "@/lib/audit";
 import { SignFormSchema, SIGN_STAGES } from "../models/signSchema.model";
 import { revalidatePath } from "next/cache";
-import { AccountRequestStage } from "@/generated/prisma/enums";
+import { AccountRequestStage, AuditAction } from "@/generated/prisma/enums";
 import type { Prisma } from "@/generated/prisma/client";
 import z from "zod";
 
@@ -211,6 +212,13 @@ export const signAction = async (
 
   // Per-stage operations: create new signatures and correct existing ones.
   const operations: Prisma.PrismaPromise<unknown>[] = [];
+  const signedStages: AccountRequestStage[] = [];
+  const correctionsSummary: {
+    stage: AccountRequestStage;
+    field: CorrectionEntry["field"];
+    previousValue: string;
+    newValue: string;
+  }[] = [];
 
   for (const stage of SIGN_STAGES) {
     const enumStage = stageToEnum[stage.key];
@@ -221,6 +229,7 @@ export const signAction = async (
     if (!sig) {
       // No previous signature: only created if the checkbox is ticked.
       if (signs[stage.key]) {
+        signedStages.push(enumStage);
         operations.push(
           prisma.accountRequestSignature.create({
             data: {
@@ -263,8 +272,17 @@ export const signAction = async (
       });
     }
     if (corrections.length > 0) {
-      const previousHistory =
-        (sig.correctionHistory ?? []) as unknown as CorrectionEntry[];
+      correctionsSummary.push(
+        ...corrections.map((correction) => ({
+          stage: enumStage,
+          field: correction.field,
+          previousValue: correction.previousValue,
+          newValue: correction.newValue,
+        })),
+      );
+
+      const previousHistory = (sig.correctionHistory ??
+        []) as unknown as CorrectionEntry[];
       operations.push(
         prisma.accountRequestSignature.update({
           where: { id: sig.id },
@@ -280,6 +298,22 @@ export const signAction = async (
 
   try {
     if (operations.length > 0) {
+      operations.push(
+        recordAudit(prisma, {
+          action: AuditAction.SIGN,
+          entityType: AUDIT_ENTITY.ACCOUNT_REQUEST,
+          entityId: id,
+          actor: {
+            id: sessionUser.id,
+            name: sessionUser.name ?? sessionUser.username,
+          },
+          metadata: {
+            signedStages,
+            corrections: correctionsSummary,
+          },
+        }),
+      );
+
       await prisma.$transaction(operations);
     }
     revalidatePath(`/dashboard/user-accounts-management/users/sign/${id}`);
