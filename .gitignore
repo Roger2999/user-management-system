@@ -15,7 +15,11 @@
 
 # next.js
 /.next/
+/.next.bak/
 /out/
+
+# cache de npm (npx crea _logs en el directorio del proyecto)
+/.npm/
 
 # production
 /build
