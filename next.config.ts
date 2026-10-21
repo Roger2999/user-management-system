@@ -1,5 +1,26 @@
 import type { NextConfig } from "next";
 
+// "upgrade-insecure-requests" (CSP) y HSTS solo tienen sentido si la app se
+// sirve por HTTPS. Sin un terminador TLS delante, el navegador reescribe los
+// subrecursos (CSS/JS/fuentes) a https://, el handshake falla y la pagina se
+// queda sin estilos ("secure connection failed"). Se activan solos cuando
+// BETTER_AUTH_URL apunta a https://.
+const useHttps = process.env.BETTER_AUTH_URL?.startsWith("https://") ?? false;
+
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob:",
+  "font-src 'self' data:",
+  "connect-src 'self'",
+  "object-src 'none'",
+  "frame-ancestors 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  ...(useHttps ? ["upgrade-insecure-requests"] : []),
+].join("; ");
+
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "DENY" },
@@ -14,14 +35,17 @@ const securityHeaders = [
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
   ...(process.env.NODE_ENV === "production"
     ? [
-        {
-          key: "Strict-Transport-Security",
-          value: "max-age=63072000",
-        },
+        ...(useHttps
+          ? [
+              {
+                key: "Strict-Transport-Security",
+                value: "max-age=63072000",
+              },
+            ]
+          : []),
         {
           key: "Content-Security-Policy",
-          value:
-            "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests",
+          value: contentSecurityPolicy,
         },
       ]
     : []),
