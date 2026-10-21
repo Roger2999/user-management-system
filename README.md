@@ -175,6 +175,8 @@ Abrí [http://localhost:3000](http://localhost:3000).
 | `pnpm dev`                                         | Servidor de desarrollo                                                |
 | `pnpm build`                                       | Build de producción                                                   |
 | `pnpm lint`                                        | ESLint                                                                |
+| `pnpm test`                                        | Tests unitarios (Vitest)                                              |
+| `pnpm test:watch`                                  | Tests en modo watch                                                   |
 | `pnpm db:migrate`                                  | Crear/aplicar migraciones en desarrollo                               |
 | `pnpm db:generate`                                 | Regenerar el cliente Prisma                                           |
 | `pnpm db:seed`                                     | Crear el admin inicial si no existe ningún usuario                    |
@@ -192,6 +194,28 @@ Abrí [http://localhost:3000](http://localhost:3000).
 > **⚠️ Wipe:** `pnpm exec tsx prisma/wipe-requests.ts` borra **todas** las
 > solicitudes y firmas. Los datos de autenticación (`user`, `session`,
 > `account`, `verification`) no se tocan. No lo corras sobre datos reales.
+
+## Tests
+
+```bash
+pnpm test        # una pasada
+pnpm test:watch  # modo watch
+```
+
+Son tests unitarios: no levantan base de datos ni navegador. Cubren las reglas
+de dominio que no se pueden verificar mirando la UI.
+
+| Archivo                                                         | Qué cubre                                                     |
+| --------------------------------------------------------------- | ------------------------------------------------------------- |
+| `.../sign/[id]/models/signature-plan.model.test.ts`             | Orden de firmas, inmutabilidad e historial de correcciones    |
+| `.../sign/[id]/models/signSchema.model.test.ts`                 | Validación del formulario de firma                            |
+| `.../sign/[id]/actions/sign-action.test.ts`                     | Cableado: transacción, auditoría y respuesta al cliente       |
+| `lib/filters.test.ts`                                           | Filtros del listado (tipo, cuenta, expiración, pendientes)     |
+
+La lógica del flujo de firmas vive en `signature-plan.model.ts`, aislada de
+Next.js, Prisma y `FormData`. La server action sólo lee el formulario, resuelve
+la identidad del firmante y persiste el plan que devuelve el modelo; así las
+reglas se pueden probar sin mocks.
 
 ## Desarrollo local sin conexión a Prisma Postgres
 
