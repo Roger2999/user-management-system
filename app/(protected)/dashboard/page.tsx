@@ -11,7 +11,7 @@ export default async function Dashboard() {
     <div className="flex flex-col items-center space-y-10">
       <header className="w-full space-y-4">
         <h1 className="text-center text-3xl font-semibold">
-          Sistema para la gestion usuarios
+          Sistema para la gestion de usuarios
         </h1>
         <h2 className="text-muted-foreground text-center text-2xl font-semibold">
           Bienvenido de vuelta, {username ?? "usuario"}
@@ -23,8 +23,19 @@ export default async function Dashboard() {
           icon={<UsersIcon className="text-brand mx-auto my-1 size-6" />}
           card={{
             title: "Gestionar cuentas de usuario",
-            description: "Registra, firma, actualiza y da de baja cuentas de usuario",
+            description:
+              "Registra, firma, actualiza y da de baja cuentas de usuario",
             href: "/dashboard/user-accounts-management/",
+          }}
+        />
+        <DashboardCard
+          isAdmin={isAdmin}
+          icon={<UsersIcon className="text-brand mx-auto my-1 size-6" />}
+          card={{
+            title: "Gestionar informes mensuales",
+            description:
+              "Gestión integral de informes mensuales de seguridad informática",
+            href: "/dashboard/monthly-report-management/",
           }}
         />
       </section>
