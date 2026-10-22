@@ -11,7 +11,7 @@ export default async function Dashboard() {
     <div className="flex flex-col items-center space-y-10">
       <header className="w-full space-y-4">
         <h1 className="text-center text-3xl font-semibold">
-          Sistema para la gestion de usuarios
+          Sistema para la gestión de usuarios
         </h1>
         <h2 className="text-muted-foreground text-center text-2xl font-semibold">
           Bienvenido de vuelta, {username ?? "usuario"}
