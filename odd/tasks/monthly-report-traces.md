@@ -507,3 +507,31 @@ usuario del sitio, solo el total; se calibrará después del primero.
 
 `pnpm exec vitest run lib/reports`: 90 tests, 11 archivos, en verde.
 `pnpm exec tsc --noEmit`: sin errores.
+
+### L15 — Reemplazo de tablas sobre el documento real
+
+Se implementó `lib/reports/document/table-xml.ts`: reemplaza las filas de datos de
+una tabla de `document.xml` **clonando la fila molde del propio documento**. No se
+reconstruye el formato y no se agrega un parser XML ni una dependencia: se heredan
+bordes, anchos, fuentes y alineación del original.
+
+#### Verificación de identidad sobre el documento oficial
+
+Se tomó el `.docx` vigente, se reemplazó la tabla 4 (sitios internacionales) con
+**los mismos diez valores** que ya tenía, se volvió a comprimir y se convirtió a
+PDF con LibreOffice:
+
+| Comprobación | Resultado |
+|---|---|
+| `soffice` abre y convierte el `.docx` modificado | sí, 11 páginas |
+| Tamaño del PDF | 554,474 bytes, idéntico al original convertido |
+| Texto extraído (`pdftotext -layout`) | `diff` sin diferencias, 495 líneas |
+| Cabecera de la tabla | intacta |
+| Ancho de columna | igual: `www.instagram.com` se parte igual que en el original |
+
+Que el texto sea idéntico byte a byte prueba que el clonado no altera el
+contenido ni el orden de las celdas. Que el ancho y los saltos coincidan prueba
+que tampoco altera el formato.
+
+`pnpm exec vitest run lib/reports`: 98 tests, 12 archivos, en verde.
+`pnpm exec tsc --noEmit`: sin errores.
