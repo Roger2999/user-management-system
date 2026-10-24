@@ -4,6 +4,7 @@ import {
   buildSiteUserTableRows,
   buildTopUsersTableRows,
   buildTracesSection,
+  proposeSiteSelection,
   SITE_TABLE_HEADERS,
   SITE_USER_TABLE_HEADERS,
   type SiteTotals,
@@ -249,7 +250,7 @@ describe("buildTopUsersTableRows", () => {
 });
 
 describe("buildTracesSection", () => {
-  it("separa nacional de internacional y respeta las exclusiones", () => {
+  it("separa nacional de internacional según la selección declarada", () => {
     const section = buildTracesSection({
       totalHits: 91_300_000,
       totalBrowsingMs: 47_535_600_000,
@@ -260,6 +261,11 @@ describe("buildTracesSection", () => {
       ],
       siteUsers: [],
       users: [],
+      selection: {
+        international: ["www.youtube.com"],
+        national: ["www.picta.cu"],
+        drilldowns: [],
+      },
       nationalExclusions: ["une.cu"],
     });
 
@@ -268,11 +274,34 @@ describe("buildTracesSection", () => {
     ]);
     expect(section.internationalSites.map((row) => row.site)).toEqual([
       "www.youtube.com",
-      "elecmtz.une.cu",
     ]);
   });
 
-  it("genera un drill-down por cada sitio internacional del top", () => {
+  it("no corta la selección por hits: entra el sitio elegido y no el que más tiene", () => {
+    // Caso real de mayo: `google.com` tiene 90,921 hits y no está en el
+    // documento; `kimi.com` entra con 2,731. Con un top por hits sería al revés.
+    const section = buildTracesSection({
+      totalHits: 91_300_000,
+      totalBrowsingMs: 47_535_600_000,
+      sites: [
+        site({ site: "google.com", hits: 90_921 }),
+        site({ site: "www.kimi.com", hits: 2_731 }),
+      ],
+      siteUsers: [],
+      users: [],
+      selection: {
+        international: ["www.kimi.com"],
+        national: [],
+        drilldowns: [],
+      },
+    });
+
+    expect(section.internationalSites.map((row) => row.site)).toEqual([
+      "www.kimi.com",
+    ]);
+  });
+
+  it("genera un drill-down por cada sitio declarado, en el orden declarado", () => {
     const section = buildTracesSection({
       totalHits: 1000,
       totalBrowsingMs: 10_000_000,
@@ -285,14 +314,86 @@ describe("buildTracesSection", () => {
         siteUser("u2", "www.facebook.com", 100, 5, "00:30:00", "00:10:00"),
       ],
       users: [],
+      selection: {
+        international: ["www.youtube.com", "www.facebook.com"],
+        national: [],
+        drilldowns: ["www.facebook.com", "www.youtube.com"],
+      },
     });
 
     expect(section.siteDrilldowns.map((drilldown) => drilldown.site)).toEqual([
-      "www.youtube.com",
       "www.facebook.com",
+      "www.youtube.com",
     ]);
-    expect(section.siteDrilldowns[0].rows.map((row) => row.username)).toEqual([
+    expect(section.siteDrilldowns[1].rows.map((row) => row.username)).toEqual([
       "u1",
     ]);
+  });
+
+  it("falla si un sitio seleccionado no tiene tráfico", () => {
+    expect(() =>
+      buildTracesSection({
+        totalHits: 10,
+        totalBrowsingMs: 1000,
+        sites: [site({ site: "www.youtube.com", hits: 10 })],
+        siteUsers: [],
+        users: [],
+        selection: {
+          international: ["www.youtube.com", "www.inexistente.com"],
+          national: [],
+          drilldowns: [],
+        },
+      }),
+    ).toThrow(/sin tráfico/);
+  });
+
+  it("falla si un sitio nacional se declara en la tabla internacional", () => {
+    expect(() =>
+      buildTracesSection({
+        totalHits: 10,
+        totalBrowsingMs: 1000,
+        sites: [site({ site: "www.picta.cu", hits: 10 })],
+        siteUsers: [],
+        users: [],
+        selection: {
+          international: ["www.picta.cu"],
+          national: [],
+          drilldowns: [],
+        },
+      }),
+    ).toThrow(/clasificación international/);
+  });
+});
+
+describe("proposeSiteSelection", () => {
+  it("propone el top por hits de cada clasificación", () => {
+    const proposal = proposeSiteSelection(
+      [
+        site({ site: "www.youtube.com", hits: 900 }),
+        site({ site: "google.com", hits: 5000 }),
+        site({ site: "www.picta.cu", hits: 7000 }),
+        site({ site: "www.cubadebate.cu", hits: 100 }),
+      ],
+      { limit: 1 },
+    );
+
+    expect(proposal).toEqual({
+      international: ["google.com"],
+      national: ["www.picta.cu"],
+      drilldowns: ["google.com"],
+    });
+  });
+
+  it("respeta las exclusiones al clasificar la propuesta", () => {
+    const proposal = proposeSiteSelection(
+      [
+        site({ site: "elecmtz.une.cu", hits: 9000 }),
+        site({ site: "www.youtube.com", hits: 900 }),
+      ],
+      { nationalExclusions: ["une.cu"] },
+    );
+
+    expect(proposal.international).toEqual(["elecmtz.une.cu", "www.youtube.com"]);
+    expect(proposal.national).toEqual([]);
   });
 });

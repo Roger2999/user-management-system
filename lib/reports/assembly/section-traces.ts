@@ -236,6 +236,62 @@ export function buildTopUsersTableRows(
     }));
 }
 
+/**
+ * Sitios que el especialista confirma para el informe.
+ *
+ * La selección es un dato del informe, no un cálculo: la tabla internacional del
+ * documento vigente no es ni el top por hits ni el top por `Browsing Time`
+ * (`google.com` tiene 90,921 hits y no aparece; `kimi.com` entra con 2,731). Por
+ * eso se declara y no se deduce. `proposeSiteSelection` propone un top por hits
+ * como punto de partida, y la lista final la confirma el especialista.
+ */
+export type SiteSelection = {
+  /** Sitios de la tabla internacional, por nombre tal como aparece en el log. */
+  international: readonly string[];
+  /** Sitios de la tabla nacional. */
+  national: readonly string[];
+  /** Sitios con drill-down de usuarios, en el orden del documento. */
+  drilldowns: readonly string[];
+};
+
+export type ProposeSelectionOptions = {
+  limit?: number;
+  nationalExclusions?: readonly string[];
+};
+
+/**
+ * Propuesta de selección: el top por hits de cada clasificación.
+ *
+ * Es solo una propuesta. Sirve para que el especialista parta de algo y ajuste;
+ * no es lo que el informe de mayo tiene, y no se usa como default en
+ * `buildTracesSection` a propósito: un default silencioso volvería a calcular la
+ * selección, que es justo lo que S20 prohíbe.
+ */
+export function proposeSiteSelection(
+  sites: readonly SiteTotals[],
+  options: ProposeSelectionOptions = {},
+): SiteSelection {
+  const limit = options.limit ?? TOP_ROWS;
+  const byHits = [...sites].sort(
+    (a, b) => b.hits - a.hits || a.site.localeCompare(b.site),
+  );
+  const pick = (kind: "national" | "international") =>
+    byHits
+      .filter(
+        (site) => classifySite(site.site, options.nationalExclusions) === kind,
+      )
+      .slice(0, limit)
+      .map((site) => site.site);
+
+  const international = pick("international");
+
+  return {
+    international,
+    national: pick("national"),
+    drilldowns: international,
+  };
+}
+
 export type TracesSection = {
   internationalSites: SiteTableRow[];
   nationalSites: SiteTableRow[];
@@ -249,19 +305,73 @@ export type TracesSectionInput = {
   sites: readonly SiteTotals[];
   siteUsers: readonly SiteUserTotals[];
   users: readonly UserTotals[];
+  selection: SiteSelection;
   nationalExclusions?: readonly string[];
+  /** Recorte de filas al renderizar. Nunca se aplica al persistir (S17). */
   limit?: number;
 };
+
+/**
+ * Resuelve la selección contra los sitios con tráfico.
+ *
+ * Falla en vez de emitir una tabla incompleta: un sitio seleccionado sin tráfico
+ * o puesto en la tabla equivocada es un error del informe, no una fila vacía.
+ */
+function selectSites(
+  sites: readonly SiteTotals[],
+  names: readonly string[],
+  expected: "national" | "international",
+  nationalExclusions: readonly string[] | undefined,
+): SiteTotals[] {
+  const byName = new Map(sites.map((site) => [site.site, site]));
+  const missing: string[] = [];
+  const misclassified: string[] = [];
+  const selected: SiteTotals[] = [];
+
+  for (const name of names) {
+    const site = byName.get(name);
+    if (site === undefined) {
+      missing.push(name);
+      continue;
+    }
+
+    if (classifySite(site.site, nationalExclusions) !== expected) {
+      misclassified.push(name);
+      continue;
+    }
+
+    selected.push(site);
+  }
+
+  if (missing.length > 0) {
+    throw new RangeError(
+      `sitios seleccionados sin tráfico en el período: ${missing.join(", ")}`,
+    );
+  }
+
+  if (misclassified.length > 0) {
+    throw new RangeError(
+      `sitios fuera de la clasificación ${expected}: ${misclassified.join(", ")}`,
+    );
+  }
+
+  return selected;
+}
 
 export function buildTracesSection(input: TracesSectionInput): TracesSection {
   const limit = input.limit ?? TOP_ROWS;
 
-  const international = input.sites.filter(
-    (site) =>
-      classifySite(site.site, input.nationalExclusions) === "international",
+  const international = selectSites(
+    input.sites,
+    input.selection.international,
+    "international",
+    input.nationalExclusions,
   );
-  const national = input.sites.filter(
-    (site) => classifySite(site.site, input.nationalExclusions) === "national",
+  const national = selectSites(
+    input.sites,
+    input.selection.national,
+    "national",
+    input.nationalExclusions,
   );
 
   const internationalSites = buildSiteTableRows(
@@ -281,10 +391,20 @@ export function buildTracesSection(input: TracesSectionInput): TracesSection {
     }
   }
 
-  const siteDrilldowns = internationalSites.map((row) => ({
-    site: row.site,
-    rows: buildSiteUserTableRows(usersBySite.get(row.site) ?? [], { limit }),
-  }));
+  // El drill-down sigue el orden declarado, no el de la tabla de sitios: son
+  // datos distintos del informe y el especialista puede ordenarlos.
+  const siteDrilldowns = input.selection.drilldowns.map((site) => {
+    if (!input.sites.some((row) => row.site === site)) {
+      throw new RangeError(
+        `sitio con drill-down sin tráfico en el período: ${site}`,
+      );
+    }
+
+    return {
+      site,
+      rows: buildSiteUserTableRows(usersBySite.get(site) ?? [], { limit }),
+    };
+  });
 
   return {
     internationalSites,
