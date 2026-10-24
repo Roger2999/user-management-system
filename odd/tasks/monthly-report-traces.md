@@ -466,3 +466,44 @@ pedir los 10 con el rango `01/05 - 31/05`, incluidos clarity.ms y windy.
 
 Nada de esto depende del export: la plantilla, el render y la ingesta no lo
 necesitan. Solo la paridad numérica lo necesita.
+
+### L14 — Paridad y calibración ajustadas sin el export corregido
+
+Decisión del usuario: ajustar ambas con lo disponible y corregir después si hace
+falta, para no frenar el resto.
+
+#### Paridad: se separa en dos niveles
+
+- **Nivel 1, verificado hoy**: formato, orden y denominador contra los siete
+  exports de usuarios disponibles. El fixture `lib/reports/parity/exports.fixture.ts`
+  guarda hits, bytes, tiempos y porcentajes tal como los publicó WebSpy, sin los
+  nombres de usuario; se contrastó fila por fila contra el documento oficial y dio
+  **cero diferencias**. Los siete sitios se reproducen exactos, incluidos los
+  órdenes con empate en cero (`kimi`, `fbsbx`).
+- **Nivel 2, pendiente**: que el motor calcule esas filas desde el `access.log`.
+  Es lo que necesita el log del mismo período y lo que queda para el lunes.
+
+Esto es más estricto que el test dorado anterior, que solo cubría facebook: ahora
+hay siete sitios y el denominador está probado contra la fila `Total` real.
+
+#### Calibración: se construyó el instrumento, no se adivinó el número
+
+`lib/reports/parity/calibrate.ts` recibe registros y tiempos publicados, y barre
+umbrales de 5 a 120 minutos devolviendo el error de cada uno. Reusa
+`DailyMetricsAccumulator`, así que calibra exactamente el código de producción.
+
+Propiedad que documenta el test: el umbral **no siempre es identificable**. Con
+huecos de 20, 30 y 45 minutos, cualquier umbral entre 30 y 40 reproduce el mismo
+total; la calibración devuelve el rango, no un valor único. Inventar un número
+exacto sería mentir.
+
+El valor por defecto sigue en 30 minutos y sigue declarado como hipótesis hasta
+que la calibración corra contra el log real.
+
+#### Lo que no se tocó
+
+El umbral del sitio (`siteBrowsingGapMs`) no tiene objetivos publicados por
+usuario del sitio, solo el total; se calibrará después del primero.
+
+`pnpm exec vitest run lib/reports`: 90 tests, 11 archivos, en verde.
+`pnpm exec tsc --noEmit`: sin errores.
