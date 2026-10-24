@@ -47,4 +47,9 @@ export type ParseStats = {
   linesTotal: number;
   /** Líneas que no se pudieron interpretar y se descartaron. */
   linesInvalid: number;
+  /**
+   * Líneas aceptadas por la variante CONNECT sin estado ni tamaño. Se cuentan
+   * aparte porque esos túneles no aportan bytes al volumen del informe.
+   */
+  linesLegacyConnect: number;
 };
