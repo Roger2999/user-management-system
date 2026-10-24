@@ -89,14 +89,16 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
 - **T1** — Documento de seguimiento. Route: inline. Status: hecho (`a85a8b5`).
 - **T2** — Contrato de formato (`lib/reports/format.ts`) + tests. Route: inline. Spec: S3. Status: hecho (`670c02a`).
 - **T3** — Día local con zona explícita (`lib/reports/time.ts`) + tests. Route: inline. Spec: S10. Status: hecho (`670c02a`).
-- **T15** — Período mensual y cobertura de días (`monthlyPeriod`, `checkCoverage`) + tests. Route: inline. Spec: S19. Status: hecho.
+- **T15** — Período mensual y cobertura de días (`monthlyPeriod`, `checkCoverage`) + tests. Route: inline. Spec: S19. Status: hecho (`74a62a6`).
 - **T4** — Parser de `access.log` con columnas configurables (`lib/reports/parser/`) + tests + fragmento real como fixture. Route: inline. Spec: S2, S8, S14. Status: hecho (`20bb01e`, variante CONNECT en `8de35b6`).
 - **T5** — Clasificación de sitios nacional/internacional/webmail (`lib/reports/classify/`) + tests. Route: inline. Spec: S4. Status: hecho (`2efa0a2`).
 - **T6** — Motor de reglas por categoría (`lib/reports/rules/`) + tests. Route: inline. Spec: S5. Status: hecho (`2efa0a2`).
 - **T7** — Agregación diaria con la semántica de las tablas del informe (`lib/reports/metrics/`) + tests. Route: inline. Spec: S2, S7, S12, S18. Status: hecho (`58ac620`, reloj del sitio separado después).
 - **T8** — Esquema Prisma de informes + migración. Route: inline. Spec: S1, S5, S7, S13. Status: hecho (`b00c317`). Migración creada pero **no aplicada**: `prisma migrate deploy` es una mutación de base de datos y queda a decisión del usuario.
-- **T13** — Armado de las tablas de la sección 1 (`lib/reports/assembly/`) + test dorado contra el documento. Route: inline. Spec: S15, S16, S17. Status: hecho.
-- **T14** — Arnés de paridad: fixture numérico con los totales de los exports de WebSpy (sitios + usuarios por sitio) y comparación por sitio contra el motor. Route: inline. Spec: S11, S15. Status: pendiente; los exports ya están en `~/Documentos/Informes mensuales/Mayo/`.
+- **T13** — Armado de las tablas de la sección 1 (`lib/reports/assembly/`) + test dorado contra el documento. Route: inline. Spec: S15, S16, S17. Status: hecho (`29516e1`, cabeceras normalizadas en `3c3b3bc`).
+- **T16** — Selección explícita de sitios + propuesta por hits (`proposeSiteSelection`, `buildTracesSection` con `selection`). Route: inline. Spec: S20, S21. Status: hecho.
+- **T17** — Modelo mensual: merge de días, cobertura y declaraciones (`lib/reports/model/monthly.ts`). Route: inline. Spec: S7, S12, S19. Status: hecho.
+- **T14** — Arnés de paridad: fixture numérico con los totales de los exports de WebSpy (sitios + usuarios por sitio) y comparación por sitio contra el motor. Route: inline. Spec: S11, S15. Status: nivel 1 hecho (`1307188`); nivel 2 bloqueado por el `access.log` de mayo.
 - **T10** — Paridad mayo 2026. Status: desbloqueado en parte — los exports de WebSpy ya están y confirman el denominador de S15; falta el `access.log` completo de mayo (incluido el 30/04) para comparar hits, bytes y tiempos.
 - **T9** — Servicio de ingesta (stream, hash, idempotencia). Status: bloqueado por Gate 0 (logformat real) y por verificación contra base de datos.
 - **T11** — Plantilla `.docx` + `docx-templates` + PDF. Status: bloqueado por la plantilla oficial.
@@ -567,3 +569,56 @@ segundo tipo no sirven para la paridad.
 
 Guardas agregadas: la cabecera está congelada por test y cada fila emite
 exactamente seis columnas en ese orden.
+
+### L17 — Selección explícita de sitios y modelo mensual
+
+#### La selección dejó de calcularse
+
+`buildTracesSection` filtraba por clasificación y cortaba en un top 10 por hits:
+eso es exactamente lo que S20 prohíbe, porque el documento vigente no es el top
+por hits (`google.com` tiene 90,921 hits y no aparece; `kimi.com` entra con
+2,731). Ahora la selección es un parámetro obligatorio:
+
+```ts
+selection: { international: string[]; national: string[]; drilldowns: string[] }
+```
+
+`proposeSiteSelection` sigue existiendo como punto de partida —el top por hits de
+cada clasificación—, pero no es un default: un default silencioso volvería a
+calcular la selección. La tabla se ordena por hits descendente, que es el orden
+verificado del documento; la selección decide **qué** entra, no en qué orden se
+imprime. El drill-down sí respeta el orden declarado porque es una lista aparte.
+
+Guardas: un sitio seleccionado sin tráfico falla con el nombre en el mensaje en
+vez de emitir una tabla incompleta; un sitio nacional declarado en la tabla
+internacional falla en vez de imprimirse en la tabla equivocada.
+
+#### Modelo mensual
+
+`lib/reports/model/monthly.ts` une los días ya agregados y arma el informe:
+
+- `mergeDailyMetrics` suma usuarios, sitios y pares, y **rechaza un día repetido**
+  en vez de duplicar métricas: reimportar un archivo es idempotente o es un error,
+  nunca el doble de hits.
+- `buildMonthlyReport` filtra al período, declara días faltantes, días ajenos y
+  hits sin cuenta, y arma la sección 1 con la selección recibida.
+- El denominador del top de usuarios excluye la cuenta sin identificar: la tabla
+  ya la excluye y el porcentaje tiene que medir sobre el mismo conjunto.
+
+Declaraciones del informe: `browsingTimeApproximate` (verdadero hasta que los dos
+relojes se calibren contra WebSpy) e `incompleteCoverage` (hay días faltantes y el
+informe no puede aprobarse sin declararlo, S7).
+
+Límite conocido: el `Browsing Time` se acumula por día, así que una sesión que
+cruza la medianoche local se corta en el cambio de día. Es parte de la
+aproximación que el informe declara.
+
+#### Verificación
+
+`pnpm exec vitest run lib/reports`: 113 tests, 13 archivos, en verde.
+`pnpm exec tsc --noEmit`: sin errores.
+
+Disciplina de test: el test del modelo se escribió después de la implementación.
+Al correrlo falló por una expectativa mía sobre el formato de horas
+(`1:00:00` contra `01:00:00`), que es el comportamiento correcto de
+`formatDuration`; el test se corrigió, no el código.
