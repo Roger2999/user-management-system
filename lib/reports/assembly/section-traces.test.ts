@@ -55,6 +55,42 @@ describe("cabeceras del documento", () => {
     expect(SITE_USER_TABLE_HEADERS[5]).toBe("% of Browsing Time (h:m:s)");
   });
 
+  it("usa una sola cabecera para los diez drill-downs", () => {
+    // Decisión del usuario: los diez drill-downs se normalizan a Browsing Time.
+    // No existe variante por hits, aunque el documento vigente la tenga en dos
+    // tablas (clarity.ms y windy.com).
+    expect([...SITE_USER_TABLE_HEADERS]).toEqual([
+      "Users",
+      "Hits",
+      "Incoming (MB)",
+      "Download Time (h:m:s)",
+      "Browsing Time (h:m:s)",
+      "% of Browsing Time (h:m:s)",
+    ]);
+  });
+
+  it("emite exactamente seis columnas, en ese orden", () => {
+    const [row] = buildSiteUserTableRows([
+      {
+        site: "www.youtube.com",
+        username: "u1",
+        hits: 1,
+        bytesIn: 0,
+        elapsedMs: 0,
+        browsingMs: 0,
+      },
+    ]);
+
+    expect(Object.keys(row)).toEqual([
+      "username",
+      "hits",
+      "incoming",
+      "downloadTime",
+      "browsingTime",
+      "percentOfBrowsingTime",
+    ]);
+  });
+
   it("declara las siete columnas de la tabla de sitios", () => {
     expect([...SITE_TABLE_HEADERS]).toEqual([
       "Sites",

@@ -75,6 +75,14 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   presentes ni se extiende a 32 días. Un día faltante se reporta como faltante,
   y un día fuera del período —como el 30/04 en un informe de mayo— se reporta
   como ajeno al período en lugar de sumarse.
+- **S20** — La selección de sitios de las tablas de la sección 1 es un dato
+  explícito del informe, no un cálculo. El sistema puede proponer un top por
+  hits, pero la lista final la confirma el especialista: la del documento vigente
+  no se deduce ni de hits ni de browsing.
+- **S21** — Los diez drill-downs usan la misma cabecera y la misma métrica:
+  `Users | Hits | Incoming (MB) | Download Time (h:m:s) | Browsing Time (h:m:s) |
+  % of Browsing Time (h:m:s)`. No existe variante por hits, aunque el documento
+  de mayo la tenga en `clarity.ms` y `windy.com`.
 
 ## Tasks
 
@@ -535,3 +543,27 @@ que tampoco altera el formato.
 
 `pnpm exec vitest run lib/reports`: 98 tests, 12 archivos, en verde.
 `pnpm exec tsc --noEmit`: sin errores.
+
+### L16 — R4 resuelta: los diez drill-downs se normalizan (verbatim)
+
+> normalizalos todos a Users
+> Hits
+> Incoming (MB)
+> Download Time (h:m:s)
+> Browsing Time (h:m:s)
+> % of Browsing Time (h:m:s)
+
+Los diez drill-downs quedan con esa cabecera y con `% of Browsing Time` calculado
+sobre el total de usuarios del sitio. Se descarta reproducir la variante por hits
+de `clarity.ms` y `windy.com`. Queda registrado como S21.
+
+Consecuencia: en el informe de junio esas dos tablas van a diferir del informe de
+mayo en el orden y en el porcentaje. Es una corrección deliberada, no una
+regresión.
+
+Consecuencia operativa para el lunes: los exports de `clarity.ms` y `windy.com`
+tienen que ser de tipo *Users by Browsing Time*, no *by hits*; si vienen del
+segundo tipo no sirven para la paridad.
+
+Guardas agregadas: la cabecera está congelada por test y cada fila emite
+exactamente seis columnas en ese orden.

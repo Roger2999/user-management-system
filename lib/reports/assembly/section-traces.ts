@@ -36,6 +36,11 @@ export const SITE_TABLE_HEADERS = [
  * La cabecera del drill-down dice `(h:m:s)` pero los valores son porcentajes.
  * Es un defecto de la herramienta de origen y se reproduce textualmente: el
  * documento generado tiene que ser indistinguible del vigente.
+ *
+ * Es la única cabecera de drill-down. El documento de mayo tiene dos tablas
+ * (`clarity.ms` y `windy.com`) exportadas con `% of Hits` y ordenadas por hits;
+ * se normalizan a esta, por decisión del usuario: dos tablas del mismo tipo no
+ * pueden medir cosas distintas en un informe oficial.
  */
 export const SITE_USER_TABLE_HEADERS = [
   "Users",
