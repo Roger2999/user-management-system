@@ -50,18 +50,18 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
 
 ## Tasks
 
-- **T1** — Documento de seguimiento. Route: inline. Status: hecho.
-- **T2** — Contrato de formato (`lib/reports/format.ts`) + tests. Route: inline. Spec: S3.
-- **T3** — Día local con zona explícita (`lib/reports/time.ts`) + tests. Route: inline. Spec: S10.
-- **T4** — Parser de `access.log` con columnas configurables (`lib/reports/parser/`) + tests. Route: inline. Spec: S2, S8.
-- **T5** — Clasificación de sitios nacional/internacional/webmail (`lib/reports/classify/`) + tests. Route: inline. Spec: S4.
-- **T6** — Motor de reglas por categoría (`lib/reports/rules/`) + tests. Route: inline. Spec: S5.
-- **T7** — Agregación diaria con semántica SARG (`lib/reports/metrics/`) + tests. Route: inline. Spec: S2, S7, S12.
-- **T8** — Esquema Prisma de informes + migración. Route: inline. Spec: S1, S5, S7, S13.
-- **T9** — Servicio de ingesta (stream, hash, idempotencia). Bloqueado por Gate 0 (formato real).
-- **T10** — Paridad mayo 2026. Bloqueado por Gate 0 (salida de SARG).
-- **T11** — Plantilla `.docx` + `docx-templates` + PDF. Bloqueado por plantilla oficial.
-- **T12** — UI de importación, revisión de hallazgos y documento. Pendiente.
+- **T1** — Documento de seguimiento. Route: inline. Status: hecho (`a85a8b5`).
+- **T2** — Contrato de formato (`lib/reports/format.ts`) + tests. Route: inline. Spec: S3. Status: hecho (`670c02a`).
+- **T3** — Día local con zona explícita (`lib/reports/time.ts`) + tests. Route: inline. Spec: S10. Status: hecho (`670c02a`).
+- **T4** — Parser de `access.log` con columnas configurables (`lib/reports/parser/`) + tests. Route: inline. Spec: S2, S8. Status: hecho (`20bb01e`).
+- **T5** — Clasificación de sitios nacional/internacional/webmail (`lib/reports/classify/`) + tests. Route: inline. Spec: S4. Status: hecho (`2efa0a2`).
+- **T6** — Motor de reglas por categoría (`lib/reports/rules/`) + tests. Route: inline. Spec: S5. Status: hecho (`2efa0a2`).
+- **T7** — Agregación diaria con semántica SARG (`lib/reports/metrics/`) + tests. Route: inline. Spec: S2, S7, S12. Status: hecho (`58ac620`).
+- **T8** — Esquema Prisma de informes + migración. Route: inline. Spec: S1, S5, S7, S13. Status: hecho (`b00c317`). Migración creada pero **no aplicada**: `prisma migrate deploy` es una mutación de base de datos y queda a decisión del usuario.
+- **T9** — Servicio de ingesta (stream, hash, idempotencia). Status: bloqueado por Gate 0 (logformat real) y por verificación contra base de datos.
+- **T10** — Paridad mayo 2026. Status: bloqueado por Gate 0 (salida de SARG).
+- **T11** — Plantilla `.docx` + `docx-templates` + PDF. Status: bloqueado por la plantilla oficial.
+- **T12** — UI de importación, revisión de hallazgos y documento. Status: pendiente.
 
 Route declaration: todas las tareas de esta sesión son `inline` — no hay unidades
 independientes en paralelo ni presión de contexto que justifiquen un writer.
@@ -121,4 +121,31 @@ Efecto: S6.
 
 ### L8 — Evidencia de esta sesión
 
-Pendiente de completar al cerrar la sesión.
+Implementado y verificado:
+
+- `lib/reports/format.ts` + test: reproduce los valores del documento
+  (`129,351`, `3,676.86`, `699:52:18`, `0.1%`, `0.0%`).
+- `lib/reports/time.ts` + test: el corte de día se hace en `America/Havana`;
+  el 2026-05-01T03:00Z cae en `2026-04-30`.
+- `lib/reports/parser/squid-log.ts` + test: logformat declarado por columnas;
+  un orden distinto al archivo rechaza las líneas en vez de interpretarlas mal;
+  las líneas en blanco no cuentan y las inválidas se contabilizan.
+- `lib/reports/classify/site.ts` + test: `CONNECT host:port`, IPv6, `.cu` con
+  exclusiones por etiqueta completa (`notune.cu` no coincide con `une.cu`).
+- `lib/reports/rules/matcher.ts` + test: `DOMAIN`/`SUFFIX`/`CONTAINS`, sin regex.
+- `lib/reports/metrics/aggregate.ts` + test: hits, bytes, elapsed, browsing por
+  par (sitio, usuario) con umbral de corte, y subidas por método.
+- `prisma/schema.prisma` + migración `20261024120000_add_monthly_reports`:
+  8 tablas nuevas, sin `ALTER` ni `DROP` sobre tablas existentes.
+
+Verificación: `pnpm test` 86/86 en 10 archivos; `tsc --noEmit` sin errores.
+
+Pendiente y bloqueado:
+
+- `Browsing Time` sigue sin calibrar contra SARG (S12). El default de 30 minutos
+  es una hipótesis, no una verdad medida.
+- El logformat es el estándar de Squid por default; confirmar contra el archivo
+  real antes de la T9.
+- La migración no se aplicó (mutación de base de datos, decisión del usuario):
+  `pnpm exec prisma migrate deploy`.
+- El cambio sin commitear en `layout.tsx` es del usuario y no se tocó.
