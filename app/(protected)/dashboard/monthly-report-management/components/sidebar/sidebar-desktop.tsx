@@ -6,6 +6,7 @@ import type { SidebarProps } from "./types";
 
 export default function SidebarDesktop({ routes }: SidebarProps) {
   const pathname = usePathname();
+
   return (
     <nav className="hidden min-h-full shrink-0 rounded-xl border p-4 sm:flex md:w-60">
       <ul className="flex w-full flex-col gap-6">

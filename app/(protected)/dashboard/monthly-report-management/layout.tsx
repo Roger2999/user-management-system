@@ -1,3 +1,4 @@
+import { requireAdmin } from "@/helpers/requireAdmin";
 import Sidebar from "./components/sidebar/sidebar";
 
 export default async function MonthlyReportManagementLayout({
@@ -5,12 +6,13 @@ export default async function MonthlyReportManagementLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  await requireAdmin();
   return (
     <div className="flex min-h-[90dvh] w-full flex-col gap-6 pt-4 sm:flex-row">
       <Sidebar />
-      <div className="flex min-w-0 flex-1 flex-col items-center">
+      <section className="flex min-w-0 flex-1 flex-col items-center">
         {children}
-      </div>
+      </section>
     </div>
   );
 }
