@@ -397,3 +397,72 @@ sistema lo declara como día ajeno al período (`extraDays`) en vez de sumarlo.
 período. Tests: 5 nuevos, incluido el caso del 30/04 clasificado como ajeno.
 `pnpm exec vitest run lib/reports`: 79 tests, 9 archivos, en verde.
 `pnpm exec tsc --noEmit`: sin errores.
+
+### L13 — Estructura real del `.docx` y selección de sitios
+
+Se inspeccionó el documento vigente (`IM EE Matanzas mayo 2026.docx`): 22 tablas
+en total, con 13 en la sección de trazas.
+
+| Tabla | Contenido |
+|---|---|
+| T04 | sitios internacionales, 7 columnas, 10 filas |
+| T05–T14 | 10 drill-downs de usuario, 6 columnas |
+| T15 | "Los 10 usuarios que más descargaron", 7 columnas |
+| T16 | sitios nacionales, 7 columnas, 10 filas |
+
+#### 1. Dos drill-downs miden otra cosa
+
+`www.clarity.ms` (T13) y `www.windy.com` (T14) traen la cabecera `% of Hits` y sus
+porcentajes son de hits, no de tiempo:
+
+| Sitio | Usuario | Hits | `%` impreso | Cálculo | `%` por browsing |
+|---|---|---|---|---|---|
+| clarity.ms | amaury | 68 | 11.0% | 68/618 = 11.0% ✓ | 00:28:07 de 01:36:18 = 29.2% |
+| windy.com | liudmila | 113 | 23.3% | 113/486 = 23.3% ✓ | 00:01:26 de 00:33:23 = 4.3% |
+
+También cambia el orden: esas dos tablas van por hits descendente, no por
+`Browsing Time`. Los otros ocho drill-downs van por tiempo y con `% of Browsing
+Time`. Es una inconsistencia de origen —parecen exportes de otro tipo de reporte
+de WebSpy—, no una decisión de diseño.
+
+**R4 (abierta):** ¿se reproduce tal cual, como pide "indistinguible del original",
+o se normaliza a `Browsing Time` como las otras ocho? Recomendación: normalizar,
+porque dos tablas del mismo tipo no pueden medir cosas distintas en un informe
+oficial. No se decide sin el usuario.
+
+#### 2. La selección de los 10 sitios no se puede deducir
+
+La tabla internacional (T04) **no** es el top 10 por hits ni por browsing:
+
+- Por hits, 14 sitios internacionales superan al último del informe (`windy.com`,
+  486 hits) y ninguno aparece: `google.com` (90,921), `msftconnecttest.com`
+  (34,124), `google-analytics.com` (28,440), `googletagmanager.com` (20,519),
+  `gstatic.com` (10,749), `msftncsi.com` (7,673), `googleadservices.com` (3,477),
+  `googleapis.com` (2,758), `internetdownloadmanager.com` (1,903), `amazon.com`
+  (1,340), `temu.com` (1,315), `microsoft.com` (1,193),
+  `download.windowsupdate.com` (1,060), `usgs.gov` (773).
+- Por `Browsing Time` el orden sería youtube, google, instagram, facebook,
+  msftconnecttest, googletagmanager, gstatic, google-analytics, bing,
+  googleadservices — tampoco coincide.
+- La tabla nacional omite `google.com.cu` (13,323 hits), que supera a todos
+  menos a `picta.cu`.
+
+No hay regla de categoría que explique la lista: `clarity.ms` es analítica y
+`google-analytics.com` no; `kimi.com` y `mediafire.com` entran y `amazon.com` no.
+Es **una elección manual del especialista**.
+
+Consecuencia de diseño (S20): la selección de sitios de las dos tablas es un
+dato explícito del informe, no un cálculo. El sistema puede proponer un top por
+hits, pero la lista final la confirma el especialista. Sin esto, el informe
+automatizado mostraría `msftconnecttest` en lugar de `kimi`.
+
+#### 3. Los exports aportados cubren 7 de los 10 drill-downs
+
+Faltan `www.clarity.ms` y `www.windy.com`... y sobra uno: los aportados son bing,
+cd4o, facebook, fbsbx, instagram, kimi y mediafire (7). Para recalibrar hay que
+pedir los 10 con el rango `01/05 - 31/05`, incluidos clarity.ms y windy.
+
+#### Pendiente del período
+
+Nada de esto depende del export: la plantilla, el render y la ingesta no lo
+necesitan. Solo la paridad numérica lo necesita.
