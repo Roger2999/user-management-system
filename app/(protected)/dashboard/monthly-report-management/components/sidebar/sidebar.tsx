@@ -5,16 +5,16 @@ import SidebarMobile from "./sidebar-mobile";
 import type { SidebarRoute } from "./types";
 
 const ROUTES: SidebarRoute[] = [
-  { label: "Inicio", icon: Home, href: "/monthly-report-management" },
+  { label: "Inicio", icon: Home, href: "/dashboard/monthly-report-management" },
   {
     label: "Nuevo informe",
     icon: FilePlus2,
-    href: "/monthly-report-management/new",
+    href: "/dashboard/monthly-report-management/new",
   },
   {
     label: "Resumen",
     icon: FileText,
-    href: "/monthly-report-management/summary",
+    href: "/dashboard/monthly-report-management/summary",
   },
 ];
 
