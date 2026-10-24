@@ -42,9 +42,10 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
 - **S11** — Gate de paridad: el motor regenera las métricas de mayo 2026 y debe
   coincidir con `IM EE Matanzas mayo 2026.docx`. Sin este gate no se emite un
   informe oficial.
-- **S12** — `Browsing Time` es una métrica derivada, no un campo del log. Su
-  umbral de sesión es configurable y debe calibrarse contra WebSpy; si no se
-  reproduce exacto, el informe declara la aproximación.
+- **S12** — `Browsing Time` es una métrica derivada, no un campo del log. Tiene
+  **dos relojes independientes**: el del sitio y el del par (sitio, usuario). Cada
+  uno tiene su umbral de sesión configurable y deben calibrarse contra WebSpy por
+  separado; si no se reproducen exactos, el informe declara la aproximación.
 - **S13** — Todo importar, generar, aprobar y exportar queda auditado con los
   hashes de los artefactos.
 - **S14** — El parser acepta las dos formas de registro que conviven en el
@@ -52,8 +53,12 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   estado ni tamaño. La variante se cuenta aparte porque esos túneles no aportan
   bytes, y esa falta debe ser visible en la calidad del dato.
 - **S15** — El drill-down por sitio ordena por `Browsing Time` descendente (no
-  por hits) y su `% of Browsing Time` se calcula sobre el tiempo de navegación
-  del sitio atribuido a cuentas identificadas.
+  por hits) y su `% of Browsing Time` se calcula sobre la **suma del `Browsing
+  Time` de todos los usuarios del sitio** —la fila `Total` del export de usuarios
+  de WebSpy—, que **no** es el `Browsing Time` que la tabla de sitios muestra para
+  ese sitio. Confirmado con los exports de mayo 2026: bing `37:25:15` (134,715 s),
+  instagram `40:58:59` (147,539 s), facebook `146:33:51` (527,631 s), frente a
+  `53:56:25`, `157:52:37` y `146:16:38` en la tabla de sitios.
 - **S16** — La tabla "Los 10 usuarios que más descargaron" se ordena por
   `Browsing Time` descendente, aunque el título diga otra cosa, y su porcentaje
   se calcula sobre el tiempo de navegación total del mes.
@@ -61,6 +66,15 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   (sitio, usuario), no solo el top 10. El recorte a 10 filas ocurre al renderizar:
   truncar al persistir rompería el denominador de S15 y los porcentajes dejarían
   de coincidir con el documento.
+- **S18** — El `Browsing Time` del sitio y el del par (sitio, usuario) se
+  acumulan por separado, cada uno con su propio reloj y umbral. El del sitio no se
+  obtiene sumando los pares: los pares se solapan en el tiempo y la suma no
+  reproduce el valor del sitio.
+- **S19** — El período se declara explícitamente (inicio y fin, en
+  `America/Havana`); no se deduce del calendario. Las exportaciones de WebSpy de
+  mayo 2026 cubren `30/04/2026 - 31/05/2026`, **32 días**, así que el motor debe
+  poder reproducir ese rango exacto. Decisión pendiente del usuario (R3):
+  reproducir el rango histórico o corregirlo a `01/05 - 31/05`.
 
 ## Tasks
 
@@ -70,11 +84,12 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
 - **T4** — Parser de `access.log` con columnas configurables (`lib/reports/parser/`) + tests + fragmento real como fixture. Route: inline. Spec: S2, S8, S14. Status: hecho (`20bb01e`, variante CONNECT en `8de35b6`).
 - **T5** — Clasificación de sitios nacional/internacional/webmail (`lib/reports/classify/`) + tests. Route: inline. Spec: S4. Status: hecho (`2efa0a2`).
 - **T6** — Motor de reglas por categoría (`lib/reports/rules/`) + tests. Route: inline. Spec: S5. Status: hecho (`2efa0a2`).
-- **T7** — Agregación diaria con la semántica de las tablas del informe (`lib/reports/metrics/`) + tests. Route: inline. Spec: S2, S7, S12. Status: hecho (`58ac620`).
+- **T7** — Agregación diaria con la semántica de las tablas del informe (`lib/reports/metrics/`) + tests. Route: inline. Spec: S2, S7, S12, S18. Status: hecho (`58ac620`, reloj del sitio separado después).
 - **T8** — Esquema Prisma de informes + migración. Route: inline. Spec: S1, S5, S7, S13. Status: hecho (`b00c317`). Migración creada pero **no aplicada**: `prisma migrate deploy` es una mutación de base de datos y queda a decisión del usuario.
 - **T13** — Armado de las tablas de la sección 1 (`lib/reports/assembly/`) + test dorado contra el documento. Route: inline. Spec: S15, S16, S17. Status: hecho.
+- **T14** — Arnés de paridad: fixture numérico con los totales de los exports de WebSpy (sitios + usuarios por sitio) y comparación por sitio contra el motor. Route: inline. Spec: S11, S15. Status: pendiente; los exports ya están en `~/Documentos/Informes mensuales/Mayo/`.
+- **T10** — Paridad mayo 2026. Status: desbloqueado en parte — los exports de WebSpy ya están y confirman el denominador de S15; falta el `access.log` completo de mayo (incluido el 30/04) para comparar hits, bytes y tiempos.
 - **T9** — Servicio de ingesta (stream, hash, idempotencia). Status: bloqueado por Gate 0 (logformat real) y por verificación contra base de datos.
-- **T10** — Paridad mayo 2026. Status: bloqueado por Gate 0 (informes exportados de WebSpy).
 - **T11** — Plantilla `.docx` + `docx-templates` + PDF. Status: bloqueado por la plantilla oficial.
 - **T12** — UI de importación, revisión de hallazgos y documento. Status: pendiente.
 
@@ -254,7 +269,97 @@ El campo de jerarquía llega como `HIER_DIRECT` / `HIER_NONE`, no `DIRECT` /
 
 #### Pendiente
 
-- Confirmar R2 con la exportación de WebSpy.
-- Calibrar el umbral de `Browsing Time` (S12) contra el mismo export.
+- R2 resuelta en L11.
+- Calibrar los dos relojes de `Browsing Time` (S12) contra los exports: los
+  valores objetivo ya existen, falta el `access.log` completo.
+- Decidir el rango del período (R3, S19).
 - La ingesta (T9) sigue bloqueada: `db.prisma.io` no es alcanzable desde este
   equipo, así que no hay forma de verificar escrituras contra una base real.
+
+### L11 — Exportaciones de WebSpy: R2 resuelta y dos hallazgos nuevos
+
+El usuario aportó las exportaciones del informe de mayo (WordML con extensión
+`.doc`): `2026-06-04 Sites Export.doc` y siete `Users Export(...)` (bing, cd4o,
+facebook, fbsbx, instagram, kimi, mediafire).
+
+#### 1. R2 confirmada: el denominador del drill-down es la suma de los usuarios
+
+Cada export de usuarios trae una fila `Total` con el `Browsing Time` completo del
+sitio, y los porcentajes de las filas cierran contra **ese** total, no contra el
+`Browsing Time` de la tabla de sitios:
+
+| Sitio | `%` del primer usuario | Denominador implicado | `Total` del export de usuarios | Tabla de sitios |
+|---|---|---|---|---|
+| www.bing.com | 21.1% (`dtor.fre`) | 134,953 s | **134,715 s** ✓ | 194,185 s |
+| www.instagram.com | 46.5% | 147,387 s | **147,539 s** ✓ | 568,357 s |
+| www.facebook.com | 20.9% (`marketing`) | 526,670 s | **527,631 s** ✓ | 526,598 s |
+
+Los tres coinciden dentro del redondeo a un decimal. La hipótesis de L10 era
+correcta en el denominador, pero su explicación no: no se trata de tráfico
+anónimo. En bing los hits del export de usuarios (`12,574`) son **exactamente**
+los de la tabla de sitios, o sea que todo el tráfico está atribuido a las 45
+cuentas, y aun así el `Browsing Time` difiere: `37:25:15` contra `53:56:25`.
+
+#### 2. Hallazgo nuevo: el `Browsing Time` del sitio no es la suma de sus usuarios
+
+Es una **segunda métrica distinta**, no la misma agregada de otra forma:
+
+| Sitio | Browsing del sitio | Suma de sus usuarios | Cociente |
+|---|---|---|---|
+| www.facebook.com | 526,598 s | 527,631 s | 0.998 |
+| www.youtube.com | 959,672 s | 781,169 s | 1.23 |
+| www.bing.com | 194,185 s | 134,715 s | 1.44 |
+| www.instagram.com | 568,357 s | 147,539 s | 3.85 |
+
+Y la relación no puede ser "el sitio incluye anónimos": la suma por usuario es
+**mayor** que el sitio en facebook. Eso es consistente con relojes paralelos
+—cada usuario acumula su propio hueco, y los huecos de usuarios simultáneos se
+solapan—, mientras que el reloj del sitio ve un solo flujo de marcas de tiempo.
+El cociente desigual en bing e instagram indica además que WebSpy no usa el mismo
+umbral en los dos niveles.
+
+Consecuencia: el código calculaba el `Browsing Time` del sitio sumando los pares.
+Era incorrecto. Ahora hay dos acumuladores independientes
+(`siteBrowsingGapMs` y `browsingGapMs`), con tests que prueban que divergen
+(`aggregate.test.ts`: 20 min del sitio contra 30 min de los pares para el mismo
+tráfico). El algoritmo exacto de WebSpy sigue sin reproducirse: queda como R1.
+
+#### 3. Hallazgo nuevo: el "mes de mayo" cubre 32 días
+
+```
+Export of a drilldown by Organization
+Date range: 30/04/2026 - 31/05/2026 (32 days)
+WebSpy Analyzer Giga 2.3
+```
+
+El informe vigente incluye el **30 de abril**. Consecuencias:
+
+- Para reproducir sus números hay que importar también el log del 30/04.
+- Mi cobertura por `daysInMonth` (31 días) marcaría ese día como faltante.
+- Puede ser deliberado (capturar el tráfico de la noche del 30) o un error de
+  configuración del rango en WebSpy. No lo decido yo: queda como R3 y el rango
+  pasa a ser un parámetro explícito (S19).
+
+#### 4. Los exports están truncados y el `% of Hits` no es sobre la suma de sitios
+
+- `1. 723 of 12,119 Sites`: el export de sitios muestra 723 de 12,119 sitios.
+- Los exports de usuarios también truncan: bing muestra 36 de 45 usuarios,
+  instagram 46 de 59, facebook 94 de 103. La fila `Total` sí es completa.
+- La fila `Total` del export de sitios suma `1,097,316` hits y marca `1.2%`. Si
+  el `%` fuera sobre la suma de los sitios listados, esa fila diría 100%.
+  El denominador del `% of Hits` es entonces **todo el tráfico del período**
+  (~88–95M hits según el redondeo), no la suma de los sitios: los 723 sitios
+  listados apenas cubren el 1.2%.
+
+  Esto confirma que el denominador correcto de `% of Hits` es el total de líneas
+  procesadas —incluidas las que no se resuelven a ningún sitio—, que es lo que el
+  acumulador ya usa (`totalHits`).
+
+- Los dos exports (sitios a las 10:24, usuarios a las 17:31–18:00) coinciden
+  exactamente en hits, MB y `Download Time` de cada sitio, así que la diferencia
+  de `Browsing Time` no es una diferencia de datos ni de momento de exportación.
+
+#### Verificación de esta entrada
+
+`pnpm exec vitest run lib/reports`: 74 tests, 9 archivos, en verde.
+`pnpm exec tsc --noEmit`: sin errores.

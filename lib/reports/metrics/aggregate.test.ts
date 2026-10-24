@@ -154,6 +154,46 @@ describe("DailyMetricsAccumulator", () => {
     expect(accumulator.toMetrics().sites[0].site).toBe(UNKNOWN_SITE);
   });
 
+  it("no deriva el Browsing Time del sitio sumando sus usuarios", () => {
+    const accumulator = new DailyMetricsAccumulator("2026-05-01");
+
+    accumulator.add(record({ username: "u1", timestampMs: 0 }));
+    accumulator.add(record({ username: "u2", timestampMs: 5 * MINUTE }));
+    accumulator.add(record({ username: "u1", timestampMs: 10 * MINUTE }));
+    accumulator.add(record({ username: "u2", timestampMs: 15 * MINUTE }));
+    accumulator.add(record({ username: "u1", timestampMs: 20 * MINUTE }));
+
+    const metrics = accumulator.toMetrics();
+    const site = metrics.sites[0];
+    const sumaLosPares = metrics.siteUsers.reduce(
+      (total, par) => total + par.browsingMs,
+      0,
+    );
+
+    // El reloj del sitio (0, 5, 10, 15, 20) suma 20 min; los relojes de cada
+    // usuario suman 20 + 10 = 30 min. Son dos métricas distintas: los pares se
+    // solapan en el tiempo y el sitio no.
+    expect(site.browsingMs).toBe(20 * MINUTE);
+    expect(sumaLosPares).toBe(30 * MINUTE);
+  });
+
+  it("usa su propio umbral para el reloj del sitio", () => {
+    const accumulator = new DailyMetricsAccumulator("2026-05-01", {
+      browsingGapMs: 30 * MINUTE,
+      siteBrowsingGapMs: 4 * MINUTE,
+    });
+
+    accumulator.add(record({ username: "u1", timestampMs: 0 }));
+    accumulator.add(record({ username: "u1", timestampMs: 5 * MINUTE }));
+
+    const metrics = accumulator.toMetrics();
+
+    // El mismo hueco de 5 min: el umbral del sitio lo corta, el del par lo acepta.
+    expect(metrics.sites[0].browsingMs).toBe(0);
+    expect(metrics.siteUsers[0].browsingMs).toBe(5 * MINUTE);
+    expect(metrics.users[0].browsingMs).toBe(5 * MINUTE);
+  });
+
   it("ignora los registros fuera de orden sin romper el acumulador", () => {
     const accumulator = new DailyMetricsAccumulator("2026-05-01");
 

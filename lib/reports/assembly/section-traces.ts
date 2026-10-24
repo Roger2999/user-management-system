@@ -137,14 +137,23 @@ export type SiteUserTableOptions = {
   /**
    * Denominador del `% of Browsing Time`.
    *
-   * El documento lo calcula sobre el tiempo de navegación del sitio atribuido a
-   * cuentas identificadas: para `www.facebook.com` la suma de las 10 filas más
-   * las cuentas fuera del top reproduce exactamente el `146:16:38` de la tabla
-   * de sitios. Cuando el sitio tiene tráfico sin autenticar, el valor impreso en
-   * la tabla de sitios es mayor y los porcentajes no cierran contra él.
+   * Es la suma del `Browsing Time` de **todos** los usuarios del sitio, o sea la
+   * fila `Total` del export de usuarios de WebSpy. Verificado contra tres sitios
+   * de mayo 2026: bing `37:25:15` (134,715 s), instagram `40:58:59` (147,539 s),
+   * facebook `146:33:51` (527,631 s).
+   *
+   * No es el `Browsing Time` que la tabla de sitios muestra para ese sitio: para
+   * bing ese valor es `53:56:25` (194,185 s) y para instagram `157:52:37`
+   * (568,357 s). Son dos métricas calculadas con relojes distintos; usar la de la
+   * tabla de sitios como denominador produce porcentajes que no coinciden con el
+   * documento.
    *
    * Se deja explícito porque no es un detalle cosmético: es la diferencia entre
    * reproducir el documento y parecer que lo reproduce.
+   *
+   * Detalle abierto: si el sitio tuviera tráfico sin cuenta, no hay evidencia de
+   * si ese tráfico entra en el `Total` del drill-down. Por ahora queda fuera y
+   * cuando exista se declara en la calidad del dato.
    */
   basisMs?: number;
 };

@@ -33,7 +33,18 @@ export const DEFAULT_BROWSING_GAP_MS = 30 * 60 * 1000;
 export const DEFAULT_UPLOAD_METHODS = ["POST", "PUT"] as const;
 
 export type DailyMetricsOptions = {
+  /** Umbral de corte para el tiempo de navegación por par (sitio, usuario). */
   browsingGapMs?: number;
+  /**
+   * Umbral de corte para el tiempo de navegación **del sitio**.
+   *
+   * Es un acumulador separado a propósito: WebSpy calcula el Browsing Time del
+   * sitio y el de sus usuarios con resultados distintos. Para `www.bing.com` del
+   * informe de mayo el sitio marca `53:56:25` y la suma de sus 45 usuarios da
+   * `37:25:15`. Sumar los pares para obtener el sitio daría el segundo valor, no
+   * el primero.
+   */
+  siteBrowsingGapMs?: number;
   uploadMethods?: readonly string[];
 };
 
@@ -97,6 +108,29 @@ function createAccumulator(): Accumulator {
   };
 }
 
+function accumulateRecord(
+  accumulator: Accumulator,
+  record: SquidLogRecord,
+  bytesOut: number,
+  gapMs: number,
+): void {
+  accumulator.hits += 1;
+  accumulator.bytesIn += record.bytes;
+  accumulator.bytesOut += bytesOut;
+  accumulator.elapsedMs += record.elapsedMs;
+
+  if (accumulator.lastTimestampMs === null) {
+    accumulator.lastTimestampMs = record.timestampMs;
+    return;
+  }
+
+  const gap = record.timestampMs - accumulator.lastTimestampMs;
+  if (gap < 0) return;
+
+  if (gap <= gapMs) accumulator.browsingMs += gap;
+  accumulator.lastTimestampMs = record.timestampMs;
+}
+
 function accountSortKey(username: string | null): string {
   // Las cuentas sin identificar van al final: son ruido de calidad de dato.
   return username ?? "\uFFFF";
@@ -111,7 +145,9 @@ function accountSortKey(username: string | null): string {
  */
 export class DailyMetricsAccumulator {
   private readonly browsingGapMs: number;
+  private readonly siteBrowsingGapMs: number;
   private readonly uploadMethods: Set<string>;
+  private readonly sites = new Map<string, Accumulator>();
   private readonly pairsBySite = new Map<string, Map<string, Accumulator>>();
 
   private totalHits = 0;
@@ -125,6 +161,8 @@ export class DailyMetricsAccumulator {
     options: DailyMetricsOptions = {},
   ) {
     this.browsingGapMs = options.browsingGapMs ?? DEFAULT_BROWSING_GAP_MS;
+    this.siteBrowsingGapMs =
+      options.siteBrowsingGapMs ?? this.browsingGapMs;
     this.uploadMethods = new Set(
       (options.uploadMethods ?? DEFAULT_UPLOAD_METHODS).map((method) =>
         method.toUpperCase(),
@@ -145,6 +183,16 @@ export class DailyMetricsAccumulator {
     this.totalElapsedMs += record.elapsedMs;
     if (record.username === null) this.unidentifiedHits += 1;
 
+    // El sitio y el par (sitio, usuario) son dos agregaciones distintas, cada una
+    // con su propio reloj: el mismo tráfico produce tiempos de navegación
+    // diferentes. Sumar los pares no reproduce el Browsing Time del sitio.
+    let siteAccumulator = this.sites.get(site);
+    if (siteAccumulator === undefined) {
+      siteAccumulator = createAccumulator();
+      this.sites.set(site, siteAccumulator);
+    }
+    accumulateRecord(siteAccumulator, record, bytesOut, this.siteBrowsingGapMs);
+
     let pairs = this.pairsBySite.get(site);
     if (pairs === undefined) {
       pairs = new Map<string, Accumulator>();
@@ -157,26 +205,11 @@ export class DailyMetricsAccumulator {
       pairs.set(account, accumulator);
     }
 
-    accumulator.hits += 1;
-    accumulator.bytesIn += record.bytes;
-    accumulator.bytesOut += bytesOut;
-    accumulator.elapsedMs += record.elapsedMs;
-
-    if (accumulator.lastTimestampMs === null) {
-      accumulator.lastTimestampMs = record.timestampMs;
-      return;
-    }
-
-    const gap = record.timestampMs - accumulator.lastTimestampMs;
-    if (gap < 0) return;
-
-    if (gap <= this.browsingGapMs) accumulator.browsingMs += gap;
-    accumulator.lastTimestampMs = record.timestampMs;
+    accumulateRecord(accumulator, record, bytesOut, this.browsingGapMs);
   }
 
   toMetrics(): DailyMetrics {
     const users = new Map<string, DailyUserMetrics>();
-    const sites = new Map<string, DailySiteMetrics>();
     const siteUsers: DailySiteUserMetrics[] = [];
 
     for (const [site, pairs] of this.pairsBySite) {
@@ -209,26 +242,17 @@ export class DailyMetricsAccumulator {
           user.elapsedMs += accumulator.elapsedMs;
           user.browsingMs += accumulator.browsingMs;
         }
-
-        const siteTotal = sites.get(site);
-        if (siteTotal === undefined) {
-          sites.set(site, {
-            site,
-            hits: accumulator.hits,
-            bytesIn: accumulator.bytesIn,
-            bytesOut: accumulator.bytesOut,
-            elapsedMs: accumulator.elapsedMs,
-            browsingMs: accumulator.browsingMs,
-          });
-        } else {
-          siteTotal.hits += accumulator.hits;
-          siteTotal.bytesIn += accumulator.bytesIn;
-          siteTotal.bytesOut += accumulator.bytesOut;
-          siteTotal.elapsedMs += accumulator.elapsedMs;
-          siteTotal.browsingMs += accumulator.browsingMs;
-        }
       }
     }
+
+    const sites = [...this.sites].map(([site, accumulator]) => ({
+      site,
+      hits: accumulator.hits,
+      bytesIn: accumulator.bytesIn,
+      bytesOut: accumulator.bytesOut,
+      elapsedMs: accumulator.elapsedMs,
+      browsingMs: accumulator.browsingMs,
+    }));
 
     return {
       day: this.day,
@@ -242,7 +266,7 @@ export class DailyMetricsAccumulator {
           b.hits - a.hits ||
           accountSortKey(a.username).localeCompare(accountSortKey(b.username)),
       ),
-      sites: [...sites.values()].sort(
+      sites: sites.sort(
         (a, b) => b.hits - a.hits || a.site.localeCompare(b.site),
       ),
       siteUsers: siteUsers.sort(
