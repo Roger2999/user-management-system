@@ -33,6 +33,7 @@ model User {
   createdRequests      AccountRequest[]           @relation("AccountRequestCreatedBy")
   updatedRequests      AccountRequest[]           @relation("AccountRequestUpdatedBy")
   auditLogs            AuditLog[]
+  importedLogFiles     ImportedLogFile[]         @relation("LogFileImportedBy")
 
   @@unique([email])
   @@map("user")
@@ -255,4 +256,196 @@ model AuditLog {
   @@index([entityType, entityId])
   @@index([actorUserId])
   @@index([createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────
+// Informe mensual de trazas de navegación (Squid)
+// ─────────────────────────────────────────────────────────────
+
+enum RuleCategory {
+  ADULT
+  SUBVERSIVE
+  ANON_PROXY
+  MINING
+}
+
+enum RuleMatchType {
+  DOMAIN
+  SUFFIX
+  CONTAINS
+}
+
+enum ReportStatus {
+  DRAFT
+  REVIEW
+  APPROVED
+  EXPORTED
+}
+
+enum FindingDisposition {
+  PENDING
+  CONFIRMED
+  FALSE_POSITIVE
+  ACTION_TAKEN
+}
+
+/// Cuenta con la que el usuario se autentica en el proxy contra el AD.
+/// Una cuenta = una persona (política de la empresa). El registro aporta el
+/// nombre y el cargo que el informe necesita para la tabla de incidencias.
+model ProxyAccount {
+  username    String   @id
+  displayName String?
+  position    String?
+  area        String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  dailyUserStats DailyUserStat[]
+  dailySiteUsers DailySiteUserStat[]
+  findings       ReportFinding[]
+
+  @@map("proxy_account")
+}
+
+/// Archivo diario de logs importado. El sha256 es la clave de idempotencia:
+/// reimportar el mismo archivo no duplica datos.
+model ImportedLogFile {
+  id           String   @id @default(cuid())
+  sha256       String   @unique
+  fileName     String
+  sizeBytes    BigInt
+  linesTotal   Int
+  linesInvalid Int
+  firstEventAt DateTime
+  lastEventAt  DateTime
+  importedAt   DateTime @default(now())
+
+  importedById String?
+  importedBy   User?    @relation("LogFileImportedBy", fields: [importedById], references: [id], onDelete: SetNull)
+
+  @@index([firstEventAt, lastEventAt])
+  @@map("imported_log_file")
+}
+
+/// Totales del día local por cuenta. Es la base de la tabla
+/// "Los 10 usuarios que más descargaron".
+model DailyUserStat {
+  date           DateTime     @db.Date
+  proxyAccountId String
+  proxyAccount   ProxyAccount @relation(fields: [proxyAccountId], references: [username], onDelete: Cascade)
+  hits           Int
+  bytesIn        BigInt
+  bytesOut       BigInt
+  elapsedMs      BigInt
+  browsingMs     BigInt
+
+  @@id([date, proxyAccountId])
+  @@map("daily_user_stat")
+}
+
+/// Totales del día local por sitio. Es la base de la tabla de sitios más
+/// visitados y de la separación nacional / internacional.
+model DailySiteStat {
+  date       DateTime @db.Date
+  site       String
+  hits       Int
+  bytesIn    BigInt
+  bytesOut   BigInt
+  elapsedMs  BigInt
+  browsingMs BigInt
+
+  @@id([date, site])
+  @@map("daily_site_stat")
+}
+
+/// Cruce sitio × cuenta de un día. Se persiste solo para los sitios más
+/// visitados de ese día: guardar todos los pares llevaría la tabla a decenas
+/// de millones de filas por mes. El cierre del mes verifica que los sitios del
+/// top mensual estén cubiertos y reescanea el día que falte.
+model DailySiteUserStat {
+  date           DateTime     @db.Date
+  site           String
+  proxyAccountId String
+  proxyAccount   ProxyAccount @relation(fields: [proxyAccountId], references: [username], onDelete: Cascade)
+  hits           Int
+  bytesIn        BigInt
+  elapsedMs      BigInt
+  browsingMs     BigInt
+
+  @@id([date, site, proxyAccountId])
+  @@index([date, hits])
+  @@map("daily_site_user_stat")
+}
+
+/// Regla de detección de una categoría prohibida del informe. Versionada:
+/// el informe emitido cita la versión con la que se evaluó.
+model CategoryRule {
+  id        String        @id @default(cuid())
+  category  RuleCategory
+  matchType RuleMatchType
+  pattern   String
+  active    Boolean       @default(true)
+  version   Int           @default(1)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  findings ReportFinding[]
+
+  @@unique([category, matchType, pattern])
+  @@map("category_rule")
+}
+
+/// El documento del mes. Los totales se congelan en `snapshot` al aprobar:
+/// reimportar un archivo corregido después no altera un informe ya emitido.
+model MonthlyReport {
+  id                   String       @id @default(cuid())
+  year                 Int
+  month                Int
+  status               ReportStatus @default(DRAFT)
+
+  rulesetVersion       Int
+  coverageDaysExpected Int
+  coverageDaysImported Int
+  totalHits            BigInt
+  unidentifiedHits     BigInt
+
+  templateVersion      Int
+  motto                String?
+  place                String?
+  issuedOn             DateTime?
+  docxSha256           String?
+  pdfSha256            String?
+
+  snapshot             Json?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  findings ReportFinding[]
+
+  @@unique([year, month])
+  @@map("monthly_report")
+}
+
+/// Coincidencia de una regla con tráfico real. La disposición y la medida son
+/// las que terminan en las columnas del documento.
+model ReportFinding {
+  id              String             @id @default(cuid())
+  monthlyReportId String
+  monthlyReport   MonthlyReport      @relation(fields: [monthlyReportId], references: [id], onDelete: Cascade)
+  categoryRuleId  String
+  categoryRule    CategoryRule       @relation(fields: [categoryRuleId], references: [id])
+  proxyAccountId  String?
+  proxyAccount    ProxyAccount?      @relation(fields: [proxyAccountId], references: [username], onDelete: SetNull)
+
+  url         String
+  hits        Int
+  firstSeen   DateTime
+  lastSeen    DateTime
+  disposition FindingDisposition @default(PENDING)
+  measure     String?
+  createdAt   DateTime           @default(now())
+
+  @@index([monthlyReportId])
+  @@map("report_finding")
 }
