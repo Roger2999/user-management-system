@@ -47,17 +47,32 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   reproduce exacto, el informe declara la aproximación.
 - **S13** — Todo importar, generar, aprobar y exportar queda auditado con los
   hashes de los artefactos.
+- **S14** — El parser acepta las dos formas de registro que conviven en el
+  archivo real: la primaria del logformat declarado y la variante CONNECT sin
+  estado ni tamaño. La variante se cuenta aparte porque esos túneles no aportan
+  bytes, y esa falta debe ser visible en la calidad del dato.
+- **S15** — El drill-down por sitio ordena por `Browsing Time` descendente (no
+  por hits) y su `% of Browsing Time` se calcula sobre el tiempo de navegación
+  del sitio atribuido a cuentas identificadas.
+- **S16** — La tabla "Los 10 usuarios que más descargaron" se ordena por
+  `Browsing Time` descendente, aunque el título diga otra cosa, y su porcentaje
+  se calcula sobre el tiempo de navegación total del mes.
+- **S17** — Para cada sitio seleccionado se persisten **todos** sus pares
+  (sitio, usuario), no solo el top 10. El recorte a 10 filas ocurre al renderizar:
+  truncar al persistir rompería el denominador de S15 y los porcentajes dejarían
+  de coincidir con el documento.
 
 ## Tasks
 
 - **T1** — Documento de seguimiento. Route: inline. Status: hecho (`a85a8b5`).
 - **T2** — Contrato de formato (`lib/reports/format.ts`) + tests. Route: inline. Spec: S3. Status: hecho (`670c02a`).
 - **T3** — Día local con zona explícita (`lib/reports/time.ts`) + tests. Route: inline. Spec: S10. Status: hecho (`670c02a`).
-- **T4** — Parser de `access.log` con columnas configurables (`lib/reports/parser/`) + tests. Route: inline. Spec: S2, S8. Status: hecho (`20bb01e`).
+- **T4** — Parser de `access.log` con columnas configurables (`lib/reports/parser/`) + tests + fragmento real como fixture. Route: inline. Spec: S2, S8, S14. Status: hecho (`20bb01e`, variante CONNECT en `8de35b6`).
 - **T5** — Clasificación de sitios nacional/internacional/webmail (`lib/reports/classify/`) + tests. Route: inline. Spec: S4. Status: hecho (`2efa0a2`).
 - **T6** — Motor de reglas por categoría (`lib/reports/rules/`) + tests. Route: inline. Spec: S5. Status: hecho (`2efa0a2`).
 - **T7** — Agregación diaria con la semántica de las tablas del informe (`lib/reports/metrics/`) + tests. Route: inline. Spec: S2, S7, S12. Status: hecho (`58ac620`).
 - **T8** — Esquema Prisma de informes + migración. Route: inline. Spec: S1, S5, S7, S13. Status: hecho (`b00c317`). Migración creada pero **no aplicada**: `prisma migrate deploy` es una mutación de base de datos y queda a decisión del usuario.
+- **T13** — Armado de las tablas de la sección 1 (`lib/reports/assembly/`) + test dorado contra el documento. Route: inline. Spec: S15, S16, S17. Status: hecho.
 - **T9** — Servicio de ingesta (stream, hash, idempotencia). Status: bloqueado por Gate 0 (logformat real) y por verificación contra base de datos.
 - **T10** — Paridad mayo 2026. Status: bloqueado por Gate 0 (informes exportados de WebSpy).
 - **T11** — Plantilla `.docx` + `docx-templates` + PDF. Status: bloqueado por la plantilla oficial.
@@ -170,3 +185,76 @@ Efecto sobre el plan:
   y agregación siguen siendo válidos. Cambia contra qué se calibra, no el diseño.
 - **Queda registrado** que el mensaje del commit `58ac620` dice "semantica de
   SARG"; la atribución correcta es WebSpy. El historial no se reescribe.
+
+### L10 — Fragmento real de log y verificación aritmética del documento
+
+Fragmento aportado: 12 líneas, y **dos formas de registro**:
+
+- 11 líneas con el logformat de 10 campos.
+- 1 CONNECT de 8 campos (`... CONNECT github.com:443 - HIER_DIRECT/140.82.114.4 -`),
+  que el parser rechazaba a propósito.
+
+La decisión fue declarar la variante en lugar de aflojar la validación: se acepta
+solo cuando la cantidad de campos no coincide, se cuenta aparte y entra con
+`bytes: 0`, porque el archivo no trae tamaño para esos túneles. Implementado en
+`8de35b6`. El fragmento quedó como fixture
+(`lib/reports/parser/fixtures/squid-access-sample.log`) y el pipeline completo se
+prueba sobre él: 12/12 válidas, 0 inválidas, 1 variante CONNECT, 52,780 bytes,
+11,247 ms de `elapsed`, 10 hits sin cuenta.
+
+El campo de jerarquía llega como `HIER_DIRECT` / `HIER_NONE`, no `DIRECT` /
+`NONE`. Se conserva tal cual: no se interpreta.
+
+#### Verificación aritmética del documento vigente
+
+1. **El drill-down ordena por Browsing Time, no por hits.** En `www.youtube.com`,
+   `infojovellanos` (6,522 hits) va antes que `brian` (7,002 hits) porque navegó
+   más tiempo (33:25:00 contra 30:43:34).
+
+2. **"Los 10 usuarios que más descargaron" tampoco ordena por descarga.**
+   `red.social2` (47,321.10 MB) aparece antes que `amaury` (604,006.72 MB). El
+   orden real es Browsing Time descendente.
+
+3. **`% of Browsing Time` usa dos denominadores distintos.** En el drill-down es
+   el tiempo del sitio; en la tabla de top usuarios es el tiempo total del mes.
+   En `www.facebook.com` el drill-down cierra **al segundo**: el total de la tabla
+   de sitios `146:16:38` = 526,598 s, y `marketing` 110,074 / 526,598 = 20.9%. Las
+   diez filas se reproducen exactas en el test dorado de
+   `lib/reports/assembly/section-traces.test.ts`.
+
+4. **Inconsistencia real en el documento vigente.** En youtube, bing e instagram
+   los porcentajes del drill-down no cierran contra el Browsing Time impreso en
+   la tabla de sitios:
+
+   | Sitio | Browsing del sitio | Cálculo directo | Impreso | Denominador implicado |
+   |---|---|---|---|---|
+   | www.facebook.com | 146:16:38 | 20.9% | 20.9% ✓ | 146:16:38 |
+   | www.youtube.com | 266:34:32 | 12.5% | 15.4% | 216:59:29 |
+   | www.bing.com | 53:56:25 | 14.7% | 21.1% | 37:29:13 |
+   | www.instagram.com | 157:52:37 | 12.1% | 46.5% | 40:56:27 |
+
+   Hipótesis que explica los cuatro casos: el denominador del drill-down es el
+   tiempo del sitio **atribuido a cuentas identificadas**, mientras que el valor
+   de la tabla de sitios incluye tráfico sin autenticar (los túneles CONNECT
+   anónimos, como la línea 5 del fragmento). Facebook es un sitio con login, no
+   tiene anónimo, y por eso coincide exacto.
+
+   **No confirmado.** Sin la exportación de WebSpy no se puede verificar. Queda
+   como pregunta abierta **R2** y la resuelve el gate de paridad. De ahí S15 y
+   S17: el recorte a 10 filas va al renderizar, nunca al persistir, porque
+   truncar al persistir rompe el denominador.
+
+5. **`% of Hits` es consistente con un total mensual de ~91.3M hits.** Con ese
+   total, youtube 129,351 da 0.1% y picta.cu 639,073 da 0.7%, ambos impresos.
+
+6. El documento trae una anotación manual antes de la tabla nacional
+   (`{excluir páginas web alojadas en servidores del Organismo. (UNE, MINEM, DNC)`).
+   No es contenido generado: no se emite, pero la regla queda registrada como
+   exclusión configurable (S4).
+
+#### Pendiente
+
+- Confirmar R2 con la exportación de WebSpy.
+- Calibrar el umbral de `Browsing Time` (S12) contra el mismo export.
+- La ingesta (T9) sigue bloqueada: `db.prisma.io` no es alcanzable desde este
+  equipo, así que no hay forma de verificar escrituras contra una base real.

@@ -1,0 +1,281 @@
+import { classifySite } from "../classify/site";
+import {
+  formatDuration,
+  formatInteger,
+  formatMegabytes,
+  formatPercentage,
+} from "../format";
+
+/**
+ * Armado de la sección 1 del informe: las tablas de trazas.
+ *
+ * Acá no se decide qué medir (eso es `metrics/`) ni cómo se ve un número (eso
+ * es `format/`). Acá se arma la estructura exacta que el documento oficial
+ * espera, con las cabeceras textuales que trae hoy.
+ *
+ * Las tres tablas de la sección, en el orden del documento vigente:
+ *
+ * 1. Sitios internacionales más visitados (7 columnas).
+ * 2. Drill-down por sitio: los 10 usuarios que más accedieron a cada uno (6).
+ * 3. Los 10 usuarios que más descargaron (7).
+ */
+
+export const TOP_ROWS = 10;
+
+export const SITE_TABLE_HEADERS = [
+  "Sites",
+  "Hits",
+  "Incoming (MB)",
+  "Outgoing (MB)",
+  "Download Time (h:m:s)",
+  "Browsing Time (h:m:s)",
+  "% of Hits",
+] as const;
+
+/**
+ * La cabecera del drill-down dice `(h:m:s)` pero los valores son porcentajes.
+ * Es un defecto de la herramienta de origen y se reproduce textualmente: el
+ * documento generado tiene que ser indistinguible del vigente.
+ */
+export const SITE_USER_TABLE_HEADERS = [
+  "Users",
+  "Hits",
+  "Incoming (MB)",
+  "Download Time (h:m:s)",
+  "Browsing Time (h:m:s)",
+  "% of Browsing Time (h:m:s)",
+] as const;
+
+export const TOP_USERS_TABLE_HEADERS = [
+  "Users",
+  "Hits",
+  "Incoming (MB)",
+  "Outgoing (MB)",
+  "Download Time (h:m:s)",
+  "Browsing Time (h:m:s)",
+  "% of Browsing Time (h:m:s)",
+] as const;
+
+export type SiteTotals = {
+  site: string;
+  hits: number;
+  bytesIn: number;
+  bytesOut: number;
+  elapsedMs: number;
+  browsingMs: number;
+};
+
+export type SiteUserTotals = {
+  site: string;
+  username: string | null;
+  hits: number;
+  bytesIn: number;
+  elapsedMs: number;
+  browsingMs: number;
+};
+
+export type UserTotals = {
+  username: string | null;
+  hits: number;
+  bytesIn: number;
+  bytesOut: number;
+  elapsedMs: number;
+  browsingMs: number;
+};
+
+export type SiteTableRow = {
+  site: string;
+  hits: string;
+  incoming: string;
+  outgoing: string;
+  downloadTime: string;
+  browsingTime: string;
+  percentOfHits: string;
+};
+
+export type SiteUserTableRow = {
+  username: string;
+  hits: string;
+  incoming: string;
+  downloadTime: string;
+  browsingTime: string;
+  percentOfBrowsingTime: string;
+};
+
+export type UserTableRow = {
+  username: string;
+  hits: string;
+  incoming: string;
+  outgoing: string;
+  downloadTime: string;
+  browsingTime: string;
+  percentOfBrowsingTime: string;
+};
+
+/** Filas de la tabla de sitios, ordenadas por hits descendente. */
+export function buildSiteTableRows(
+  sites: readonly SiteTotals[],
+  totalHits: number,
+  limit: number = TOP_ROWS,
+): SiteTableRow[] {
+  return [...sites]
+    .sort((a, b) => b.hits - a.hits || a.site.localeCompare(b.site))
+    .slice(0, limit)
+    .map((site) => ({
+      site: site.site,
+      hits: formatInteger(site.hits),
+      incoming: formatMegabytes(site.bytesIn),
+      outgoing: formatMegabytes(site.bytesOut),
+      downloadTime: formatDuration(site.elapsedMs),
+      browsingTime: formatDuration(site.browsingMs),
+      percentOfHits: formatPercentage(site.hits, totalHits),
+    }));
+}
+
+export type SiteUserTableOptions = {
+  limit?: number;
+  /**
+   * Denominador del `% of Browsing Time`.
+   *
+   * El documento lo calcula sobre el tiempo de navegación del sitio atribuido a
+   * cuentas identificadas: para `www.facebook.com` la suma de las 10 filas más
+   * las cuentas fuera del top reproduce exactamente el `146:16:38` de la tabla
+   * de sitios. Cuando el sitio tiene tráfico sin autenticar, el valor impreso en
+   * la tabla de sitios es mayor y los porcentajes no cierran contra él.
+   *
+   * Se deja explícito porque no es un detalle cosmético: es la diferencia entre
+   * reproducir el documento y parecer que lo reproduce.
+   */
+  basisMs?: number;
+};
+
+/**
+ * Filas del drill-down de un sitio.
+ *
+ * Orden: `Browsing Time` descendente. Está verificado contra dos sitios del
+ * documento; en `www.youtube.com` el usuario con más hits no es el primero,
+ * justamente porque el orden no es por hits.
+ */
+export function buildSiteUserTableRows(
+  rows: readonly SiteUserTotals[],
+  options: SiteUserTableOptions = {},
+): SiteUserTableRow[] {
+  const limit = options.limit ?? TOP_ROWS;
+  const identified = rows.filter(
+    (row): row is SiteUserTotals & { username: string } => row.username !== null,
+  );
+
+  const basisMs =
+    options.basisMs ?? identified.reduce((sum, row) => sum + row.browsingMs, 0);
+
+  return [...identified]
+    .sort(
+      (a, b) =>
+        b.browsingMs - a.browsingMs ||
+        b.hits - a.hits ||
+        a.username.localeCompare(b.username),
+    )
+    .slice(0, limit)
+    .map((row) => ({
+      username: row.username,
+      hits: formatInteger(row.hits),
+      incoming: formatMegabytes(row.bytesIn),
+      downloadTime: formatDuration(row.elapsedMs),
+      browsingTime: formatDuration(row.browsingMs),
+      percentOfBrowsingTime: formatPercentage(row.browsingMs, basisMs),
+    }));
+}
+
+/**
+ * Filas de la tabla de los 10 usuarios que más descargaron.
+ *
+ * El título dice "descargaron" pero el orden NO es por volumen: `red.social2`
+ * (47,321.10 MB) aparece antes que `amaury` (604,006.72 MB). El único orden que
+ * explica el documento es `Browsing Time` descendente, y el porcentaje
+ * descendente lo confirma.
+ *
+ * El denominador es el tiempo de navegación total del mes, no el del sitio:
+ * `red.social2` (5.5%) y `amaury` (3.2%) implican el mismo total.
+ */
+export function buildTopUsersTableRows(
+  users: readonly UserTotals[],
+  totalBrowsingMs: number,
+  limit: number = TOP_ROWS,
+): UserTableRow[] {
+  return [...users]
+    .filter((user): user is UserTotals & { username: string } => user.username !== null)
+    .sort(
+      (a, b) =>
+        b.browsingMs - a.browsingMs ||
+        b.hits - a.hits ||
+        a.username.localeCompare(b.username),
+    )
+    .slice(0, limit)
+    .map((user) => ({
+      username: user.username,
+      hits: formatInteger(user.hits),
+      incoming: formatMegabytes(user.bytesIn),
+      outgoing: formatMegabytes(user.bytesOut),
+      downloadTime: formatDuration(user.elapsedMs),
+      browsingTime: formatDuration(user.browsingMs),
+      percentOfBrowsingTime: formatPercentage(user.browsingMs, totalBrowsingMs),
+    }));
+}
+
+export type TracesSection = {
+  internationalSites: SiteTableRow[];
+  nationalSites: SiteTableRow[];
+  siteDrilldowns: Array<{ site: string; rows: SiteUserTableRow[] }>;
+  topUsers: UserTableRow[];
+};
+
+export type TracesSectionInput = {
+  totalHits: number;
+  totalBrowsingMs: number;
+  sites: readonly SiteTotals[];
+  siteUsers: readonly SiteUserTotals[];
+  users: readonly UserTotals[];
+  nationalExclusions?: readonly string[];
+  limit?: number;
+};
+
+export function buildTracesSection(input: TracesSectionInput): TracesSection {
+  const limit = input.limit ?? TOP_ROWS;
+
+  const international = input.sites.filter(
+    (site) =>
+      classifySite(site.site, input.nationalExclusions) === "international",
+  );
+  const national = input.sites.filter(
+    (site) => classifySite(site.site, input.nationalExclusions) === "national",
+  );
+
+  const internationalSites = buildSiteTableRows(
+    international,
+    input.totalHits,
+    limit,
+  );
+  const nationalSites = buildSiteTableRows(national, input.totalHits, limit);
+
+  const usersBySite = new Map<string, SiteUserTotals[]>();
+  for (const row of input.siteUsers) {
+    const bucket = usersBySite.get(row.site);
+    if (bucket === undefined) {
+      usersBySite.set(row.site, [row]);
+    } else {
+      bucket.push(row);
+    }
+  }
+
+  const siteDrilldowns = internationalSites.map((row) => ({
+    site: row.site,
+    rows: buildSiteUserTableRows(usersBySite.get(row.site) ?? [], { limit }),
+  }));
+
+  return {
+    internationalSites,
+    nationalSites,
+    siteDrilldowns,
+    topUsers: buildTopUsersTableRows(input.users, input.totalBrowsingMs, limit),
+  };
+}
