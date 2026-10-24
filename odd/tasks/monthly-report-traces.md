@@ -2,7 +2,7 @@
 
 Objetivo: automatizar la sección 1 (análisis de trazas de navegación) del informe
 mensual de la empresa a partir de los logs diarios de Squid, reproduciendo las
-métricas del informe vigente (SARG 2.x).
+métricas que hoy exporta WebSpy Giga Analyzer.
 Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `pnpm test` (Vitest).
 
 ## Specs
@@ -12,9 +12,9 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   body de una server action (1 MB), por lo que la ingesta será por stream
   (route handler) o por CLI. Cada archivo se identifica por su hash SHA-256 y
   reimportarlo no duplica datos.
-- **S2** — El sistema reproduce las métricas del informe vigente, generado por
-  SARG 2.x: `Hits`, `Incoming (MB)`, `Outgoing (MB)`, `Download Time (h:m:s)`,
-  `Browsing Time (h:m:s)`, `% of Hits`.
+- **S2** — El sistema reproduce las métricas de las tablas que hoy se exportan
+  de WebSpy Giga Analyzer: `Hits`, `Incoming (MB)`, `Outgoing (MB)`,
+  `Download Time (h:m:s)`, `Browsing Time (h:m:s)`, `% of Hits`.
 - **S3** — El formato de salida es exacto: enteros con separador de miles
   (`129,351`), megabytes con 2 decimales (`3,676.86`), tiempos `h:m:s` sin tope
   de 24 horas (`699:52:18`), porcentajes a 1 decimal (`0.1%`, `0.0%`).
@@ -43,7 +43,7 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   coincidir con `IM EE Matanzas mayo 2026.docx`. Sin este gate no se emite un
   informe oficial.
 - **S12** — `Browsing Time` es una métrica derivada, no un campo del log. Su
-  umbral de sesión es configurable y debe calibrarse contra SARG; si no se
+  umbral de sesión es configurable y debe calibrarse contra WebSpy; si no se
   reproduce exacto, el informe declara la aproximación.
 - **S13** — Todo importar, generar, aprobar y exportar queda auditado con los
   hashes de los artefactos.
@@ -56,10 +56,10 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
 - **T4** — Parser de `access.log` con columnas configurables (`lib/reports/parser/`) + tests. Route: inline. Spec: S2, S8. Status: hecho (`20bb01e`).
 - **T5** — Clasificación de sitios nacional/internacional/webmail (`lib/reports/classify/`) + tests. Route: inline. Spec: S4. Status: hecho (`2efa0a2`).
 - **T6** — Motor de reglas por categoría (`lib/reports/rules/`) + tests. Route: inline. Spec: S5. Status: hecho (`2efa0a2`).
-- **T7** — Agregación diaria con semántica SARG (`lib/reports/metrics/`) + tests. Route: inline. Spec: S2, S7, S12. Status: hecho (`58ac620`).
+- **T7** — Agregación diaria con la semántica de las tablas del informe (`lib/reports/metrics/`) + tests. Route: inline. Spec: S2, S7, S12. Status: hecho (`58ac620`).
 - **T8** — Esquema Prisma de informes + migración. Route: inline. Spec: S1, S5, S7, S13. Status: hecho (`b00c317`). Migración creada pero **no aplicada**: `prisma migrate deploy` es una mutación de base de datos y queda a decisión del usuario.
 - **T9** — Servicio de ingesta (stream, hash, idempotencia). Status: bloqueado por Gate 0 (logformat real) y por verificación contra base de datos.
-- **T10** — Paridad mayo 2026. Status: bloqueado por Gate 0 (salida de SARG).
+- **T10** — Paridad mayo 2026. Status: bloqueado por Gate 0 (informes exportados de WebSpy).
 - **T11** — Plantilla `.docx` + `docx-templates` + PDF. Status: bloqueado por la plantilla oficial.
 - **T12** — UI de importación, revisión de hallazgos y documento. Status: pendiente.
 
@@ -81,10 +81,13 @@ Efecto: elimina la tabla IP→usuario del diseño (S8).
 ### L3 — Evidencia del informe vigente
 
 Se analizó `IM EE Matanzas mayo 2026.docx`. Hallazgo: la sección 1 son tablas
-HTML de SARG 2.x pegadas en Word (columnas `Hits`, `Incoming (MB)`,
-`Outgoing (MB)`, `Download Time (h:m:s)`, `Browsing Time (h:m:s)`, `% of Hits`,
-más drill-down por sitio). Consecuencia: el objetivo no es inventar un formato
-sino reproducir métricas (S2) y validar paridad (S11).
+con columnas `Hits`, `Incoming (MB)`, `Outgoing (MB)`, `Download Time (h:m:s)`,
+`Browsing Time (h:m:s)`, `% of Hits`, más drill-down por sitio. Consecuencia: el
+objetivo no es inventar un formato sino reproducir métricas (S2) y validar
+paridad (S11).
+
+_La atribución de esas tablas a SARG que figuraba en esta entrada era
+incorrecta; la herramienta real es WebSpy Giga Analyzer (ver L9)._
 
 Evidencia de que `Browsing Time` no es tiempo de reloj: la cuenta `red.social2`
 acumula `726:14:18` en un mes de 720 horas; los tiempos por sitio de un usuario
@@ -142,10 +145,28 @@ Verificación: `pnpm test` 86/86 en 10 archivos; `tsc --noEmit` sin errores.
 
 Pendiente y bloqueado:
 
-- `Browsing Time` sigue sin calibrar contra SARG (S12). El default de 30 minutos
+- `Browsing Time` sigue sin calibrar contra WebSpy (S12). El default de 30 minutos
   es una hipótesis, no una verdad medida.
 - El logformat es el estándar de Squid por default; confirmar contra el archivo
   real antes de la T9.
 - La migración no se aplicó (mutación de base de datos, decisión del usuario):
   `pnpm exec prisma migrate deploy`.
 - El cambio sin commitear en `layout.tsx` es del usuario y no se tocó.
+
+### L9 — Corrección: la herramienta es WebSpy Giga Analyzer (verbatim)
+
+> aclaracion importante, las columnas no provienen de SARG, sino de WebSpay Giga Analizer, detallo el flujo actual que tengo, importo los logs en la herramienta webspy, de ahi genero los informes para cada tabla que el informe oficial que te proporcione requiere, entonces de los informes generados por webspy copio y pego en ese informe oficial, dime si entendiste
+
+Flujo real: logs de Squid → importación en WebSpy → un informe por tabla →
+copiar y pegar en el documento oficial.
+
+Efecto sobre el plan:
+
+- **S2 y S12 se reescriben**: la referencia de paridad es WebSpy, no SARG.
+- **Gate 0 cambia dos artefactos**: el perfil de importación de WebSpy (orden de
+  campos con que interpreta el log) en lugar de `sarg.conf`, y los informes de
+  mayo exportados de WebSpy en lugar de su salida HTML.
+- **El motor no cambia de estructura**: parser configurable, contrato de formato
+  y agregación siguen siendo válidos. Cambia contra qué se calibra, no el diseño.
+- **Queda registrado** que el mensaje del commit `58ac620` dice "semantica de
+  SARG"; la atribución correcta es WebSpy. El historial no se reescribe.

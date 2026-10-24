@@ -24,7 +24,8 @@ export const UNIDENTIFIED_ACCOUNT = "";
 /**
  * Umbral de corte de sesión, en milisegundos.
  *
- * Pendiente de calibrar contra la salida real de SARG (riesgo R1 del plan): si
+ * Pendiente de calibrar contra la salida real de WebSpy Giga Analyzer (riesgo R1
+ * del plan): si
  * el valor no se reproduce exacto, se declara la aproximación en el informe.
  */
 export const DEFAULT_BROWSING_GAP_MS = 30 * 60 * 1000;

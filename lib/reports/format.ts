@@ -2,8 +2,9 @@
  * Contrato de formato del informe.
  *
  * El informe mensual es un documento oficial: los números que emite el sistema
- * tienen que ser idénticos a los del informe vigente, que se genera con SARG y
- * se pega en Word. Por eso todo formateo pasa por acá y por ningún otro lado.
+ * tienen que ser idénticos a los de las tablas que hoy se exportan de WebSpy
+ * Giga Analyzer y se pegan en Word. Por eso todo formateo pasa por acá y por
+ * ningún otro lado.
  *
  * Formato de referencia tomado de `IM EE Matanzas mayo 2026.docx`:
  *   enteros         129,351
