@@ -70,17 +70,18 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   acumulan por separado, cada uno con su propio reloj y umbral. El del sitio no se
   obtiene sumando los pares: los pares se solapan en el tiempo y la suma no
   reproduce el valor del sitio.
-- **S19** — El período se declara explícitamente (inicio y fin, en
-  `America/Havana`); no se deduce del calendario. Las exportaciones de WebSpy de
-  mayo 2026 cubren `30/04/2026 - 31/05/2026`, **32 días**, así que el motor debe
-  poder reproducir ese rango exacto. Decisión pendiente del usuario (R3):
-  reproducir el rango histórico o corregirlo a `01/05 - 31/05`.
+- **S19** — El período es el **mes calendario local** del mes que se importa
+  (`01` al último día, en `America/Havana`); no se deduce de los archivos
+  presentes ni se extiende a 32 días. Un día faltante se reporta como faltante,
+  y un día fuera del período —como el 30/04 en un informe de mayo— se reporta
+  como ajeno al período en lugar de sumarse.
 
 ## Tasks
 
 - **T1** — Documento de seguimiento. Route: inline. Status: hecho (`a85a8b5`).
 - **T2** — Contrato de formato (`lib/reports/format.ts`) + tests. Route: inline. Spec: S3. Status: hecho (`670c02a`).
 - **T3** — Día local con zona explícita (`lib/reports/time.ts`) + tests. Route: inline. Spec: S10. Status: hecho (`670c02a`).
+- **T15** — Período mensual y cobertura de días (`monthlyPeriod`, `checkCoverage`) + tests. Route: inline. Spec: S19. Status: hecho.
 - **T4** — Parser de `access.log` con columnas configurables (`lib/reports/parser/`) + tests + fragmento real como fixture. Route: inline. Spec: S2, S8, S14. Status: hecho (`20bb01e`, variante CONNECT en `8de35b6`).
 - **T5** — Clasificación de sitios nacional/internacional/webmail (`lib/reports/classify/`) + tests. Route: inline. Spec: S4. Status: hecho (`2efa0a2`).
 - **T6** — Motor de reglas por categoría (`lib/reports/rules/`) + tests. Route: inline. Spec: S5. Status: hecho (`2efa0a2`).
@@ -362,4 +363,37 @@ El informe vigente incluye el **30 de abril**. Consecuencias:
 #### Verificación de esta entrada
 
 `pnpm exec vitest run lib/reports`: 74 tests, 9 archivos, en verde.
+`pnpm exec tsc --noEmit`: sin errores.
+
+### L12 — Decisión del período: mes calendario (verbatim)
+
+> claro, los logs que se van a importar seran los del correspondiente mes que se
+> importe en el sistema, dime si esto responde a tu pregunta anterior
+
+Respuesta: sí, cierra R3. El período es el mes calendario del mes que se importa,
+de `01` al último día, en `America/Havana`. No se reproduce el rango histórico de
+32 días.
+
+#### Consecuencia que hay que tener presente
+
+El informe de mayo que sirve de oráculo cubre `30/04 - 31/05`. Con un período de
+31 días, **la paridad exacta contra ese documento no es alcanzable**: todo sitio
+con tráfico el 30/04 va a quedar por debajo, y no se puede saber cuánto sin el
+log de ese día.
+
+El gate de paridad (S11) no se debilita: se reemplaza el oráculo. Para comparar
+hay que volver a exportar mayo desde WebSpy con rango `01/05/2026 - 31/05/2026`;
+ese export sí tiene la misma ventana que el motor. Mientras no exista, la
+comparación es contra un documento que mide otra cosa.
+
+Corolario operativo: si el import mensual incluye el archivo del 30/04 —el cron
+crea un archivo por día y puede quedar el del día anterior en el directorio— el
+sistema lo declara como día ajeno al período (`extraDays`) en vez de sumarlo.
+
+#### Implementado
+
+`monthlyPeriod(year, month)` declara inicio, fin y días esperados;
+`checkCoverage(period, presentDays)` devuelve días faltantes y días ajenos al
+período. Tests: 5 nuevos, incluido el caso del 30/04 clasificado como ajeno.
+`pnpm exec vitest run lib/reports`: 79 tests, 9 archivos, en verde.
 `pnpm exec tsc --noEmit`: sin errores.
