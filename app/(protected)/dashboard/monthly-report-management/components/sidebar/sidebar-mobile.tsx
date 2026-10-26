@@ -2,15 +2,18 @@
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { activeRouteHref } from "./active";
 import type { SidebarProps } from "./types";
 
 export default function SidebarMobile({ routes }: SidebarProps) {
   const pathname = usePathname();
+  const activeHref = activeRouteHref(pathname, routes);
+
   return (
-    <nav className="flex w-full rounded-xl border p-4 sm:hidden">
+    <nav className="flex w-full rounded-xl border p-4 md:hidden">
       <ul className="flex w-full justify-around gap-x-2">
         {routes.map((route) => {
-          const isActive = pathname === route.href;
+          const isActive = route.href === activeHref;
           return (
             <li key={route.href} className="min-w-0">
               <Link

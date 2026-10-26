@@ -2,16 +2,18 @@
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { activeRouteHref } from "./active";
 import type { SidebarProps } from "./types";
 
 export default function SidebarDesktop({ routes }: SidebarProps) {
   const pathname = usePathname();
+  const activeHref = activeRouteHref(pathname, routes);
 
   return (
-    <nav className="hidden min-h-full shrink-0 rounded-xl border p-4 sm:flex md:w-60">
+    <nav className="hidden min-h-full shrink-0 rounded-xl border p-4 md:flex md:w-60">
       <ul className="flex w-full flex-col gap-6">
         {routes.map((route) => {
-          const isActive = pathname === route.href;
+          const isActive = route.href === activeHref;
           return (
             <li key={route.href}>
               <Link
@@ -24,7 +26,7 @@ export default function SidebarDesktop({ routes }: SidebarProps) {
                 )}
               >
                 <route.icon className="size-5 shrink-0" aria-hidden="true" />
-                <span className="sr-only md:not-sr-only">{route.label}</span>
+                <span>{route.label}</span>
               </Link>
             </li>
           );

@@ -78,7 +78,7 @@ export default async function MonthlyReportManagementPage() {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Link
-                      href={`/dashboard/monthly-report-management/summary?id=${report.id}`}
+                      href={`/dashboard/monthly-report-management/${report.id}`}
                       className="text-primary underline-offset-4 hover:underline"
                     >
                       Ver

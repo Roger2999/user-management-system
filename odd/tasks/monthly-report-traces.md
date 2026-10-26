@@ -129,6 +129,13 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   mismo route handler de stream (sin multipart ni límite de 1 MB). Un archivo
   que falla no detiene a los demás; la idempotencia por SHA-256 sigue vigente y
   el resultado se muestra por archivo.
+- **S25** — El detalle de un informe es una ruta real `/[id]`. La lista enlaza
+  a `/[id]`; la URL vieja `/summary?id=...` redirige a `/[id]` (y sin `id` al
+  último informe, o a la lista si no hay ninguno). El sidebar tiene dos
+  secciones: **Informes** (`/`) y **Nuevo informe** (`/new`); no hay "Resumen".
+  La ruta activa se calcula por el prefijo más largo: en `/new` gana "Nuevo
+  informe"; en `/[id]` gana "Informes". El sidebar de escritorio aparece en
+  `md` con etiquetas; el móvil se oculta en `md`.
 
 ## Tasks
 
@@ -232,6 +239,10 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   (`lib/reports/import-selection.ts`) + test, formulario con dos modos y subida
   secuencial (`components/import-form.tsx`). Route: inline. Spec: S24. Status:
   hecho; 7 tests nuevos, `tsc` y `eslint` limpios.
+- **T33** — Refactor de navegación: detalle en `[id]/page.tsx`, redirect de
+  compatibilidad en `summary/page.tsx`, sidebar "Informes"/"Nuevo informe",
+  `activeRouteHref` + test, redirects de las actions y revalidación por layout.
+  Route: inline. Spec: S25. Status: hecho; tests/tsc/eslint limpios.
 
 Route declaration: todas las tareas de esta sesión son `inline` — no hay unidades
 independientes en paralelo ni presión de contexto que justifiquen un writer.
@@ -1499,6 +1510,19 @@ por ruta con comparación numérica y sube los archivos de a uno contra el route
 handler existente, que sigue leyendo el cuerpo como stream. No se usa
 `FormData`: un mes de 31 archivos de ~90 MB no se puede bufferizar en memoria.
 El resultado se muestra por archivo y un error no cancela el resto.
+
+### L38 — Refactor de rutas del sidebar (verbatim)
+
+> si dale vamos con todo
+
+Se aceptó la propuesta: "Inicio" pasa a "Informes", "Resumen" sale del
+sidebar y el detalle deja de ser `summary?id=...` para ser `/[id]`. La lista
+enlaza a la ruta real; `/summary` queda como redirect de compatibilidad (con
+`id` va al informe, sin `id` al último o a la lista). Las actions de generar,
+regenerar y revisar redirigen/revalidan la nueva ruta. El active state usa el
+prefijo más largo para que `/new` no active "Informes". El sidebar de
+escritorio aparece en `md` con etiquetas y el móvil se oculta en `md`.
+
 
 
 

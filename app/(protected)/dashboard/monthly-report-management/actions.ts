@@ -59,8 +59,8 @@ export async function generateReportAction(
     return { error: messageOf(error) };
   }
 
-  revalidatePath("/dashboard/monthly-report-management");
-  redirect(`/dashboard/monthly-report-management/summary?id=${id}`);
+  revalidatePath("/dashboard/monthly-report-management", "layout");
+  redirect(`/dashboard/monthly-report-management/${id}`);
 }
 
 /** Regenera el informe desde el detalle. Se usa como `action` de un formulario. */
@@ -72,7 +72,7 @@ export async function regenerateReportAction(formData: FormData): Promise<void> 
 
   if (period === null) {
     redirect(
-      `/dashboard/monthly-report-management/summary?id=${reportId}&error=${encodeURIComponent("Período inválido.")}`,
+      `/dashboard/monthly-report-management/${reportId}?error=${encodeURIComponent("Período inválido.")}`,
     );
   }
 
@@ -80,12 +80,12 @@ export async function regenerateReportAction(formData: FormData): Promise<void> 
     await generateMonthlyReport(period.year, period.month);
   } catch (error) {
     redirect(
-      `/dashboard/monthly-report-management/summary?id=${reportId}&error=${encodeURIComponent(messageOf(error))}`,
+      `/dashboard/monthly-report-management/${reportId}?error=${encodeURIComponent(messageOf(error))}`,
     );
   }
 
-  revalidatePath("/dashboard/monthly-report-management");
-  redirect(`/dashboard/monthly-report-management/summary?id=${reportId}`);
+  revalidatePath("/dashboard/monthly-report-management", "layout");
+  redirect(`/dashboard/monthly-report-management/${reportId}`);
 }
 
 /** Revisión de un hallazgo: disposición y medida adoptada (S5). */
@@ -107,5 +107,5 @@ export async function updateFindingAction(formData: FormData): Promise<void> {
     },
   });
 
-  revalidatePath("/dashboard/monthly-report-management/summary");
+  revalidatePath("/dashboard/monthly-report-management", "layout");
 }
