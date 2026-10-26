@@ -198,6 +198,13 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   build` no se pudo completar sin red (Google Fonts), no por el código (ver
   L33).
 
+- **T30** — Patrones de prueba de las categorías prohibidas:
+  `DEFAULT_CATEGORY_RULES` (`lib/reports/rules/defaults.ts`) y seed aditivo
+  (`prisma/seed-rules.ts`, `pnpm run db:seed:rules`). 63 reglas cargadas
+  (24 ADULT, 15 ANON_PROXY, 24 MINING); `SUBVERSIVE` queda vacía a propósito
+  hasta que el especialista defina la lista. Route: inline. Spec: S5.
+  Status: hecho; seed idempotente (segunda corrida: 0 nuevas, 63 sin cambios).
+
 Route declaration: todas las tareas de esta sesión son `inline` — no hay unidades
 independientes en paralelo ni presión de contexto que justifiquen un writer.
 
@@ -1412,3 +1419,18 @@ Hecho y commiteado: telemetría fuera del universo de navegación (T26), descart
 persistidos por día (T27), informe y hallazgos persistidos (T28), UI completa
 (T29) y los cambios pendientes del usuario. El próximo paso real es importar
 octubre desde la UI, cargar las reglas y generar el primer informe de octubre.
+
+### L35 — Patrones de prueba cargados (verbatim)
+
+> define los patrones ahora, como creas necesario, por ahora como prueba
+
+Decisión: cargué una lista de prueba de 63 patrones `SUFFIX` (24 ADULT, 15
+ANON_PROXY, 24 MINING) en `category_rule` con `pnpm run db:seed:rules`. El seed
+es aditivo: no borra ni desactiva reglas propias; una segunda corrida dejó 0
+nuevas y 63 sin cambios.
+
+`SUBVERSIVE` quedó sin patrones a propósito. Inventar una lista de sitios
+políticos no es una decisión técnica y un falso positivo en un informe oficial
+lleva nombre y apellidos. El motor ya soporta la categoría; la lista real la
+carga el especialista. El seed imprime un aviso mientras siga vacía.
+
