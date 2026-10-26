@@ -107,6 +107,15 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   como top 10 por hits (`selectTopSites`) y los drill-downs se atan a la tabla
   internacional. Route: inline. Spec: S20, S21. Status: hecho, sin verificación
   ejecutada fuera del shim (ver L18, L19).
+- **T18** — Contenedor `.docx` sin dependencias (`lib/reports/document/zip.ts`,
+  `docx.ts`): lectura y escritura del ZIP sobre `node:zlib` con CRC-32 propio, y
+  reemplazo de una sola parte dejando las demás intactas. Route: inline. Spec:
+  S6. Status: hecho (ver L20), verificado contra el documento de mayo.
+- **T19** — Emisión de la sección 1 sobre el documento real
+  (`lib/reports/document/emit.ts`): reemplaza las tablas 4, 5–14, 15 y 16,
+  normaliza cabecera y ancho de los dos drill-downs exportados por hits, y
+  elimina los sobrantes con su título. Route: inline. Spec: S2, S6, S21.
+  Status: hecho (ver L20), verificado por píxeles contra el documento de mayo.
 - **T17** — Modelo mensual: merge de días, cobertura y declaraciones (`lib/reports/model/monthly.ts`). Route: inline. Spec: S7, S12, S19. Status: hecho.
 - **T14** — Arnés de paridad: fixture numérico con los totales de los exports de WebSpy (sitios + usuarios por sitio) y comparación por sitio contra el motor. Route: inline. Spec: S11, S15. Status: nivel 1 hecho (`1307188`); nivel 2 bloqueado por el `access.log` de mayo.
 - **T10** — Paridad mayo 2026. Status: desbloqueado en parte — los exports de WebSpy ya están y confirman el denominador de S15; falta el `access.log` completo de mayo (incluido el 30/04) para comparar hits, bytes y tiempos.
@@ -752,3 +761,53 @@ bajo el shim temporal en `/tmp/opencode/reports-check`, y un smoke end-to-end
 verificó: top por hits, corte en 10, dos tablas calculadas, drill-downs atados a
 la internacional y exclusiones institucionales. Eso **no** es la suite oficial y
 no se declara verificado.
+
+### L20 — Contenedor `.docx` y emisión de la sección 1
+
+#### Qué se hizo
+
+- `zip.ts`: lector y escritor ZIP sobre `node:zlib` (`inflateRawSync` /
+  `deflateRawSync`) con CRC-32 propio. Sin dependencias nuevas: el mismo criterio
+  que `table-xml.ts` con el parser XML.
+- `docx.ts`: `readDocumentXml` y `replaceDocumentXml`; reescriben una sola parte y
+  dejan las otras 26 intactas.
+- `table-xml.ts` gana las operaciones que faltaban: `replaceTableHeaderRow`,
+  `setTableHeading`, `removeTableWithHeading`, `copyTableGrid` y
+  `readTableHeader`.
+- `emit.ts`: `emitTracesSection(documentXml, traces)` con el mapa de tablas
+  explícito — 4 internacional, 5–14 drill-downs, 15 usuarios, 16 nacional. Si la
+  selección trae más de diez drill-downs falla: la plantilla tiene diez ranuras y
+  clonar tablas enteras no está implementado.
+
+#### Dos defectos de formato encontrados y corregidos
+
+1. **Anchos de columna.** `clarity.ms` y `windy.com` vienen exportados por hits:
+   su última columna mide 875 twips contra 2255 en las otras ocho. Cambiar solo el
+   texto parte la cabecera en cuatro líneas, la tabla crece y corre la paginación
+   de todo lo que sigue. Solo esas dos tablas adoptan el `tblGrid` de la primera;
+   las otras ocho conservan el suyo, porque copiarlo a todas angostaba la columna
+   `Hits` de bing y partía `912` en dos líneas.
+2. **Zebra y borde inferior.** Las filas alternan `cnfStyle` (banda impar / banda
+   par) y la última lleva `lastRow`, que es lo que dibuja el borde inferior.
+   Clonar siempre la primera fila pintaba todas iguales y perdía el borde. Ahora
+   se alternan dos moldes y el último renglón se clona de la última fila original.
+
+#### Verificación
+
+- Ida y vuelta del contenedor: 27 partes, 0 faltantes, 0 sobrantes, 0 con bytes
+  distintos; PDF de 554,474 bytes y 495 líneas de texto idénticas al original.
+- Emisión con los valores de mayo sobre el documento de mayo: 11 páginas en ambos.
+  Comparación por píxeles a 100 dpi: páginas 1-3 y 7-11 idénticas; 4-6 difieren
+  solo en las dos cabeceras normalizadas y en el ancho que eso impone a la columna
+  de usuarios (`infojovellano` se parte igual que en las otras ocho tablas).
+- Suite: 126 tests en 15 archivos; `tsc --noEmit` limpio.
+
+#### De paso
+
+S20 citaba `S22`, que nunca existió: las exclusiones institucionales están en S4.
+Corregido en las dos referencias.
+
+#### Lo que no se tocó
+
+`.npmrc` y `pnpm-workspace.yaml` traen cambios del entorno de instalación y no se
+commitean acá. `layout.tsx` sigue con el cambio pendiente del usuario.

@@ -39,15 +39,19 @@ describe("replaceTableBodyRows", () => {
     expect(result.match(/<w:tr/g)).toHaveLength(6); // 2 cabeceras + 4 filas de datos
   });
 
-  it("clona el formato de la fila molde", () => {
+  it("clona el formato de las filas molde", () => {
     const result = replaceTableBodyRows(DOCUMENT, {
       tableIndex: 1,
-      rows: [["www.c.com", "10"]],
+      rows: [
+        ["www.c.com", "10"],
+        ["www.d.com", "20"],
+      ],
     });
 
-    // `rsidR` viene del molde: la fila nueva conserva las propiedades de la
-    // primera fila de datos del original.
+    // La primera fila generada sale del molde de banda; la última, del molde de
+    // última fila, que es el que lleva el borde inferior.
     expect(result).toContain('w:rsidR="00A1"');
+    expect(result.match(/w:rsidR="00A1"/g)).toHaveLength(1);
     expect(result).toContain("<w:tcPr/>");
   });
 
