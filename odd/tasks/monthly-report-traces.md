@@ -116,11 +116,18 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   normaliza cabecera y ancho de los dos drill-downs exportados por hits, y
   elimina los sobrantes con su título. Route: inline. Spec: S2, S6, S21.
   Status: hecho (ver L20), verificado por píxeles contra el documento de mayo.
+- **T20** — Vaciado de las secciones 2-7 (`lib/reports/document/blank-sections.ts`):
+  conserva encabezados, numeración, etiquetas y cabeceras de tabla, y borra los
+  valores del mes anterior. Route: inline. Spec: S6. Status: hecho (ver L21),
+  verificado contra el documento de mayo.
 - **T17** — Modelo mensual: merge de días, cobertura y declaraciones (`lib/reports/model/monthly.ts`). Route: inline. Spec: S7, S12, S19. Status: hecho.
 - **T14** — Arnés de paridad: fixture numérico con los totales de los exports de WebSpy (sitios + usuarios por sitio) y comparación por sitio contra el motor. Route: inline. Spec: S11, S15. Status: nivel 1 hecho (`1307188`); nivel 2 bloqueado por el `access.log` de mayo.
 - **T10** — Paridad mayo 2026. Status: desbloqueado en parte — los exports de WebSpy ya están y confirman el denominador de S15; falta el `access.log` completo de mayo (incluido el 30/04) para comparar hits, bytes y tiempos.
 - **T9** — Servicio de ingesta (stream, hash, idempotencia). Status: bloqueado por Gate 0 (logformat real) y por verificación contra base de datos.
-- **T11** — Plantilla `.docx` + `docx-templates` + PDF. Status: bloqueado por la plantilla oficial.
+- **T11** — Emisión del documento oficial: contenedor (T18), tablas de la sección
+  1 (T19) y secciones 2-7 vacías (T20). Route: inline. Spec: S2, S6, S21.
+  Status: hecho el `.docx`. La conversión a PDF queda fuera del sistema: se hace
+  con LibreOffice o Word, y no se automatiza en esta unidad.
 - **T12** — UI de importación, revisión de hallazgos y documento. Status: pendiente.
 
 Route declaration: todas las tareas de esta sesión son `inline` — no hay unidades
@@ -811,3 +818,61 @@ Corregido en las dos referencias.
 
 `.npmrc` y `pnpm-workspace.yaml` traen cambios del entorno de instalación y no se
 commitean acá. `layout.tsx` sigue con el cambio pendiente del usuario.
+
+### L21 — Secciones 2-7: se conservan las etiquetas (verbatim)
+
+#### La decisión
+
+S6 dice "presentes y vacías: encabezado, numeración, tablas con sus cabeceras,
+celdas sin contenido". La lectura literal vacía también las etiquetas de plantilla
+("Cantidad de Usuarios Autorizados:", "Medidas tomadas:"), y el especialista
+tendría que reescribirlas cada mes. Se preguntó y la respuesta fue:
+
+> Conservar etiquetas, vaciar valores
+
+#### La regla
+
+Sobre la prosa de las secciones 2-7, en este orden:
+
+1. párrafo con `@` (correos) → se vacía;
+2. párrafo que es solo un identificador en mayúsculas (nombres de PC) → se vacía;
+3. se borra lo escrito dentro de los huecos de guiones bajos
+   (`detectados__10___` → `detectados_______`, `_X__SI` → `____SI`);
+4. se corta en el último `:` y se conserva la etiqueta;
+5. un guion suelto al final se descarta (relleno de "sin dato").
+
+Un párrafo sin separador se conserva: es prosa de plantilla.
+
+Sobre las tablas se declara, por tabla, cuántas filas de arriba son cabecera:
+
+| Tabla | Contenido | Cabeceras | Filas de datos |
+|---|---|---|---|
+| 18 | anclaje USB | 2 | 1 |
+| 19 | nombres de virus (lista) | 0 | 10 |
+| 20 | vulnerabilidades | 1 | 9 |
+| 21 | alertas del IDS | 1 | 1 |
+| 22 | resumen de la entidad | 3 | 1 |
+
+Las filas de datos se conservan y sus celdas quedan vacías: la tabla mantiene la
+geometría y el especialista tiene las ranuras para llenar. Una tabla no declarada
+después del encabezado hace fallar la emisión; dejarla intacta sería publicar los
+datos del mes anterior.
+
+#### Verificación
+
+- 137 tests en 16 archivos; `tsc --noEmit` limpio.
+- Documento de mayo: la sección 1 queda byte a byte idéntica a la emisión anterior
+  (prefijo de 283,485 caracteres comparado); el PDF sigue en 11 páginas.
+- En las secciones 2-7 no queda ningún número de mayo: los dos únicos `10` que
+  aparecen son parte de las etiquetas ("10 usuarios que más uso hacen...",
+  "Las 10 vulnerabilidades...").
+
+#### Lo que queda a revisión del especialista
+
+- La frase de cierre del IDS ("Hasta la fecha no se detectan alertas...") no tiene
+  separador, así que se conserva. Afirma un resultado, no una regla: hay que
+  revisarla cada mes.
+- La firma conserva nombres y cargos. Son estables, pero es una decisión, no una
+  consecuencia de la regla.
+- La tabla de virus queda con diez renglones vacíos (sus viñetas se ven) y "Nota:"
+  queda solo, sin el texto de las fotocopiadoras.
