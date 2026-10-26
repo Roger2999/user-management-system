@@ -7,6 +7,7 @@ import {
   type OutsidePeriodDay,
 } from "../ingest";
 import type { MonthlyPeriod } from "../time";
+import type { SkippedLines } from "../metrics/aggregate";
 import type { ParseStats } from "../types";
 import {
   collectUsernames,
@@ -71,6 +72,8 @@ export type ImportSquidLogResult =
       /** Días locales del período que aportó el archivo. */
       days: string[];
       stats: ParseStats;
+      /** Líneas del período descartadas por no ser hit, por motivo (S7). */
+      skipped: SkippedLines;
       outsidePeriod: OutsidePeriodDay[];
     };
 
@@ -209,6 +212,7 @@ export async function importSquidLogFile(
     file: summarize(stored),
     days: ingestion.days.map((day) => day.day),
     stats: ingestion.stats,
+    skipped: ingestion.skipped,
     outsidePeriod: ingestion.outsidePeriod,
   };
 }

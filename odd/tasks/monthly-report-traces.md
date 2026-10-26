@@ -183,6 +183,20 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   depende de un parámetro opcional. Route: inline. Spec: S7. Status: hecho;
   migración `20261026130000_add_daily_skipped` **aplicada** contra
   `db.prisma.io`; prueba de base con `REPORTS_DB_TEST=1` (ver L32).
+- **T28** — Persistencia del informe y hallazgos: `detectFindings`
+  (`lib/reports/findings/detect.ts`), `saveMonthlyReport`
+  (`lib/reports/persistence/report.ts`), `generateMonthlyReport`
+  (`lib/reports/generate.ts`) y almacenamiento del `.docx`
+  (`lib/reports/storage.ts`). Regenerar conserva la revisión de los hallazgos.
+  Route: inline. Spec: S5, S13. Status: hecho; prueba de base 4/4, incluido el
+  `.docx` emitido desde la base (ver L33).
+- **T29** — UI de importación, generación, revisión y descarga:
+  `POST /api/reports/import` (stream, sin límite de 1 MB),
+  `GET /api/reports/[id]/document`, lista de informes, formulario de
+  importación, generación y detalle con disposición por hallazgo. Route:
+  inline. Spec: S1, S5, S6. Status: hecho; `tsc` y `eslint` limpios; `next
+  build` no se pudo completar sin red (Google Fonts), no por el código (ver
+  L33).
 
 Route declaration: todas las tareas de esta sesión son `inline` — no hay unidades
 independientes en paralelo ni presión de contexto que justifiquen un writer.
@@ -1351,3 +1365,50 @@ Decisiones:
 - 212 tests en 26 archivos, `tsc --noEmit` limpio. La nota de la sección 1 ya
   incluye la telemetría: "Se descartaron 10 respuestas no servidas, 20 accesos a
   destinos internos y 30 accesos de telemetría."
+
+### L33 — Evidencia de T28/T29
+
+- `detectFindings` arma una evidencia por (regla, sitio, usuario). Los hits se
+  suman entre días; `firstSeen`/`lastSeen` son el primer y el último día, con
+  ancla al mediodía UTC para que la fecha local de La Habana no se corra. El
+  motor de reglas se aplica contra el hostname persistido; el path completo no
+  se guarda (limitación deliberada, no se multiplica la base por URL).
+- `saveMonthlyReport` hace upsert por (año, mes), guarda un `snapshot` reducido
+  (cobertura, declaraciones, totales y tablas) y **conserva la disposición y la
+  medida** de los hallazgos que siguen existiendo; borra los que desaparecieron.
+  Una cuenta que ya no existe se guarda como `proxyAccountId = null`.
+- `generateMonthlyReport` reconstruye desde la base, emite el `.docx`, lo
+  escribe en `storage/reports/<año>-<mes>.docx` y persiste el informe. La
+  plantilla oficial se copió a `storage/templates/monthly-report.docx`
+  (ignorada por git); se puede cambiar con `REPORTS_TEMPLATE_PATH` y la salida
+  con `REPORTS_STORAGE_DIR`.
+- Prueba de base 4/4: guardar, regenerar conservando la revisión, borrar el
+  hallazgo al desactivar la regla y generar el `.docx` desde la base (empieza
+  con `PK`, o sea un ZIP válido). Limpieza con 0 residuos.
+- UI: `POST /api/reports/import` lee el cuerpo como stream (un log real de 90 MB
+  no pasa por el límite de 1 MB de las server actions), `GET
+  /api/reports/[id]/document` sirve el `.docx` solo a ADMIN, la lista muestra
+  cobertura/hits/hallazgos, `/new` importa y genera, y el detalle permite
+  revisar cada hallazgo (disposición + medida) y regenerar.
+- 217 tests en 26 archivos, `tsc --noEmit` y `eslint` limpios. `next build` no
+  se pudo completar en este entorno: Turbopack no puede descargar Geist desde
+  Google Fonts sin red. Es una limitación del entorno, no del código; `tsc` y
+  `eslint` cubren el tipado y las reglas.
+
+Pendiente de T28/T29:
+
+- **No hay reglas cargadas.** `CategoryRule` no tiene seed ni UI de
+  administración: el motor está conectado y la revisión funciona, pero la tabla
+  de hallazgos sale vacía hasta que el especialista defina los patrones. Es una
+  decisión de contenido, no de código.
+- **Auditoría (S13).** Importar, generar y revisar todavía no escriben
+  `AuditLog`; el enum `AuditAction` solo tiene las acciones de cuentas.
+- **PDF.** La conversión queda fuera del sistema (LibreOffice o Word), como
+  estaba previsto.
+
+### L34 — Estado al cierre de la sesión
+
+Hecho y commiteado: telemetría fuera del universo de navegación (T26), descartes
+persistidos por día (T27), informe y hallazgos persistidos (T28), UI completa
+(T29) y los cambios pendientes del usuario. El próximo paso real es importar
+octubre desde la UI, cargar las reglas y generar el primer informe de octubre.
