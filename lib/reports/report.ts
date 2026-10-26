@@ -51,12 +51,15 @@ export function buildReportDocument(input: ReportDocumentInput): Uint8Array {
   // tiene que correrse igual, o buscaría las tablas 18-22 en otro lugar.
   const shift =
     DEFAULT_TRACES_TABLES.drilldownSlots - input.traces.siteDrilldowns.length;
+  // La tabla de redes sociales se inserta antes de la nacional y corre todas las
+  // tablas posteriores una posición. El mapa del vaciado tiene que verlo.
+  const socialShift = input.traces.social === null ? 0 : 1;
 
   const blankSpec: BlankSectionsSpec = {
     ...DEFAULT_BLANK_SECTIONS,
     tables: DEFAULT_BLANK_SECTIONS.tables.map((table) => ({
       ...table,
-      tableIndex: table.tableIndex - shift,
+      tableIndex: table.tableIndex - shift + socialShift,
     })),
   };
 

@@ -341,3 +341,87 @@ export function removeTableWithHeading(
 
   return documentXml.slice(0, heading.start) + documentXml.slice(table.end);
 }
+
+function findParagraphByPrefix(
+  documentXml: string,
+  prefix: string,
+): ParagraphSpan {
+  const matches = [...documentXml.matchAll(PARAGRAPH_PATTERN)];
+  const found = matches.find((match) => textOf(match[0]).startsWith(prefix));
+
+  if (found?.index === undefined) {
+    throw new RangeError(
+      `no se encontró el párrafo que empieza con: ${prefix}`,
+    );
+  }
+
+  return { start: found.index, end: found.index + found[0].length, xml: found[0] };
+}
+
+/**
+ * Cambia el nombre de la red en el título de la sección.
+ *
+ * Con `null` deja solo la etiqueta. Es lo que evita que un informe sin datos
+ * sociales herede el "Facebook" de la plantilla y afirme algo que no midió.
+ */
+export function setSocialHeading(
+  documentXml: string,
+  network: string | null,
+): string {
+  const prefix = "Redes Sociales más utilizadas en la entidad:";
+  const paragraph = findParagraphByPrefix(documentXml, prefix);
+  const text = network === null ? prefix : `${prefix} ${network}`;
+  const replaced = setParagraphText(paragraph.xml, text);
+
+  return (
+    documentXml.slice(0, paragraph.start) + replaced + documentXml.slice(paragraph.end)
+  );
+}
+
+export type InsertClonedTableOptions = {
+  /** Tabla que se clona: aporta bordes, anchos, fuentes y zebra. */
+  referenceTableIndex: number;
+  /** Párrafo después del cual se inserta la tabla. */
+  afterParagraphPrefix: string;
+  header: readonly string[];
+  rows: readonly (readonly string[])[];
+};
+
+/**
+ * Clona una tabla existente, la rellena y la inserta después de un párrafo.
+ *
+ * La plantilla oficial no trae la tabla de redes sociales: trae el título y la
+ * instrucción. Se clona un drill-down para heredar el formato exacto en lugar de
+ * inventar una tabla nueva que después no coincida con el resto del documento.
+ */
+export function insertClonedTable(
+  documentXml: string,
+  options: InsertClonedTableOptions,
+): string {
+  const reference = findTable(documentXml, options.referenceTableIndex);
+  const body = replaceInTable(reference.xml, {
+    tableIndex: options.referenceTableIndex,
+    rows: options.rows,
+  });
+
+  const header = [...body.matchAll(ROW_PATTERN)][0];
+  if (header?.index === undefined) {
+    throw new RangeError(
+      `la tabla ${options.referenceTableIndex} no tiene cabecera`,
+    );
+  }
+
+  const clone =
+    body.slice(0, header.index) +
+    fillRow(header[0], options.header) +
+    body.slice(header.index + header[0].length);
+
+  const paragraph = findParagraphByPrefix(
+    documentXml,
+    options.afterParagraphPrefix,
+  );
+
+  return (
+    documentXml.slice(0, paragraph.end) + clone + documentXml.slice(paragraph.end)
+  );
+}

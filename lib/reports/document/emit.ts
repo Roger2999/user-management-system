@@ -7,10 +7,12 @@ import {
 } from "../assembly/section-traces";
 import {
   copyTableGrid,
+  insertClonedTable,
   readTableHeader,
   removeTableWithHeading,
   replaceTableBodyRows,
   replaceTableHeaderRow,
+  setSocialHeading,
   setTableHeading,
 } from "./table-xml";
 
@@ -44,6 +46,9 @@ export type TracesTableMap = {
   topUsers: number;
   nationalSites: number;
 };
+
+/** Instrucción de la plantilla que precede a la tabla de redes sociales. */
+export const SOCIAL_INSTRUCTION_PREFIX = "**Filtrar por “Browsing Time”.";
 
 function siteRow(row: SiteTableRow): string[] {
   return [
@@ -162,6 +167,26 @@ export function emitTracesSection(
   xml = replaceTableBodyRows(xml, {
     tableIndex: map.topUsers - shift,
     rows: traces.topUsers.map(userRow),
+  });
+
+  if (traces.social === null) {
+    // Sin datos sociales no se hereda el "Facebook" de la plantilla.
+    xml = setSocialHeading(xml, null);
+    return xml;
+  }
+
+  if (drilldowns.length === 0) {
+    throw new RangeError(
+      "la tabla de redes sociales necesita un drill-down como molde",
+    );
+  }
+
+  xml = setSocialHeading(xml, traces.social.network);
+  xml = insertClonedTable(xml, {
+    referenceTableIndex: map.firstDrilldown,
+    afterParagraphPrefix: SOCIAL_INSTRUCTION_PREFIX,
+    header: SITE_USER_TABLE_HEADERS,
+    rows: traces.social.rows.map(siteUserRow),
   });
 
   return xml;

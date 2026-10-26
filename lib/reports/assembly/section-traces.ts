@@ -1,5 +1,10 @@
 import { classifySite } from "../classify/site";
 import {
+  DEFAULT_SOCIAL_NETWORKS,
+  socialNetworkFor,
+  type SocialNetwork,
+} from "../classify/social";
+import {
   formatDuration,
   formatInteger,
   formatMegabytes,
@@ -124,6 +129,12 @@ export type UserTableRow = {
   percentOfBrowsingTime: string;
 };
 
+export type SocialSection = {
+  /** Nombre de la red con más `Browsing Time` de usuarios. */
+  network: string;
+  rows: SiteUserTableRow[];
+};
+
 /** Filas de la tabla de sitios, ordenadas por hits descendente. */
 export function buildSiteTableRows(
   sites: readonly SiteTotals[],
@@ -244,6 +255,84 @@ export function buildTopUsersTableRows(
 }
 
 /**
+ * Filas de la sección "Redes Sociales más utilizadas en la entidad".
+ *
+ * La red se elige por el `Browsing Time` de sus usuarios, no por hits ni por el
+ * `Browsing Time` del sitio: el reloj del sitio y el del par (sitio, usuario)
+ * son métricas distintas (S12, S18). El denominador del `% of Browsing Time` es
+ * la suma de todos los usuarios identificados de la red, igual que en el
+ * drill-down de un sitio (S15).
+ *
+ * Un usuario puede aparecer en varios dominios de la misma red; sus valores se
+ * suman antes de ordenar. Las conexiones directas por IP no se clasifican.
+ */
+export function buildSocialSection(
+  rows: readonly SiteUserTotals[],
+  networks: readonly SocialNetwork[] = DEFAULT_SOCIAL_NETWORKS,
+  limit: number = TOP_ROWS,
+): SocialSection | null {
+  const byNetwork = new Map<
+    string,
+    { name: string; rows: SiteUserTotals[] }
+  >();
+
+  for (const row of rows) {
+    if (row.username === null) continue;
+
+    const network = socialNetworkFor(row.site, networks);
+    if (network === null) continue;
+
+    const bucket = byNetwork.get(network.name) ?? {
+      name: network.name,
+      rows: [],
+    };
+    bucket.rows.push(row);
+    byNetwork.set(network.name, bucket);
+  }
+
+  if (byNetwork.size === 0) return null;
+
+  const ranked = [...byNetwork.values()]
+    .map((bucket) => ({
+      ...bucket,
+      totalBrowsingMs: bucket.rows.reduce(
+        (sum, row) => sum + row.browsingMs,
+        0,
+      ),
+    }))
+    .sort(
+      (a, b) =>
+        b.totalBrowsingMs - a.totalBrowsingMs ||
+        a.name.localeCompare(b.name),
+    );
+
+  const top = ranked[0];
+  const users = new Map<string, SiteUserTotals>();
+
+  for (const row of top.rows) {
+    const username = row.username as string;
+    const current = users.get(username);
+    if (current === undefined) {
+      users.set(username, { ...row });
+      continue;
+    }
+
+    current.hits += row.hits;
+    current.bytesIn += row.bytesIn;
+    current.elapsedMs += row.elapsedMs;
+    current.browsingMs += row.browsingMs;
+  }
+
+  return {
+    network: top.name,
+    rows: buildSiteUserTableRows([...users.values()], {
+      limit,
+      basisMs: top.totalBrowsingMs,
+    }),
+  };
+}
+
+/**
  * Sitios más visitados de una clasificación: top `limit` por hits descendente
  * (S20). Es un cálculo, no una lista declarada.
  */
@@ -273,6 +362,7 @@ export type TracesSection = {
   nationalSites: SiteTableRow[];
   siteDrilldowns: Array<{ site: string; rows: SiteUserTableRow[] }>;
   topUsers: UserTableRow[];
+  social: SocialSection | null;
 };
 
 export type TracesSectionInput = {
@@ -286,6 +376,8 @@ export type TracesSectionInput = {
    * lista que se configura; no decide qué sitios entran, solo cómo se clasifican.
    */
   nationalExclusions?: readonly string[];
+  /** Catálogo de redes; por defecto el del informe (sin YouTube). */
+  socialNetworks?: readonly SocialNetwork[];
   /** Recorte de filas al renderizar. Nunca se aplica al persistir (S17). */
   limit?: number;
 };
@@ -333,5 +425,6 @@ export function buildTracesSection(input: TracesSectionInput): TracesSection {
     nationalSites,
     siteDrilldowns,
     topUsers: buildTopUsersTableRows(input.users, input.totalBrowsingMs, limit),
+    social: buildSocialSection(input.siteUsers, input.socialNetworks, limit),
   };
 }

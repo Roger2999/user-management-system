@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildSiteTableRows,
   buildSiteUserTableRows,
+  buildSocialSection,
   buildTopUsersTableRows,
   buildTracesSection,
   selectTopSites,
@@ -248,6 +249,53 @@ describe("buildTopUsersTableRows", () => {
       percentOfBrowsingTime: "5.5%",
     });
     expect(rows[1].percentOfBrowsingTime).toBe("3.2%");
+  });
+});
+
+describe("buildSocialSection", () => {
+  it("elige la red con más Browsing Time de usuarios, no la de más hits", () => {
+    const section = buildSocialSection([
+      siteUser("ana", "web.whatsapp.com", 10, 1, "00:10:00", "02:00:00"),
+      siteUser("brian", "web.whatsapp.com", 90, 1, "00:10:00", "01:00:00"),
+      siteUser("ana", "web.telegram.org", 10, 1, "00:10:00", "01:00:00"),
+      siteUser("carlos", "web.telegram.org", 80, 1, "00:10:00", "01:00:00"),
+      siteUser("dani", "www.facebook.com", 5, 1, "00:10:00", "00:30:00"),
+    ]);
+
+    expect(section?.network).toBe("WhatsApp");
+    expect(section?.rows.map((row) => row.username)).toEqual(["ana", "brian"]);
+    expect(section?.rows[0].percentOfBrowsingTime).toBe("66.7%");
+    expect(section?.rows[1].percentOfBrowsingTime).toBe("33.3%");
+  });
+
+  it("suma los dominios de la misma red antes de ordenar", () => {
+    const section = buildSocialSection([
+      siteUser("ana", "web.whatsapp.com", 10, 1, "00:10:00", "02:00:00"),
+      siteUser("ana", "whatsapp.com", 5, 1, "00:05:00", "01:00:00"),
+      siteUser("brian", "web.whatsapp.com", 10, 1, "00:10:00", "01:00:00"),
+    ]);
+
+    expect(section?.rows.map((row) => row.username)).toEqual(["ana", "brian"]);
+    expect(section?.rows[0].browsingTime).toBe("03:00:00");
+    expect(section?.rows[0].hits).toBe("15");
+    expect(section?.rows[0].percentOfBrowsingTime).toBe("75.0%");
+  });
+
+  it("devuelve null si no hay sitios de redes sociales", () => {
+    expect(
+      buildSocialSection([
+        siteUser("ana", "www.google.com", 10, 1, "00:10:00", "02:00:00"),
+        siteUser("ana", "www.youtube.com", 10, 1, "00:10:00", "02:00:00"),
+      ]),
+    ).toBeNull();
+  });
+
+  it("ignora el tráfico sin cuenta", () => {
+    expect(
+      buildSocialSection([
+        siteUser(null, "web.whatsapp.com", 10, 1, "00:10:00", "02:00:00"),
+      ]),
+    ).toBeNull();
   });
 });
 

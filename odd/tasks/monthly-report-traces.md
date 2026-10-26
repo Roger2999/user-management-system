@@ -112,6 +112,16 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   de generación en `America/Havana`, la línea "Informe mensual correspondiente al
   mes" lleva el mes y el año informados, y la prosa de la sección 1 menciona ese
   mismo mes. No puede quedar el mes de la plantilla.
+- **S23** — La sección "Redes Sociales más utilizadas en la entidad" se llena
+  automáticamente. La red se elige por el `Browsing Time` de sus usuarios (no por
+  hits ni por el `Browsing Time` del sitio, S12/S18); el catálogo agrupa los
+  dominios de cada red y YouTube queda fuera porque el informe de mayo titula
+  "Facebook" aunque YouTube tiene más tiempo por usuario. La tabla es el top 10
+  de usuarios de esa red, ordenado por `Browsing Time`, con el formato del
+  drill-down (S21) y el `% of Browsing Time` sobre la suma de todos los usuarios
+  identificados de la red. Sin datos sociales, el título conserva la etiqueta y
+  no hereda el "Facebook" de la plantilla. Las conexiones directas por IP no se
+  clasifican.
 
 ## Tasks
 
@@ -204,6 +214,13 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   (24 ADULT, 15 ANON_PROXY, 24 MINING); `SUBVERSIVE` queda vacía a propósito
   hasta que el especialista defina la lista. Route: inline. Spec: S5.
   Status: hecho; seed idempotente (segunda corrida: 0 nuevas, 63 sin cambios).
+- **T31** — Sección de redes sociales: catálogo
+  (`lib/reports/classify/social.ts`), `buildSocialSection`
+  (`lib/reports/assembly/section-traces.ts`), inserción de la tabla
+  (`lib/reports/document/table-xml.ts`, `emit.ts`) y corrimiento del vaciado
+  (`lib/reports/report.ts`). Route: inline. Spec: S23. Status: hecho; 235
+  tests, `tsc` y `eslint` limpios; informe de octubre regenerado con WhatsApp
+  (2 usuarios).
 
 Route declaration: todas las tareas de esta sesión son `inline` — no hay unidades
 independientes en paralelo ni presión de contexto que justifiquen un writer.
@@ -1433,4 +1450,31 @@ nuevas y 63 sin cambios.
 políticos no es una decisión técnica y un falso positivo en un informe oficial
 lleva nombre y apellidos. El motor ya soporta la categoría; la lista real la
 carga el especialista. El seed imprime un aviso mientras siga vacía.
+
+### L36 — Redes sociales y sitios con IP (verbatim)
+
+> bien, otras cosas que note en el informe generado
+> 1: por que hay sitios con ip en vez del nombre, como 149.154.175.50, 194.221.250.50, 149.154.167.50.
+> 2. Por que la seccion de redes sociales mas utilizadas en la entidad , que se debe filtrar por browsing time, esta vacia.Esta es una tabla con el top 10 de usuarios de la red social mas usada
+
+La sección de redes sociales se llena desde los pares (sitio, usuario)
+persistidos. La red se elige por la suma de `Browsing Time` de sus usuarios; el
+catálogo agrupa dominios (`facebook.com`, `fbcdn.net`, etc.) y deja YouTube
+fuera: el informe de mayo titula "Facebook" aunque YouTube tiene más tiempo por
+usuario (781,169 s contra 527,631 s), así que YouTube no forma parte del
+concepto de "red social" de este informe. La tabla se clona de un drill-down
+para heredar el formato y se inserta después de la instrucción "Filtrar por
+Browsing Time"; el vaciado de las secciones 2-7 se corre una tabla.
+
+Resultado en octubre (día 12/10/2026): WhatsApp, 314 min de usuarios; top
+`red.social2` 5:11:31 (99.3%) y `brian` 0:02:14 (0.7%). El informe se regeneró
+en `storage/reports/2026-10.docx` (200.740 bytes).
+
+Sitios con IP: `149.154.175.50` y `149.154.167.50` son Telegram; el log trae
+`CONNECT 149.154.175.50:443` y ningún hostname, porque el cliente se conecta
+por IP. `194.221.250.50` también es una conexión directa y no tiene PTR. El
+sistema muestra el IP porque es el único dato del log; no lo inventa. Para
+mostrar un nombre haría falta un mapa de rangos IP verificados (Telegram) o DNS
+inverso, que no es confiable y haría la importación dependiente de la red.
+
 

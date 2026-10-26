@@ -46,6 +46,9 @@ function template(): string {
   }
 
   body.push(TABLE([cols(7, "users-h"), cols(7, "users")]));
+  body.push(P("Redes Sociales más utilizadas en la entidad: Facebook"));
+  body.push(P("Usuarios con más tiempo de conexión en las mismas"));
+  body.push(P("**Filtrar por “Browsing Time”."));
   body.push(TABLE([cols(7, "nac-h"), cols(7, "nac")]));
   body.push(dummy("t17"));
   body.push(P("Uso de correo por webmail en servidores nacionales:"));
@@ -93,6 +96,7 @@ function traces(): TracesSection {
       rows: [siteUserRow("usuario.uno")],
     })),
     topUsers: [userRow("usuario.dos")],
+    social: null,
   };
 }
 
@@ -138,6 +142,26 @@ describe("buildReportDocument", () => {
     expect(tableText(result, 16)).toContain("www.nacional.cu");
     expect(tableText(result, 15)).toContain("usuario.dos");
     expect(tableText(result, 5)).toContain("usuario.uno");
+  });
+
+  it("inserta la tabla social y corre el vaciado de las secciones 2-7", () => {
+    const custom = traces();
+    custom.social = {
+      network: "WhatsApp",
+      rows: [siteUserRow("red.social2")],
+    };
+
+    const result = build(custom);
+
+    expect(tableText(result, 16)).toContain("red.social2");
+    expect(tableText(result, 17)).toContain("www.nacional.cu");
+    // La tabla USB pasó de 18 a 19 y sigue vacía.
+    expect(tableText(result, 19)).toBe(
+      "usb-h10usb-h11usb-h12usb-h20usb-h21usb-h22",
+    );
+    expect(result).toContain(
+      "Redes Sociales más utilizadas en la entidad: WhatsApp",
+    );
   });
 
   it("vuelve vacías las tablas de las secciones 2-7", () => {

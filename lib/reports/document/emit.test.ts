@@ -93,6 +93,10 @@ function sampleDocument(): string {
   parts.push(PARAGRAPH("Los 10 usuarios que más descargaron."));
   parts.push(TABLE(TOP_USERS_HEADER, [["viejo-usuario", "1", "0.00", "0.00", "00:00:01", "00:00:01", "0.0%"]]));
 
+  parts.push(PARAGRAPH("Redes Sociales más utilizadas en la entidad: Facebook"));
+  parts.push(PARAGRAPH("Usuarios con más tiempo de conexión en las mismas"));
+  parts.push(PARAGRAPH("**Filtrar por “Browsing Time”."));
+
   parts.push(PARAGRAPH("titulo nacional"));
   parts.push(TABLE(SITE_HEADER, [["www.viejo-nac.cu", "1", "0.00", "0.00", "00:00:01", "00:00:01", "0.0%"]]))
 
@@ -154,6 +158,7 @@ function traces(drilldownCount: number): TracesSection {
         percentOfBrowsingTime: "9.0%",
       },
     ],
+    social: null,
   };
 }
 
@@ -174,6 +179,47 @@ describe("emitTracesSection", () => {
     expect(tables[2]).toContain("a3");
     expect(result).toContain("titulo internacional");
     expect(result).toContain("titulo nacional");
+  });
+
+  it("inserta la tabla de la red social más usada antes de la tabla nacional", () => {
+    const base = traces(10);
+    const withSocial: TracesSection = {
+      ...base,
+      social: {
+        network: "WhatsApp",
+        rows: [
+          {
+            username: "red.social2",
+            hits: "10",
+            incoming: "1.00",
+            downloadTime: "00:10:00",
+            browsingTime: "05:00:00",
+            percentOfBrowsingTime: "99.3%",
+          },
+        ],
+      },
+    };
+
+    const result = emitTracesSection(sampleDocument(), withSocial);
+    const tables = tablesOf(result);
+
+    expect(tables).toHaveLength(17);
+    expect(tables[15]).toContain("red.social2");
+    expect(tables[16]).toContain("www.nuevo-nac.cu");
+    expect(result).toContain(
+      "Redes Sociales más utilizadas en la entidad: WhatsApp",
+    );
+    expect(result).not.toContain("entidad: Facebook");
+    expect(result.indexOf("red.social2")).toBeGreaterThan(
+      result.indexOf("**Filtrar por “Browsing Time”."),
+    );
+  });
+
+  it("no hereda la red social de la plantilla si no hay datos", () => {
+    const result = emitTracesSection(sampleDocument(), traces(10));
+
+    expect(result).toContain("Redes Sociales más utilizadas en la entidad:");
+    expect(result).not.toContain("entidad: Facebook");
   });
 
   it("elimina los drill-downs sobrantes con su título", () => {
