@@ -128,6 +128,9 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   en `America/Havana`, mes y año del período y mención del mes en la prosa de la
   sección 1. Route: inline. Spec: S10, S22. Status: hecho (ver L22), verificado
   contra el documento de mayo.
+- **T22** — Composición del documento (`lib/reports/report.ts`): plantilla + trazas
+  + período → `.docx`. Route: inline. Spec: S6, S22. Status: hecho (ver L23),
+  verificado contra el documento de mayo.
 - **T17** — Modelo mensual: merge de días, cobertura y declaraciones (`lib/reports/model/monthly.ts`). Route: inline. Spec: S7, S12, S19. Status: hecho.
 - **T14** — Arnés de paridad: fixture numérico con los totales de los exports de WebSpy (sitios + usuarios por sitio) y comparación por sitio contra el motor. Route: inline. Spec: S11, S15. Status: nivel 1 hecho (`1307188`); nivel 2 bloqueado por el `access.log` de mayo.
 - **T10** — Paridad mayo 2026. Status: desbloqueado en parte — los exports de WebSpy ya están y confirman el denominador de S15; falta el `access.log` completo de mayo (incluido el 30/04) para comparar hits, bytes y tiempos.
@@ -929,3 +932,31 @@ respuesta fue:
 `blocks.ts`: el escaneo de bloques y el reemplazo de texto estaban duplicados
 entre el vaciado de las secciones 2-7 y los campos del período; quedaron en un
 módulo compartido.
+
+### L23 — Composición del documento
+
+#### Qué se hizo
+
+`buildReportDocument({ template, traces, period, generatedAt })` junta las tres
+operaciones en el único orden que importa: emite la sección 1 (puede quitar
+drill-downs y correr los índices de las tablas posteriores), vacía las secciones
+2-7 y fecha los campos del período. Toma la plantilla y devuelve el `.docx`; las
+otras 26 partes quedan intactas.
+
+#### Verificación
+
+- 147 tests en 18 archivos; `tsc --noEmit` limpio.
+- Documento de mayo compuesto con las trazas de mayo y período junio 2026: XML
+  byte a byte igual al armado paso a paso, 11 páginas, los tres campos correctos y
+  ninguna mención de mayo.
+- Test de extremo a extremo con un documento sintético de 22 tablas: la sección 1
+  recibe los valores, la tabla 18 conserva dos cabeceras y pierde el dato, la 19
+  queda vacía y la 22 conserva tres cabeceras.
+
+#### Lo que sigue faltando
+
+- Ingesta (T9): unir `parseSquidLogStream` con `DailyMetricsAccumulator` por día
+  para producir los `DailyMetrics` que consume `buildMonthlyReport`. Falta el
+  logformat real y la verificación contra la base de datos.
+- Dónde se declaran la cobertura y el `Browsing Time` aproximado (S7/S12): el
+  modelo los calcula, pero el `.docx` no tiene un lugar definido para ellos.
