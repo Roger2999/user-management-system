@@ -134,7 +134,7 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
 - **T17** — Modelo mensual: merge de días, cobertura y declaraciones (`lib/reports/model/monthly.ts`). Route: inline. Spec: S7, S12, S19. Status: hecho.
 - **T14** — Arnés de paridad: fixture numérico con los totales de los exports de WebSpy (sitios + usuarios por sitio) y comparación por sitio contra el motor. Route: inline. Spec: S11, S15. Status: nivel 1 hecho (`1307188`); nivel 2 bloqueado por el `access.log` de mayo.
 - **T10** — Paridad mayo 2026. Status: desbloqueado en parte — los exports de WebSpy ya están y confirman el denominador de S15; falta el `access.log` completo de mayo (incluido el 30/04) para comparar hits, bytes y tiempos.
-- **T9** — Servicio de ingesta (stream, hash, idempotencia). Status: bloqueado por Gate 0 (logformat real) y por verificación contra base de datos.
+- **T9** — Servicio de ingesta (stream, hash, idempotencia). Route: inline. Spec: S1, S10, S19. Status: la parte pura está hecha (`lib/reports/ingest.ts`, ver L24): stream → métricas por día local, con los días ajenos declarados. Faltan el hash, la idempotencia y la persistencia, que dependen de la base de datos.
 - **T11** — Emisión del documento oficial: contenedor (T18), tablas de la sección
   1 (T19) y secciones 2-7 vacías (T20). Route: inline. Spec: S2, S6, S21.
   Status: hecho el `.docx`. La conversión a PDF queda fuera del sistema: se hace
@@ -960,3 +960,39 @@ otras 26 partes quedan intactas.
   logformat real y la verificación contra la base de datos.
 - Dónde se declaran la cobertura y el `Browsing Time` aproximado (S7/S12): el
   modelo los calcula, pero el `.docx` no tiene un lugar definido para ellos.
+
+### L24 — Ingesta por día local y corrección del mapa al quitar ranuras
+
+#### Ingesta
+
+`ingestSquidLog(stream, { period })` recorre el `access.log` sin materializarlo,
+enruta cada registro a su acumulador por día local (`America/Havana`) y devuelve
+las métricas de los días del período, los días ajenos contados y los contadores
+del parser.
+
+No se asume que el archivo sea del día que dice el nombre: el export de mayo trae
+el 30/04, y un registro de las 23:30 locales ya es el día siguiente en UTC. Un día
+fuera del período se declara, no se suma (S19).
+
+#### Un defecto de composición
+
+Si el mes trae menos de diez sitios internacionales, `emitTracesSection` elimina
+las ranuras sobrantes y las tablas posteriores se corren. El mapa del vaciado de
+las secciones 2-7 seguía apuntando a 18-22 y fallaba con "tabla no declarada".
+Ahora `buildReportDocument` corre el mapa por la misma cantidad de ranuras.
+
+#### Verificación
+
+- 151 tests en 19 archivos; `tsc --noEmit` limpio.
+- Fragmento real de 12 líneas: un día local (2024-05-30), 12 hits, 3 usuarios,
+  12 sitios, 0 líneas inválidas, 1 `legacy_connect`, ningún día fuera del período.
+- Test de composición con nueve drill-downs: la tabla de anclaje USB queda en la
+  posición 17 y se vacía igual, y la fecha sigue correcta.
+
+#### Lo que falta
+
+- Hash SHA-256 del archivo e idempotencia al reimportar (S1): necesitan la capa de
+  persistencia.
+- El orquestador que une varios días con `buildMonthlyReport` y emite el documento:
+  las dos puntas ya están (`ingestSquidLog` → `DailyMetrics[]` y
+  `buildReportDocument`).

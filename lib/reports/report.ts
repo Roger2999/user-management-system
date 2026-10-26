@@ -12,9 +12,13 @@
 
 import type { TracesSection } from "./assembly/section-traces";
 import { DEFAULT_TIME_ZONE } from "./time";
-import { blankSections } from "./document/blank-sections";
+import {
+  DEFAULT_BLANK_SECTIONS,
+  blankSections,
+  type BlankSectionsSpec,
+} from "./document/blank-sections";
 import { readDocumentXml, replaceDocumentXml } from "./document/docx";
-import { emitTracesSection } from "./document/emit";
+import { DEFAULT_TRACES_TABLES, emitTracesSection } from "./document/emit";
 import { fillPeriodFields } from "./document/period";
 
 export type ReportDocumentInput = {
@@ -33,7 +37,22 @@ export function buildReportDocument(input: ReportDocumentInput): Uint8Array {
   const xml = readDocumentXml(input.template);
 
   const withTraces = emitTracesSection(xml, input.traces);
-  const blanked = blankSections(withTraces);
+
+  // Si la selección trae menos de diez sitios, `emitTracesSection` elimina las
+  // ranuras sobrantes y las tablas posteriores se corren. El mapa del vaciado
+  // tiene que correrse igual, o buscaría las tablas 18-22 en otro lugar.
+  const shift =
+    DEFAULT_TRACES_TABLES.drilldownSlots - input.traces.siteDrilldowns.length;
+
+  const blankSpec: BlankSectionsSpec = {
+    ...DEFAULT_BLANK_SECTIONS,
+    tables: DEFAULT_BLANK_SECTIONS.tables.map((table) => ({
+      ...table,
+      tableIndex: table.tableIndex - shift,
+    })),
+  };
+
+  const blanked = blankSections(withTraces, blankSpec);
   const dated = fillPeriodFields(blanked, {
     month: input.period.month,
     year: input.period.year,

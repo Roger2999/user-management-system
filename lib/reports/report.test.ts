@@ -104,7 +104,7 @@ function tableText(documentXml: string, index: number): string {
 /** 3 de julio 02:00 UTC = 2 de julio 22:00 en La Habana. */
 const EMISSION = Date.UTC(2026, 6, 3, 2, 0, 0);
 
-function build(): string {
+function build(custom: TracesSection = traces()): string {
   const templateBytes = writeZip([
     {
       name: "word/document.xml",
@@ -114,7 +114,7 @@ function build(): string {
 
   const result = buildReportDocument({
     template: templateBytes,
-    traces: traces(),
+    traces: custom,
     period: { year: 2026, month: 6 },
     generatedAt: EMISSION,
   });
@@ -142,6 +142,20 @@ describe("buildReportDocument", () => {
     // Tabla 22: tres cabeceras y el dato vacío.
     expect(tableText(result, 22)).toContain("res-h10");
     expect(tableText(result, 22)).not.toContain("res0");
+  });
+
+  it("corre las tablas de las secciones 2-7 si sobran ranuras de drill-down", () => {
+    const nine = traces();
+    nine.siteDrilldowns = nine.siteDrilldowns.slice(0, 9);
+
+    const result = build(nine);
+
+    // Al quitar la décima ranura, las tablas posteriores se corren una posición.
+    expect(tableText(result, 17)).toBe(
+      "usb-h10usb-h11usb-h12usb-h20usb-h21usb-h22",
+    );
+    expect(tableText(result, 18)).toBe("");
+    expect(result).toContain("Matanzas, 2 de Julio de 2026");
   });
 
   it("fecha el documento y declara el mes del período", () => {
