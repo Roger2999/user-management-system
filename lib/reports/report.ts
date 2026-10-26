@@ -11,6 +11,8 @@
  */
 
 import type { TracesSection } from "./assembly/section-traces";
+import type { DailyMetrics } from "./metrics/aggregate";
+import { buildMonthlyReport, type MonthlyReport } from "./model/monthly";
 import { DEFAULT_TIME_ZONE } from "./time";
 import {
   DEFAULT_BLANK_SECTIONS,
@@ -61,4 +63,47 @@ export function buildReportDocument(input: ReportDocumentInput): Uint8Array {
   });
 
   return replaceDocumentXml(input.template, dated);
+}
+
+export type MonthlyDocumentInput = {
+  /** Bytes del `.docx` oficial, sin modificar. */
+  template: Uint8Array;
+  /** Días ya acumulados por `ingestSquidLog`. */
+  days: readonly DailyMetrics[];
+  period: { year: number; month: number };
+  generatedAt: number;
+  timeZone?: string;
+  nationalExclusions?: readonly string[];
+  limit?: number;
+  browsingTimeCalibrated?: boolean;
+};
+
+export type MonthlyDocumentResult = {
+  report: MonthlyReport;
+  /** `.docx` listo para abrir en Word. */
+  document: Uint8Array;
+};
+
+/** De los días acumulados al documento: modelo mensual y `.docx`. */
+export function buildMonthlyDocument(
+  input: MonthlyDocumentInput,
+): MonthlyDocumentResult {
+  const report = buildMonthlyReport({
+    year: input.period.year,
+    month: input.period.month,
+    daily: input.days,
+    nationalExclusions: input.nationalExclusions,
+    limit: input.limit,
+    browsingTimeCalibrated: input.browsingTimeCalibrated,
+  });
+
+  const document = buildReportDocument({
+    template: input.template,
+    traces: report.traces,
+    period: input.period,
+    generatedAt: input.generatedAt,
+    timeZone: input.timeZone,
+  });
+
+  return { report, document };
 }

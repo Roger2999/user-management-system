@@ -1,8 +1,14 @@
+import { Readable } from "node:stream";
 import { describe, expect, it } from "vitest";
 import type { TracesSection } from "./assembly/section-traces";
 import { readDocumentXml } from "./document/docx";
 import { writeZip } from "./document/zip";
-import { buildReportDocument } from "./report";
+import { ingestSquidLog } from "./ingest";
+import {
+  buildMonthlyDocument,
+  buildReportDocument,
+} from "./report";
+import { monthlyPeriod } from "./time";
 
 const CELL = (text: string) =>
   `<w:tc><w:tcPr/><w:p><w:r><w:t>${text}</w:t></w:r></w:p></w:tc>`;
@@ -104,16 +110,18 @@ function tableText(documentXml: string, index: number): string {
 /** 3 de julio 02:00 UTC = 2 de julio 22:00 en La Habana. */
 const EMISSION = Date.UTC(2026, 6, 3, 2, 0, 0);
 
-function build(custom: TracesSection = traces()): string {
-  const templateBytes = writeZip([
+function templateBytes(): Uint8Array {
+  return writeZip([
     {
       name: "word/document.xml",
       data: new TextEncoder().encode(template()),
     },
   ]);
+}
 
+function build(custom: TracesSection = traces()): string {
   const result = buildReportDocument({
-    template: templateBytes,
+    template: templateBytes(),
     traces: custom,
     period: { year: 2026, month: 6 },
     generatedAt: EMISSION,
@@ -142,6 +150,34 @@ describe("buildReportDocument", () => {
     // Tabla 22: tres cabeceras y el dato vacío.
     expect(tableText(result, 22)).toContain("res-h10");
     expect(tableText(result, 22)).not.toContain("res0");
+  });
+
+  it("genera el documento desde un stream de log", async () => {
+    const logLine = (epochMs: number, url: string) =>
+      `${Math.floor(epochMs / 1000)}.000    100 10.0.0.1 TCP_MISS/200 500 GET ${url} ana HIER_DIRECT/1.2.3.4 text/html`;
+    const stream = Readable.from([
+      [
+        logLine(Date.UTC(2026, 5, 1, 16, 0, 0), "http://www.internacional.com/"),
+        logLine(Date.UTC(2026, 5, 1, 16, 1, 0), "http://www.nacional.cu/"),
+      ].join("\n"),
+    ]);
+
+    const ingested = await ingestSquidLog(stream, {
+      period: monthlyPeriod(2026, 6),
+    });
+    const { report, document } = buildMonthlyDocument({
+      template: templateBytes(),
+      days: ingested.days,
+      period: { year: 2026, month: 6 },
+      generatedAt: EMISSION,
+    });
+    const result = readDocumentXml(document);
+
+    expect(report.traces.internationalSites.map((site) => site.site)).toEqual([
+      "www.internacional.com",
+    ]);
+    expect(result).toContain("www.internacional.com");
+    expect(result).toContain("Matanzas, 2 de Julio de 2026");
   });
 
   it("corre las tablas de las secciones 2-7 si sobran ranuras de drill-down", () => {

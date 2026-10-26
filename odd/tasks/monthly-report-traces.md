@@ -131,6 +131,9 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
 - **T22** — Composición del documento (`lib/reports/report.ts`): plantilla + trazas
   + período → `.docx`. Route: inline. Spec: S6, S22. Status: hecho (ver L23),
   verificado contra el documento de mayo.
+- **T23** — Orquestador del log al documento (`buildMonthlyDocument`): días
+  acumulados → modelo mensual + `.docx`. Route: inline. Spec: S6, S7, S12.
+  Status: hecho (ver L25).
 - **T17** — Modelo mensual: merge de días, cobertura y declaraciones (`lib/reports/model/monthly.ts`). Route: inline. Spec: S7, S12, S19. Status: hecho.
 - **T14** — Arnés de paridad: fixture numérico con los totales de los exports de WebSpy (sitios + usuarios por sitio) y comparación por sitio contra el motor. Route: inline. Spec: S11, S15. Status: nivel 1 hecho (`1307188`); nivel 2 bloqueado por el `access.log` de mayo.
 - **T10** — Paridad mayo 2026. Status: desbloqueado en parte — los exports de WebSpy ya están y confirman el denominador de S15; falta el `access.log` completo de mayo (incluido el 30/04) para comparar hits, bytes y tiempos.
@@ -996,3 +999,29 @@ Ahora `buildReportDocument` corre el mapa por la misma cantidad de ranuras.
 - El orquestador que une varios días con `buildMonthlyReport` y emite el documento:
   las dos puntas ya están (`ingestSquidLog` → `DailyMetrics[]` y
   `buildReportDocument`).
+
+### L25 — Orquestador: del log al `.docx`
+
+#### Qué se hizo
+
+`buildMonthlyDocument({ template, days, period, generatedAt })` une las dos
+puntas: `buildMonthlyReport` (modelo mensual, cobertura, declaraciones) y
+`buildReportDocument` (sección 1, secciones 2-7 vacías, fecha y mes). Devuelve el
+modelo y los bytes del `.docx`.
+
+Con `ingestSquidLog` queda la cadena completa sin persistencia: stream →
+`DailyMetrics[]` → modelo → documento.
+
+#### Verificación
+
+- 152 tests en 19 archivos; `tsc --noEmit` limpio.
+- Prueba de punta a punta: un stream de dos líneas (un sitio internacional y uno
+  nacional) produce el modelo con `www.internacional.com` en la tabla 4 y un
+  `.docx` fechado "Matanzas, 2 de Julio de 2026".
+
+#### Lo que falta
+
+- Persistencia: hash SHA-256, idempotencia y guardado de días y hallazgos (S1).
+- Dónde se declaran la cobertura y el `Browsing Time` aproximado (S7/S12): el
+  modelo los calcula y el `.docx` no tiene un lugar definido.
+- UI de importación, revisión de hallazgos y descarga (T12).
