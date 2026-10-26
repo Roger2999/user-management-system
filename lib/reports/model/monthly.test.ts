@@ -195,18 +195,11 @@ describe("buildMonthlyReport", () => {
     }),
   ];
 
-  const selection = {
-    international: ["www.youtube.com"],
-    national: [],
-    drilldowns: ["www.youtube.com"],
-  };
-
   it("declara los días faltantes del período", () => {
     const report = buildMonthlyReport({
       year: 2026,
       month: 5,
       daily,
-      selection,
     });
 
     expect(report.period.days).toHaveLength(31);
@@ -236,7 +229,6 @@ describe("buildMonthlyReport", () => {
           ],
         }),
       ],
-      selection,
     });
 
     expect(report.coverage.extraDays).toEqual(["2026-04-30"]);
@@ -249,21 +241,22 @@ describe("buildMonthlyReport", () => {
       year: 2026,
       month: 5,
       daily,
-      selection,
     });
 
     expect(report.coverage.unidentifiedHits).toBe(10);
   });
 
-  it("usa la selección declarada para las tablas y el drill-down", () => {
+  it("calcula las dos tablas y ata el drill-down a la tabla internacional", () => {
     const report = buildMonthlyReport({
       year: 2026,
       month: 5,
       daily,
-      selection,
     });
 
     expect(report.traces.internationalSites.map((row) => row.site)).toEqual([
+      "www.youtube.com",
+    ]);
+    expect(report.traces.siteDrilldowns.map((drilldown) => drilldown.site)).toEqual([
       "www.youtube.com",
     ]);
     expect(report.traces.siteDrilldowns[0].rows[0]).toMatchObject({
@@ -278,13 +271,11 @@ describe("buildMonthlyReport", () => {
       year: 2026,
       month: 5,
       daily,
-      selection,
     });
     const calibrated = buildMonthlyReport({
       year: 2026,
       month: 5,
       daily,
-      selection,
       browsingTimeCalibrated: true,
     });
 

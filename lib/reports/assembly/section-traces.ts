@@ -18,6 +18,13 @@ import {
  * 1. Sitios internacionales más visitados (7 columnas).
  * 2. Drill-down por sitio: los 10 usuarios que más accedieron a cada uno (6).
  * 3. Los 10 usuarios que más descargaron (7).
+ *
+ * Regla de "sitios más visitados" (S20): las dos tablas de sitios son el top 10
+ * por hits, calculado por el sistema. La selección no se declara.
+ *
+ * Los drill-downs son esos mismos sitios, en el orden de la tabla internacional,
+ * y dentro de cada uno los 10 usuarios se ordenan por `Browsing Time` (S15).
+ * Esa es la métrica del drill-down, no la de la tabla de sitios.
  */
 
 export const TOP_ROWS = 10;
@@ -237,59 +244,28 @@ export function buildTopUsersTableRows(
 }
 
 /**
- * Sitios que el especialista confirma para el informe.
- *
- * La selección es un dato del informe, no un cálculo: la tabla internacional del
- * documento vigente no es ni el top por hits ni el top por `Browsing Time`
- * (`google.com` tiene 90,921 hits y no aparece; `kimi.com` entra con 2,731). Por
- * eso se declara y no se deduce. `proposeSiteSelection` propone un top por hits
- * como punto de partida, y la lista final la confirma el especialista.
+ * Sitios más visitados de una clasificación: top `limit` por hits descendente
+ * (S20). Es un cálculo, no una lista declarada.
  */
-export type SiteSelection = {
-  /** Sitios de la tabla internacional, por nombre tal como aparece en el log. */
-  international: readonly string[];
-  /** Sitios de la tabla nacional. */
-  national: readonly string[];
-  /** Sitios con drill-down de usuarios, en el orden del documento. */
-  drilldowns: readonly string[];
-};
-
-export type ProposeSelectionOptions = {
+export type TopSitesOptions = {
   limit?: number;
+  kind?: "national" | "international";
   nationalExclusions?: readonly string[];
 };
 
-/**
- * Propuesta de selección: el top por hits de cada clasificación.
- *
- * Es solo una propuesta. Sirve para que el especialista parta de algo y ajuste;
- * no es lo que el informe de mayo tiene, y no se usa como default en
- * `buildTracesSection` a propósito: un default silencioso volvería a calcular la
- * selección, que es justo lo que S20 prohíbe.
- */
-export function proposeSiteSelection(
+export function selectTopSites(
   sites: readonly SiteTotals[],
-  options: ProposeSelectionOptions = {},
-): SiteSelection {
+  options: TopSitesOptions = {},
+): SiteTotals[] {
   const limit = options.limit ?? TOP_ROWS;
-  const byHits = [...sites].sort(
-    (a, b) => b.hits - a.hits || a.site.localeCompare(b.site),
-  );
-  const pick = (kind: "national" | "international") =>
-    byHits
-      .filter(
-        (site) => classifySite(site.site, options.nationalExclusions) === kind,
-      )
-      .slice(0, limit)
-      .map((site) => site.site);
+  const kind = options.kind ?? "international";
 
-  const international = pick("international");
-
-  return {
-    international,
-    national: pick("national"),
-    drilldowns: international,
-  };
+  return [...sites]
+    .filter(
+      (site) => classifySite(site.site, options.nationalExclusions) === kind,
+    )
+    .sort((a, b) => b.hits - a.hits || a.site.localeCompare(b.site))
+    .slice(0, limit);
 }
 
 export type TracesSection = {
@@ -305,81 +281,34 @@ export type TracesSectionInput = {
   sites: readonly SiteTotals[];
   siteUsers: readonly SiteUserTotals[];
   users: readonly UserTotals[];
-  selection: SiteSelection;
+  /**
+   * Exclusiones institucionales para la clasificación nacional. Es la única
+   * lista que se configura; no decide qué sitios entran, solo cómo se clasifican.
+   */
   nationalExclusions?: readonly string[];
   /** Recorte de filas al renderizar. Nunca se aplica al persistir (S17). */
   limit?: number;
 };
 
-/**
- * Resuelve la selección contra los sitios con tráfico.
- *
- * Falla en vez de emitir una tabla incompleta: un sitio seleccionado sin tráfico
- * o puesto en la tabla equivocada es un error del informe, no una fila vacía.
- */
-function selectSites(
-  sites: readonly SiteTotals[],
-  names: readonly string[],
-  expected: "national" | "international",
-  nationalExclusions: readonly string[] | undefined,
-): SiteTotals[] {
-  const byName = new Map(sites.map((site) => [site.site, site]));
-  const missing: string[] = [];
-  const misclassified: string[] = [];
-  const selected: SiteTotals[] = [];
-
-  for (const name of names) {
-    const site = byName.get(name);
-    if (site === undefined) {
-      missing.push(name);
-      continue;
-    }
-
-    if (classifySite(site.site, nationalExclusions) !== expected) {
-      misclassified.push(name);
-      continue;
-    }
-
-    selected.push(site);
-  }
-
-  if (missing.length > 0) {
-    throw new RangeError(
-      `sitios seleccionados sin tráfico en el período: ${missing.join(", ")}`,
-    );
-  }
-
-  if (misclassified.length > 0) {
-    throw new RangeError(
-      `sitios fuera de la clasificación ${expected}: ${misclassified.join(", ")}`,
-    );
-  }
-
-  return selected;
-}
-
 export function buildTracesSection(input: TracesSectionInput): TracesSection {
   const limit = input.limit ?? TOP_ROWS;
 
-  const international = selectSites(
-    input.sites,
-    input.selection.international,
-    "international",
-    input.nationalExclusions,
-  );
-  const national = selectSites(
-    input.sites,
-    input.selection.national,
-    "national",
-    input.nationalExclusions,
-  );
-
+  // Las dos tablas se calculan: top 10 por hits de cada clasificación (S20).
   const internationalSites = buildSiteTableRows(
-    international,
+    selectTopSites(input.sites, {
+      nationalExclusions: input.nationalExclusions,
+    }),
     input.totalHits,
     limit,
   );
-  const nationalSites = buildSiteTableRows(national, input.totalHits, limit);
+  const nationalSites = buildSiteTableRows(
+    selectTopSites(input.sites, {
+      kind: "national",
+      nationalExclusions: input.nationalExclusions,
+    }),
+    input.totalHits,
+    limit,
+  );
 
   const usersBySite = new Map<string, SiteUserTotals[]>();
   for (const row of input.siteUsers) {
@@ -391,20 +320,13 @@ export function buildTracesSection(input: TracesSectionInput): TracesSection {
     }
   }
 
-  // El drill-down sigue el orden declarado, no el de la tabla de sitios: son
-  // datos distintos del informe y el especialista puede ordenarlos.
-  const siteDrilldowns = input.selection.drilldowns.map((site) => {
-    if (!input.sites.some((row) => row.site === site)) {
-      throw new RangeError(
-        `sitio con drill-down sin tráfico en el período: ${site}`,
-      );
-    }
-
-    return {
-      site,
-      rows: buildSiteUserTableRows(usersBySite.get(site) ?? [], { limit }),
-    };
-  });
+  // Los drill-downs son los mismos sitios de la tabla internacional y en su
+  // mismo orden: "de los sitios más visitados, los 10 usuarios que más
+  // accedieron a cada uno de estos sitios" (S20).
+  const siteDrilldowns = internationalSites.map((row) => ({
+    site: row.site,
+    rows: buildSiteUserTableRows(usersBySite.get(row.site) ?? [], { limit }),
+  }));
 
   return {
     internationalSites,

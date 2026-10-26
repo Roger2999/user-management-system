@@ -1,4 +1,4 @@
-import type { SiteSelection, SiteTotals, SiteUserTotals, TracesSection, UserTotals } from "../assembly/section-traces";
+import type { SiteTotals, SiteUserTotals, TracesSection, UserTotals } from "../assembly/section-traces";
 import { buildTracesSection } from "../assembly/section-traces";
 import type { DailyMetrics } from "../metrics/aggregate";
 import { checkCoverage, monthlyPeriod } from "../time";
@@ -12,9 +12,10 @@ import type { MonthlyPeriod, PeriodCoverage } from "../time";
  * - **El período se declara, no se deduce.** `monthlyPeriod` fija el mes
  *   calendario local; un día que falta se reporta como faltante y un día ajeno
  *   (el 30/04 en un informe de mayo) se reporta como ajeno en vez de sumarse.
- * - **La selección de sitios es un dato del informe.** El motor puede proponer
- *   un top por hits, pero lo que se emite es la lista que el especialista
- *   confirma. Ver S20.
+ * - **"Sitios más visitados" se calcula, no se declara.** Las dos tablas son el
+ *   top 10 por hits de cada clasificación y los drill-downs son los sitios de la
+ *   tabla internacional. El `Browsing Time` ordena a los usuarios dentro de cada
+ *   drill-down, no la tabla de sitios. Ver S20.
  * - **Un día se agrega una sola vez.** Reimportar el mismo archivo no puede
  *   duplicar métricas: el merge rechaza días repetidos en vez de sumarlos dos
  *   veces.
@@ -174,7 +175,6 @@ export type MonthlyReportInput = {
   year: number;
   month: number;
   daily: readonly DailyMetrics[];
-  selection: SiteSelection;
   nationalExclusions?: readonly string[];
   /** Recorte de filas al renderizar. No afecta el merge ni los denominadores. */
   limit?: number;
@@ -213,7 +213,6 @@ export function buildMonthlyReport(input: MonthlyReportInput): MonthlyReport {
     sites: totals.sites,
     siteUsers: totals.siteUsers,
     users: totals.users,
-    selection: input.selection,
     nationalExclusions: input.nationalExclusions,
     limit: input.limit,
   });

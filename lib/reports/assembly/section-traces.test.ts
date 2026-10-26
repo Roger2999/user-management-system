@@ -4,7 +4,7 @@ import {
   buildSiteUserTableRows,
   buildTopUsersTableRows,
   buildTracesSection,
-  proposeSiteSelection,
+  selectTopSites,
   SITE_TABLE_HEADERS,
   SITE_USER_TABLE_HEADERS,
   type SiteTotals,
@@ -132,11 +132,13 @@ describe("buildSiteTableRows", () => {
   });
 
   it("ordena por hits descendente y corta en el top", () => {
+    // S20: la tabla de sitios se ordena por hits, aunque el Browsing Time sea
+    // mayor en otro sitio.
     const rows = buildSiteTableRows(
       [
-        site({ site: "b.com", hits: 10 }),
-        site({ site: "a.com", hits: 30 }),
-        site({ site: "c.com", hits: 20 }),
+        site({ site: "b.com", hits: 10, browsingMs: hms("09:00:00") }),
+        site({ site: "a.com", hits: 30, browsingMs: hms("01:00:00") }),
+        site({ site: "c.com", hits: 20, browsingMs: hms("05:00:00") }),
       ],
       100,
       2,
@@ -250,142 +252,122 @@ describe("buildTopUsersTableRows", () => {
 });
 
 describe("buildTracesSection", () => {
-  it("separa nacional de internacional según la selección declarada", () => {
+  it("calcula las dos tablas: top por hits de cada clasificación", () => {
+    // Regla S20: el sistema calcula la lista, no la recibe. `picta.cu` encabeza
+    // la nacional por hits y `google.com` no entra en la internacional porque
+    // youtube tiene más.
     const section = buildTracesSection({
       totalHits: 91_300_000,
       totalBrowsingMs: 47_535_600_000,
       sites: [
-        site({ site: "www.youtube.com", hits: 129351 }),
-        site({ site: "www.picta.cu", hits: 639073 }),
-        site({ site: "elecmtz.une.cu", hits: 900 }),
+        site({ site: "www.youtube.com", hits: 129_351, browsingMs: hms("266:34:32") }),
+        site({ site: "google.com", hits: 90_921, browsingMs: hms("231:39:24") }),
+        site({ site: "www.picta.cu", hits: 639_073, browsingMs: hms("358:48:41") }),
       ],
       siteUsers: [],
       users: [],
-      selection: {
-        international: ["www.youtube.com"],
-        national: ["www.picta.cu"],
-        drilldowns: [],
-      },
-      nationalExclusions: ["une.cu"],
     });
 
+    expect(section.internationalSites.map((row) => row.site)).toEqual([
+      "www.youtube.com",
+      "google.com",
+    ]);
     expect(section.nationalSites.map((row) => row.site)).toEqual([
       "www.picta.cu",
     ]);
-    expect(section.internationalSites.map((row) => row.site)).toEqual([
-      "www.youtube.com",
-    ]);
   });
 
-  it("no corta la selección por hits: entra el sitio elegido y no el que más tiene", () => {
-    // Caso real de mayo: `google.com` tiene 90,921 hits y no está en el
-    // documento; `kimi.com` entra con 2,731. Con un top por hits sería al revés.
+  it("corta cada tabla en 10 y ordena por hits", () => {
+    const sites = Array.from({ length: 12 }, (_, index) =>
+      site({
+        site: `s${String(index).padStart(2, "0")}.com`,
+        hits: index,
+        browsingMs: hms("99:00:00"),
+      }),
+    );
+
     const section = buildTracesSection({
-      totalHits: 91_300_000,
-      totalBrowsingMs: 47_535_600_000,
-      sites: [
-        site({ site: "google.com", hits: 90_921 }),
-        site({ site: "www.kimi.com", hits: 2_731 }),
-      ],
+      totalHits: 1000,
+      totalBrowsingMs: 1_000_000,
+      sites,
       siteUsers: [],
       users: [],
-      selection: {
-        international: ["www.kimi.com"],
-        national: [],
-        drilldowns: [],
-      },
     });
 
-    expect(section.internationalSites.map((row) => row.site)).toEqual([
-      "www.kimi.com",
-    ]);
+    expect(section.internationalSites).toHaveLength(10);
+    expect(section.internationalSites[0].site).toBe("s11.com");
+    expect(section.internationalSites[9].site).toBe("s02.com");
   });
 
-  it("genera un drill-down por cada sitio declarado, en el orden declarado", () => {
+  it("genera un drill-down por cada sitio de la tabla, en el mismo orden", () => {
     const section = buildTracesSection({
       totalHits: 1000,
       totalBrowsingMs: 10_000_000,
       sites: [
-        site({ site: "www.youtube.com", hits: 900 }),
-        site({ site: "www.facebook.com", hits: 100 }),
+        site({ site: "www.youtube.com", hits: 900, browsingMs: hms("10:00:00") }),
+        site({ site: "www.facebook.com", hits: 100, browsingMs: hms("20:00:00") }),
       ],
       siteUsers: [
         siteUser("u1", "www.youtube.com", 900, 10, "01:00:00", "02:00:00"),
         siteUser("u2", "www.facebook.com", 100, 5, "00:30:00", "00:10:00"),
       ],
       users: [],
-      selection: {
-        international: ["www.youtube.com", "www.facebook.com"],
-        national: [],
-        drilldowns: ["www.facebook.com", "www.youtube.com"],
-      },
     });
 
-    expect(section.siteDrilldowns.map((drilldown) => drilldown.site)).toEqual([
-      "www.facebook.com",
+    expect(section.internationalSites.map((row) => row.site)).toEqual([
       "www.youtube.com",
+      "www.facebook.com",
+    ]);
+    expect(section.siteDrilldowns.map((drilldown) => drilldown.site)).toEqual([
+      "www.youtube.com",
+      "www.facebook.com",
     ]);
     expect(section.siteDrilldowns[1].rows.map((row) => row.username)).toEqual([
-      "u1",
+      "u2",
     ]);
   });
 
-  it("falla si un sitio seleccionado no tiene tráfico", () => {
-    expect(() =>
-      buildTracesSection({
-        totalHits: 10,
-        totalBrowsingMs: 1000,
-        sites: [site({ site: "www.youtube.com", hits: 10 })],
-        siteUsers: [],
-        users: [],
-        selection: {
-          international: ["www.youtube.com", "www.inexistente.com"],
-          national: [],
-          drilldowns: [],
-        },
-      }),
-    ).toThrow(/sin tráfico/);
-  });
+  it("respeta las exclusiones institucionales al clasificar", () => {
+    // `une.cu` deja de ser nacional y compite en la tabla internacional.
+    const section = buildTracesSection({
+      totalHits: 10_000,
+      totalBrowsingMs: 1_000_000,
+      sites: [
+        site({ site: "elecmtz.une.cu", hits: 9000 }),
+        site({ site: "www.picta.cu", hits: 500 }),
+      ],
+      siteUsers: [],
+      users: [],
+      nationalExclusions: ["une.cu"],
+    });
 
-  it("falla si un sitio nacional se declara en la tabla internacional", () => {
-    expect(() =>
-      buildTracesSection({
-        totalHits: 10,
-        totalBrowsingMs: 1000,
-        sites: [site({ site: "www.picta.cu", hits: 10 })],
-        siteUsers: [],
-        users: [],
-        selection: {
-          international: ["www.picta.cu"],
-          national: [],
-          drilldowns: [],
-        },
-      }),
-    ).toThrow(/clasificación international/);
+    expect(section.internationalSites.map((row) => row.site)).toEqual([
+      "elecmtz.une.cu",
+    ]);
+    expect(section.nationalSites.map((row) => row.site)).toEqual([
+      "www.picta.cu",
+    ]);
   });
 });
 
-describe("proposeSiteSelection", () => {
-  it("propone el top por hits de cada clasificación", () => {
-    const proposal = proposeSiteSelection(
-      [
-        site({ site: "www.youtube.com", hits: 900 }),
-        site({ site: "google.com", hits: 5000 }),
-        site({ site: "www.picta.cu", hits: 7000 }),
-        site({ site: "www.cubadebate.cu", hits: 100 }),
-      ],
-      { limit: 1 },
-    );
+describe("selectTopSites", () => {
+  it("ordena por hits y no por Browsing Time", () => {
+    const selected = selectTopSites([
+      site({ site: "www.youtube.com", hits: 900, browsingMs: hms("01:00:00") }),
+      site({ site: "google.com", hits: 5000, browsingMs: hms("09:00:00") }),
+      site({ site: "www.picta.cu", hits: 7000, browsingMs: hms("05:00:00") }),
+    ]);
 
-    expect(proposal).toEqual({
-      international: ["google.com"],
-      national: ["www.picta.cu"],
-      drilldowns: ["google.com"],
-    });
+    expect(selected.map((row) => row.site)).toEqual([
+      "google.com",
+      "www.youtube.com",
+    ]);
   });
 
-  it("respeta las exclusiones al clasificar la propuesta", () => {
-    const proposal = proposeSiteSelection(
+  it("respeta las exclusiones al clasificar", () => {
+    // `une.cu` es una exclusión institucional: sus dominios dejan de ser
+    // nacionales y pasan a competir en la tabla internacional.
+    const selected = selectTopSites(
       [
         site({ site: "elecmtz.une.cu", hits: 9000 }),
         site({ site: "www.youtube.com", hits: 900 }),
@@ -393,7 +375,9 @@ describe("proposeSiteSelection", () => {
       { nationalExclusions: ["une.cu"] },
     );
 
-    expect(proposal.international).toEqual(["elecmtz.une.cu", "www.youtube.com"]);
-    expect(proposal.national).toEqual([]);
+    expect(selected.map((row) => row.site)).toEqual([
+      "elecmtz.une.cu",
+      "www.youtube.com",
+    ]);
   });
 });

@@ -41,7 +41,9 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   la zona del servidor.
 - **S11** — Gate de paridad: el motor regenera las métricas de mayo 2026 y debe
   coincidir con `IM EE Matanzas mayo 2026.docx`. Sin este gate no se emite un
-  informe oficial.
+  informe oficial. **Excepción (S20):** la selección de sitios no se compara
+  contra mayo, porque ese documento no sigue la regla del top 10 por hits ni en
+  la tabla internacional ni en la nacional. Se usa como referencia de formato.
 - **S12** — `Browsing Time` es una métrica derivada, no un campo del log. Tiene
   **dos relojes independientes**: el del sitio y el del par (sitio, usuario). Cada
   uno tiene su umbral de sesión configurable y deben calibrarse contra WebSpy por
@@ -75,10 +77,15 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   presentes ni se extiende a 32 días. Un día faltante se reporta como faltante,
   y un día fuera del período —como el 30/04 en un informe de mayo— se reporta
   como ajeno al período en lugar de sumarse.
-- **S20** — La selección de sitios de las tablas de la sección 1 es un dato
-  explícito del informe, no un cálculo. El sistema puede proponer un top por
-  hits, pero la lista final la confirma el especialista: la del documento vigente
-  no se deduce ni de hits ni de browsing.
+- **S20** — Las dos tablas de sitios de la sección 1 las calcula el sistema: no
+  se declaran. Internacional = top 10 por hits descendente; nacional = top 10
+  por hits descendente, aplicando las exclusiones institucionales de `S4`. El
+  `Browsing Time` **no** selecciona sitios: es la métrica del drill-down, donde
+  ordena a los 10 usuarios de cada sitio (S15). Los drill-downs son los sitios
+  de la tabla internacional, en ese mismo orden. El informe de mayo 2026 no es
+  oráculo de la selección: su tabla internacional no es el top 10 por hits
+  (omite `google.com` e incluye sitios muy por debajo del corte) y la nacional
+  también está intervenida a mano.
 - **S21** — Los diez drill-downs usan la misma cabecera y la misma métrica:
   `Users | Hits | Incoming (MB) | Download Time (h:m:s) | Browsing Time (h:m:s) |
   % of Browsing Time (h:m:s)`. No existe variante por hits, aunque el documento
@@ -96,7 +103,10 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
 - **T7** — Agregación diaria con la semántica de las tablas del informe (`lib/reports/metrics/`) + tests. Route: inline. Spec: S2, S7, S12, S18. Status: hecho (`58ac620`, reloj del sitio separado después).
 - **T8** — Esquema Prisma de informes + migración. Route: inline. Spec: S1, S5, S7, S13. Status: hecho (`b00c317`). Migración creada pero **no aplicada**: `prisma migrate deploy` es una mutación de base de datos y queda a decisión del usuario.
 - **T13** — Armado de las tablas de la sección 1 (`lib/reports/assembly/`) + test dorado contra el documento. Route: inline. Spec: S15, S16, S17. Status: hecho (`29516e1`, cabeceras normalizadas en `3c3b3bc`).
-- **T16** — Selección explícita de sitios + propuesta por hits (`proposeSiteSelection`, `buildTracesSection` con `selection`). Route: inline. Spec: S20, S21. Status: hecho.
+- **T16** — Regla de "sitios más visitados" (S20): las dos tablas se calculan
+  como top 10 por hits (`selectTopSites`) y los drill-downs se atan a la tabla
+  internacional. Route: inline. Spec: S20, S21. Status: hecho, sin verificación
+  ejecutada fuera del shim (ver L18, L19).
 - **T17** — Modelo mensual: merge de días, cobertura y declaraciones (`lib/reports/model/monthly.ts`). Route: inline. Spec: S7, S12, S19. Status: hecho.
 - **T14** — Arnés de paridad: fixture numérico con los totales de los exports de WebSpy (sitios + usuarios por sitio) y comparación por sitio contra el motor. Route: inline. Spec: S11, S15. Status: nivel 1 hecho (`1307188`); nivel 2 bloqueado por el `access.log` de mayo.
 - **T10** — Paridad mayo 2026. Status: desbloqueado en parte — los exports de WebSpy ya están y confirman el denominador de S15; falta el `access.log` completo de mayo (incluido el 30/04) para comparar hits, bytes y tiempos.
@@ -622,3 +632,123 @@ Disciplina de test: el test del modelo se escribió después de la implementaci�
 Al correrlo falló por una expectativa mía sobre el formato de horas
 (`1:00:00` contra `01:00:00`), que es el comportamiento correcto de
 `formatDuration`; el test se corrigió, no el código.
+
+### L18 — S20 cambia: "sitios más visitados" se define por Browsing Time
+
+> la regla del browsing time, deja de tener como oraculo, pues al parece tiene
+> inonsistencias
+>
+> la regla del browsing time para de los De los sitios más visitados, los 10
+> usuarios que más accedieron a cada uno de estos sitios., deja de tener como
+> oraculo, pues al parece tiene inonsistencias
+
+#### Qué se verificó antes de cambiar la regla
+
+Se abrieron los archivos reales (`~/Documentos/Informes mensuales/Mayo/`) y se
+comparó el `Sites Export` (30/04–31/05/2026, 724 filas) contra el `.docx` de 22
+tablas.
+
+- El título de T05 dice literal "De los sitios más visitados, los 10 usuarios
+  que más accedieron a cada uno de estos sitios", y T05–T14 corresponden a los
+  10 sitios de T04, en el mismo orden. Esa relación queda confirmada.
+- El top 10 internacional por `Browsing Time` del export es: youtube
+  (266:34:32), google (231:39:24), instagram (157:52:37), facebook (146:16:38),
+  msftconnecttest (117:07:47), googletagmanager (95:05:11), gstatic (91:46:48),
+  google-analytics (80:37:21), bing (53:56:25), googleadservices (49:02:17).
+- Los 10 sitios del documento están en la posición #1, #4, #9, #3, #12, #14,
+  #15, #38, #35 y #54 de 651 internacionales. Solo 4 coinciden con el top por
+  tiempo; 6 están fuera.
+- El orden de T04 es hits descendente, no `Browsing Time`: instagram
+  (157:52:37) aparece después de bing (53:56:25).
+- El propio documento trae anotaciones manuales "**Filtrar por 'Hits'" antes de
+  T04 y antes de T16, que contradicen la regla del `Browsing Time`.
+
+Conclusión: el documento de mayo mezcla criterios. Se deja de usar como oráculo
+de esa tabla y manda la regla.
+
+#### Qué cambió
+
+- `selectMostVisitedSites` reemplaza a `proposeSiteSelection`: top `limit` por
+  `Browsing Time` descendente (empates por hits y después por nombre). Ya no es
+  una propuesta.
+- `buildSiteTableRows` recibe `order: "browsing" | "hits"`. La tabla
+  internacional usa `browsing`; la nacional conserva `hits`, que es como está
+  impresa y no fue parte de la decisión.
+- `buildTracesSection` deriva la tabla internacional del top 10 por tiempo y
+  arma los drill-downs con **esos mismos sitios, en ese orden**. Acepta
+  `internationalSites` como override explícito; la lista nacional sigue siendo
+  obligatoria (`nationalSites`).
+- `buildMonthlyReport` recibe `nationalSites` (y `internationalSites` opcional)
+  en lugar de `SiteSelection`.
+
+Lo que **no** cambia: el `% of Browsing Time` del drill-down sigue dividiendo
+sobre el total de usuarios del sitio (S15) y el top de usuarios sigue por tiempo
+(S16). La tabla nacional no se toca.
+
+#### Verificación
+
+**No ejecutada.** `node_modules` existe pero está vacío (0 paquetes), así que
+`pnpm exec vitest` falla con "vitest not found" y `tsc` tampoco está disponible.
+Los tests se actualizaron y se escribieron antes del cambio, pero no se observó
+RED ni GREEN en esta sesión. No se declara el cambio verificado.
+
+### L19 — Corrección: las tablas de sitios se calculan por hits (verbatim)
+
+> nono, no puede ser declarada, la tiene que calcular el sistema y si es por
+> hits, al igual que las internacionales mas visitadas es por hits y no es
+> declarada, ademas de esto hay algo mas declarado?
+
+#### Qué se corrige
+
+L18 leyó mal el alcance del `Browsing Time`. La regla de tiempo aplica a la
+sección "De los sitios más visitados, los 10 usuarios que más accedieron a cada
+uno de estos sitios" — es decir, a **los usuarios dentro de cada drill-down**,
+que es donde el documento divide por `% of Browsing Time` (S15/S16/S21). No
+aplica a la selección de sitios.
+
+Las dos tablas de sitios son top 10 **por hits**, calculadas por el sistema:
+
+- internacional: top 10 por hits, sin lista declarada;
+- nacional: top 10 por hits, sin lista declarada, aplicando las exclusiones
+  institucionales (S4);
+- los drill-downs siguen siendo los sitios de la tabla internacional, en ese
+  orden.
+
+Esto además es coherente con el documento vigente: T04 y T16 están ordenadas por
+hits y llevan la anotación manual "**Filtrar por 'Hits'**". Lo que el documento
+de mayo no respeta es la *regla de selección* (su top internacional no coincide
+con el top 10 por hits), y por eso se deja de usar como oráculo de la lista.
+
+#### Qué cambió en el código
+
+- `selectMostVisitedSites` (S20 de L18) se reemplaza por `selectTopSites`, que
+  devuelve el top `limit` por hits descendente, con empate por nombre.
+- `buildSiteTableRows` vuelve a `(sites, totalHits, limit)` y ordena siempre por
+  hits; desaparece la opción `order`.
+- `buildTracesSection` calcula **las dos** tablas con `selectTopSites` y sigue
+  atando los drill-downs a la tabla internacional. Se elimina `selectSites` y
+  sus dos errores ("sin tráfico", "clasificación"): con listas derivadas no hay
+  nada que validar contra una entrada externa.
+- `buildMonthlyReport` pierde `nationalSites` e `internationalSites`; ya no hay
+  selección declarada en la entrada del modelo.
+
+#### Consecuencia esperada para junio 2026
+
+Con la regla, la tabla internacional de junio será: youtube (129,351), google
+(90,921), msftconnecttest (34,124), google-analytics (28,440), facebook
+(27,248), googletagmanager (20,519), bing (12,574), gstatic (10,749),
+msftncsi (7,673), instagram (7,341). La nacional: picta.cu (639,073),
+cubadebate.cu (16,727), google.com.cu (13,323), bandec.cu (7,741),
+segurmatica.cu (4,470), tvcubana.icrt.cu (1,398), trabajadores.cu (1,339),
+granma.cu (473), insmet.cu (461), bc.gob.cu (399). Difieren del documento de
+mayo; es el resultado de aplicar la regla, no un defecto.
+
+#### Verificación
+
+Igual que L18: **no ejecutada** fuera del shim. `node_modules` está vacío, así
+que no corren `vitest` ni `tsc`. Los tres archivos de test actualizados
+(`section-traces.test.ts`, `monthly.test.ts`, `parity/exports.test.ts`) pasan
+bajo el shim temporal en `/tmp/opencode/reports-check`, y un smoke end-to-end
+verificó: top por hits, corte en 10, dos tablas calculadas, drill-downs atados a
+la internacional y exclusiones institucionales. Eso **no** es la suite oficial y
+no se declara verificado.
