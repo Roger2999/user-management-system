@@ -15,8 +15,9 @@ export default function NewReportPage() {
       <header>
         <h1 className="text-2xl font-semibold">Nuevo informe mensual</h1>
         <p className="text-muted-foreground mt-1 text-sm">
-          Importá los archivos diarios del período y después generá el
-          documento. La importación es idempotente por SHA-256.
+          Importá uno o varios archivos diarios, o una carpeta completa, y
+          después generá el documento. La importación es idempotente por
+          SHA-256.
         </p>
       </header>
 

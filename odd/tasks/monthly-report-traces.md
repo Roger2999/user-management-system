@@ -122,6 +122,13 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   identificados de la red. Sin datos sociales, el título conserva la etiqueta y
   no hereda el "Facebook" de la plantilla. Las conexiones directas por IP no se
   clasifican.
+- **S24** — La importación acepta uno o varios archivos sueltos o una carpeta
+  completa. La carpeta se recorre en el navegador (`webkitdirectory`), se
+  filtran `.log`, `.log.N` y `.txt` (se descartan `.gz`, imágenes y otros), se
+  ordenan por ruta/nombre con comparación numérica y se suben de a uno por el
+  mismo route handler de stream (sin multipart ni límite de 1 MB). Un archivo
+  que falla no detiene a los demás; la idempotencia por SHA-256 sigue vigente y
+  el resultado se muestra por archivo.
 
 ## Tasks
 
@@ -221,6 +228,10 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   (`lib/reports/report.ts`). Route: inline. Spec: S23. Status: hecho; 235
   tests, `tsc` y `eslint` limpios; informe de octubre regenerado con WhatsApp
   (2 usuarios).
+- **T32** — Importación por archivo(s) o carpeta: helpers de selección
+  (`lib/reports/import-selection.ts`) + test, formulario con dos modos y subida
+  secuencial (`components/import-form.tsx`). Route: inline. Spec: S24. Status:
+  hecho; 7 tests nuevos, `tsc` y `eslint` limpios.
 
 Route declaration: todas las tareas de esta sesión son `inline` — no hay unidades
 independientes en paralelo ni presión de contexto que justifiquen un writer.
@@ -1476,5 +1487,18 @@ por IP. `194.221.250.50` también es una conexión directa y no tiene PTR. El
 sistema muestra el IP porque es el único dato del log; no lo inventa. Para
 mostrar un nombre haría falta un mapa de rangos IP verificados (Telegram) o DNS
 inverso, que no es confiable y haría la importación dependiente de la red.
+
+### L37 — Importación por carpeta y por archivos (verbatim)
+
+> a la hora de importar los logs, quiero tener la opcion de hacerlo por carpeta y por archivo/archivos
+
+Se agregó un selector de origen al formulario de importación: "Archivo(s)"
+(`multiple`) y "Carpeta" (`webkitdirectory`). El navegador entrega los `File`
+con `webkitRelativePath`; el cliente filtra `.log`, `.log.N` y `.txt`, ordena
+por ruta con comparación numérica y sube los archivos de a uno contra el route
+handler existente, que sigue leyendo el cuerpo como stream. No se usa
+`FormData`: un mes de 31 archivos de ~90 MB no se puede bufferizar en memoria.
+El resultado se muestra por archivo y un error no cancela el resto.
+
 
 

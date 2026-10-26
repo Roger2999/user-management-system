@@ -1,7 +1,11 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { MONTHS } from "@/lib/reports/document/period";
+import {
+  filterLogFiles,
+  relativeName,
+} from "@/lib/reports/import-selection";
 
 type Skipped = { unserved: number; internal: number; telemetry: number };
 
@@ -15,8 +19,142 @@ type ImportResponse = {
   error?: string;
 };
 
+type FileResult = {
+  file: string;
+  response?: ImportResponse;
+  error?: string;
+};
+
+type Mode = "files" | "folder";
+
 function format(value: number): string {
   return value.toLocaleString("es-CU");
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
+  if (bytes < 1024 * 1024) {
+    return `${Math.round(bytes / 1024)} KB`;
+  }
+
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+/**
+ * Sube un archivo con el cuerpo crudo, igual que la importación individual.
+ *
+ * No se usa `FormData`: el route handler lee `request.body` como stream para no
+ * cargar 90 MB en memoria ni chocar con el límite de 1 MB de las server actions.
+ * El nombre y el período viajan en cabeceras.
+ */
+function uploadFile(
+  file: File,
+  year: number,
+  month: number,
+  onProgress: (loaded: number) => void,
+  onUploaded: () => void,
+): Promise<ImportResponse> {
+  return new Promise((resolve, reject) => {
+    const request = new XMLHttpRequest();
+    request.open("POST", "/api/reports/import");
+    request.setRequestHeader(
+      "x-file-name",
+      encodeURIComponent(relativeName(file)),
+    );
+    request.setRequestHeader("x-period-year", String(year));
+    request.setRequestHeader("x-period-month", String(month));
+
+    request.upload.onprogress = (event) => {
+      if (event.lengthComputable) onProgress(event.loaded);
+    };
+    request.upload.onload = () => onUploaded();
+
+    request.onload = () => {
+      let data: ImportResponse;
+      try {
+        data = JSON.parse(request.responseText) as ImportResponse;
+      } catch {
+        reject(new Error("El servidor devolvió una respuesta inválida."));
+        return;
+      }
+
+      if (request.status >= 200 && request.status < 300) {
+        resolve(data);
+      } else {
+        reject(new Error(data.error ?? "No se pudo importar el archivo."));
+      }
+    };
+
+    request.onerror = () => {
+      reject(new Error("Se cortó la conexión durante la importación."));
+    };
+
+    request.send(file);
+  });
+}
+
+function Results({ results }: { results: FileResult[] }) {
+  const imported = results.filter(
+    (result) => result.response?.status === "imported",
+  ).length;
+  const already = results.filter(
+    (result) => result.response?.status === "already-imported",
+  ).length;
+  const failed = results.filter((result) => result.error !== undefined).length;
+
+  return (
+    <div className="mt-4 space-y-2">
+      <p className="text-sm font-medium">
+        {imported} importado(s), {already} ya estaban, {failed} con error.
+      </p>
+      <ul className="max-h-80 space-y-1 overflow-auto text-sm">
+        {results.map((result) => {
+          const response = result.response;
+
+          return (
+            <li key={result.file} className="rounded border px-3 py-2">
+              <p className="font-medium break-all">{result.file}</p>
+              {result.error !== undefined ? (
+                <p className="text-destructive">{result.error}</p>
+              ) : response?.status === "already-imported" ? (
+                <p className="text-muted-foreground">
+                  Ya estaba importado (mismo SHA-256). No se duplicó nada.
+                </p>
+              ) : (
+                <div className="text-muted-foreground space-y-1">
+                  <p>
+                    {format(response?.stats?.linesTotal ?? 0)} líneas,{" "}
+                    {format(response?.stats?.linesInvalid ?? 0)} inválidas.
+                    Días: {response?.days?.join(", ") ?? "—"}.
+                  </p>
+                  {response !== undefined &&
+                    response.skipped !== undefined && (
+                      <p>
+                        Descartadas: {format(response.skipped.unserved)} no
+                        servidas, {format(response.skipped.internal)} internas y{" "}
+                        {format(response.skipped.telemetry)} de telemetría.
+                      </p>
+                    )}
+                  {response !== undefined &&
+                    (response.outsidePeriod?.length ?? 0) > 0 && (
+                      <p>
+                        Días ajenos al período (no sumados):{" "}
+                        {response.outsidePeriod
+                          ?.map((day) => `${day.day} (${format(day.hits)})`)
+                          .join(", ")}
+                        .
+                      </p>
+                    )}
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
 }
 
 export default function ImportForm({
@@ -28,64 +166,117 @@ export default function ImportForm({
 }) {
   const [year, setYear] = useState(defaultYear);
   const [month, setMonth] = useState(defaultMonth);
-  const [file, setFile] = useState<File | null>(null);
+  const [mode, setMode] = useState<Mode>("files");
+  const [files, setFiles] = useState<File[]>([]);
+  const [ignored, setIgnored] = useState(0);
   const [uploading, setUploading] = useState(false);
+  const [phase, setPhase] = useState<"sending" | "processing">("sending");
   const [progress, setProgress] = useState(0);
-  const [result, setResult] = useState<ImportResponse | null>(null);
+  const [current, setCurrent] = useState<{
+    index: number;
+    name: string;
+    loaded: number;
+    total: number;
+  } | null>(null);
+  const [results, setResults] = useState<FileResult[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const folderInput = useRef<HTMLInputElement>(null);
 
-  function submit(event: FormEvent<HTMLFormElement>): void {
+  // `webkitdirectory` no está en los tipos de React: se pone sobre el nodo para
+  // que el input abra el selector de carpeta en Chromium, Edge y Safari.
+  useEffect(() => {
+    const input = folderInput.current;
+    if (input === null) return;
+
+    input.setAttribute("webkitdirectory", "");
+    input.setAttribute("directory", "");
+  }, [mode]);
+
+  const totalBytes = files.reduce((sum, file) => sum + file.size, 0);
+
+  function selectFiles(list: FileList | null): void {
+    const filtered = filterLogFiles(Array.from(list ?? []));
+    setFiles(filtered.accepted);
+    setIgnored(filtered.ignored);
+    setResults([]);
+    setError(null);
+  }
+
+  function switchMode(next: Mode): void {
+    if (next === mode) return;
+
+    setMode(next);
+    setFiles([]);
+    setIgnored(0);
+    setResults([]);
+    setError(null);
+  }
+
+  async function submit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
-    if (file === null || uploading) return;
+    if (files.length === 0 || uploading) return;
+
+    if (!Number.isInteger(year) || !Number.isInteger(month)) {
+      setError("Período inválido.");
+      return;
+    }
 
     setUploading(true);
     setProgress(0);
-    setResult(null);
+    setResults([]);
     setError(null);
 
-    const request = new XMLHttpRequest();
-    request.open("POST", "/api/reports/import");
-    request.setRequestHeader("x-file-name", encodeURIComponent(file.name));
-    request.setRequestHeader("x-period-year", String(year));
-    request.setRequestHeader("x-period-month", String(month));
+    const total = files.reduce((sum, file) => sum + file.size, 0);
+    let completed = 0;
+    const collected: FileResult[] = [];
 
-    request.upload.onprogress = (event) => {
-      if (event.lengthComputable) {
-        setProgress(Math.round((event.loaded / event.total) * 100));
-      }
-    };
+    for (const [index, file] of files.entries()) {
+      const name = relativeName(file);
+      setPhase("sending");
+      setCurrent({ index, name, loaded: 0, total: file.size });
 
-    request.onload = () => {
-      setUploading(false);
-      let data: ImportResponse;
       try {
-        data = JSON.parse(request.responseText) as ImportResponse;
-      } catch {
-        setError("El servidor devolvió una respuesta inválida.");
-        return;
+        const response = await uploadFile(
+          file,
+          year,
+          month,
+          (loaded) => {
+            setCurrent({ index, name, loaded, total: file.size });
+            setProgress(
+              total === 0
+                ? 0
+                : Math.round(((completed + loaded) / total) * 100),
+            );
+          },
+          () => setPhase("processing"),
+        );
+        collected.push({ file: name, response });
+      } catch (uploadError) {
+        collected.push({
+          file: name,
+          error:
+            uploadError instanceof Error
+              ? uploadError.message
+              : "No se pudo importar el archivo.",
+        });
       }
 
-      if (request.status >= 200 && request.status < 300) {
-        setResult(data);
-      } else {
-        setError(data.error ?? "No se pudo importar el archivo.");
-      }
-    };
+      completed += file.size;
+      setProgress(total === 0 ? 100 : Math.round((completed / total) * 100));
+      setResults([...collected]);
+    }
 
-    request.onerror = () => {
-      setUploading(false);
-      setError("Se cortó la conexión durante la importación.");
-    };
-
-    request.send(file);
+    setUploading(false);
+    setCurrent(null);
   }
 
   return (
     <section className="rounded-xl border p-5">
-      <h2 className="text-lg font-semibold">Importar un log diario</h2>
+      <h2 className="text-lg font-semibold">Importar logs diarios</h2>
       <p className="text-muted-foreground mt-1 text-sm">
-        Se envía por stream, sin límite de 1 MB. El período define a qué mes
-        pertenecen los días; un día ajeno se declara y no se suma.
+        Elegí uno o varios archivos, o una carpeta completa. Se envían por
+        stream, sin límite de 1 MB. El período define a qué mes pertenecen los
+        días; un día ajeno se declara y no se suma.
       </p>
 
       <form onSubmit={submit} className="mt-4 space-y-4">
@@ -98,6 +289,7 @@ export default function ImportForm({
               max={2100}
               value={year}
               onChange={(event) => setYear(Number(event.target.value))}
+              disabled={uploading}
               className="bg-background w-28 rounded-md border px-3 py-2"
             />
           </label>
@@ -106,6 +298,7 @@ export default function ImportForm({
             <select
               value={month}
               onChange={(event) => setMonth(Number(event.target.value))}
+              disabled={uploading}
               className="bg-background rounded-md border px-3 py-2 capitalize"
             >
               {MONTHS.map((name, index) => (
@@ -115,30 +308,112 @@ export default function ImportForm({
               ))}
             </select>
           </label>
+          <div className="flex flex-col gap-1 text-sm">
+            <span>Origen</span>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => switchMode("files")}
+                disabled={uploading}
+                className={`rounded-md border px-3 py-2 text-sm ${
+                  mode === "files"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-background"
+                }`}
+              >
+                Archivo(s)
+              </button>
+              <button
+                type="button"
+                onClick={() => switchMode("folder")}
+                disabled={uploading}
+                className={`rounded-md border px-3 py-2 text-sm ${
+                  mode === "folder"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-background"
+                }`}
+              >
+                Carpeta
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-end gap-3">
           <label className="flex min-w-56 flex-1 flex-col gap-1 text-sm">
-            Archivo
-            <input
-              type="file"
-              accept=".log,text/plain"
-              onChange={(event) => setFile(event.target.files?.[0] ?? null)}
-              className="bg-background rounded-md border px-3 py-1.5 file:mr-3 file:rounded file:border-0 file:bg-muted file:px-2 file:py-1 file:text-sm"
-            />
+            {mode === "files" ? "Archivos" : "Carpeta"}
+            {mode === "files" ? (
+              <input
+                type="file"
+                multiple
+                accept=".log,.txt,text/plain"
+                onChange={(event) => {
+                  selectFiles(event.target.files);
+                  event.target.value = "";
+                }}
+                disabled={uploading}
+                className="bg-background rounded-md border px-3 py-1.5 file:mr-3 file:rounded file:border-0 file:bg-muted file:px-2 file:py-1 file:text-sm"
+              />
+            ) : (
+              <input
+                ref={folderInput}
+                type="file"
+                multiple
+                onChange={(event) => {
+                  selectFiles(event.target.files);
+                  event.target.value = "";
+                }}
+                disabled={uploading}
+                className="bg-background rounded-md border px-3 py-1.5 file:mr-3 file:rounded file:border-0 file:bg-muted file:px-2 file:py-1 file:text-sm"
+              />
+            )}
           </label>
           <button
             type="submit"
-            disabled={file === null || uploading}
+            disabled={files.length === 0 || uploading}
             className="bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm disabled:opacity-50"
           >
-            {uploading ? `Importando ${progress}%` : "Importar"}
+            {uploading
+              ? `Importando ${progress}%`
+              : `Importar${files.length > 0 ? ` (${files.length})` : ""}`}
           </button>
         </div>
 
-        {uploading && (
-          <div className="bg-muted h-2 w-full overflow-hidden rounded">
-            <div
-              className="bg-primary h-full transition-all"
-              style={{ width: `${progress}%` }}
-            />
+        {files.length > 0 && (
+          <p className="text-muted-foreground text-sm">
+            {files.length} archivo(s), {formatBytes(totalBytes)}. Orden:{" "}
+            {files
+              .slice(0, 3)
+              .map((file) => relativeName(file))
+              .join(", ")}
+            {files.length > 3 ? "…" : ""}.
+          </p>
+        )}
+
+        {ignored > 0 && (
+          <p className="text-muted-foreground text-sm">
+            {ignored} archivo(s) ignorado(s): solo se importan <code>.log</code>{" "}
+            y <code>.txt</code>.
+          </p>
+        )}
+
+        {uploading && current !== null && (
+          <div className="space-y-1">
+            <p className="text-sm">
+              {current.index + 1} de {files.length}:{" "}
+              <span className="break-all">{current.name}</span> —{" "}
+              {phase === "processing"
+                ? "procesando en el servidor…"
+                : `${Math.round(
+                    (current.loaded / Math.max(current.total, 1)) * 100,
+                  )}%`}
+            </p>
+            <div className="bg-muted h-2 w-full overflow-hidden rounded">
+              <div
+                className="bg-primary h-full transition-all"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
           </div>
         )}
       </form>
@@ -147,39 +422,7 @@ export default function ImportForm({
         <p className="text-destructive mt-4 text-sm">{error}</p>
       )}
 
-      {result?.status === "already-imported" && (
-        <p className="mt-4 text-sm">
-          <strong>{result.file?.fileName}</strong> ya estaba importado
-          (mismo SHA-256). No se duplicó nada.
-        </p>
-      )}
-
-      {result?.status === "imported" && (
-        <div className="mt-4 space-y-1 text-sm">
-          <p>
-            <strong>{result.file?.fileName}</strong>:{" "}
-            {format(result.stats?.linesTotal ?? 0)} líneas,{" "}
-            {format(result.stats?.linesInvalid ?? 0)} inválidas. Días
-            aportados: {result.days?.join(", ") ?? "—"}.
-          </p>
-          {result.skipped !== undefined && (
-            <p className="text-muted-foreground">
-              Descartadas: {format(result.skipped.unserved)} no servidas,{" "}
-              {format(result.skipped.internal)} internas y{" "}
-              {format(result.skipped.telemetry)} de telemetría.
-            </p>
-          )}
-          {(result.outsidePeriod?.length ?? 0) > 0 && (
-            <p className="text-muted-foreground">
-              Días ajenos al período (no sumados):{" "}
-              {result.outsidePeriod
-                ?.map((day) => `${day.day} (${format(day.hits)})`)
-                .join(", ")}
-              .
-            </p>
-          )}
-        </div>
-      )}
+      {results.length > 0 && <Results results={results} />}
     </section>
   );
 }
