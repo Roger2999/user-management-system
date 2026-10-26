@@ -59,4 +59,22 @@ describe("ingestSquidLog", () => {
     expect(result.days[0].unidentifiedHits).toBe(1);
     expect(result.days[0].totalHits).toBe(2);
   });
+
+  it("declara el primer y el último instante de los registros válidos", async () => {
+    const result = await ingestSquidLog(
+      stream([line(JUNE_1), "invalida", line(MAY_31), line(JUNE_2)]),
+      { period: JUNE },
+    );
+
+    // Los días ajenos al período también son contenido del archivo.
+    expect(result.firstEventAt).toBe(MAY_31);
+    expect(result.lastEventAt).toBe(JUNE_2);
+  });
+
+  it("no inventa instantes cuando no hay registros válidos", async () => {
+    const result = await ingestSquidLog(stream(["invalida"]), { period: JUNE });
+
+    expect(result.firstEventAt).toBeNull();
+    expect(result.lastEventAt).toBeNull();
+  });
 });

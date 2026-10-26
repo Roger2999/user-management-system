@@ -43,6 +43,14 @@ export type IngestSquidLogResult = {
   /** Días locales fuera del período que traía el archivo. */
   outsidePeriod: OutsidePeriodDay[];
   stats: ParseStats;
+  /**
+   * Instante UTC del primer y último registro válido del archivo, o `null` si no
+   * hubo ninguno. `ImportedLogFile` los exige, y no se pueden deducir de las
+   * métricas: un archivo puede traer días ajenos al período que igual son parte
+   * de su contenido.
+   */
+  firstEventAt: number | null;
+  lastEventAt: number | null;
 };
 
 /** Acumula un `access.log` completo en métricas por día local. */
@@ -54,10 +62,19 @@ export async function ingestSquidLog(
   const expected = new Set(options.period.days);
   const accumulators = new Map<string, DailyMetricsAccumulator>();
   const outside = new Map<string, number>();
+  let firstEventAt: number | null = null;
+  let lastEventAt: number | null = null;
 
   const stats = await parseSquidLogStream(input, {
     columns: options.columns,
     onRecord: (record) => {
+      if (firstEventAt === null || record.timestampMs < firstEventAt) {
+        firstEventAt = record.timestampMs;
+      }
+      if (lastEventAt === null || record.timestampMs > lastEventAt) {
+        lastEventAt = record.timestampMs;
+      }
+
       const day = toLocalDay(record.timestampMs, timeZone);
 
       if (!expected.has(day)) {
@@ -83,5 +100,7 @@ export async function ingestSquidLog(
       .map(([day, hits]) => ({ day, hits }))
       .sort((a, b) => a.day.localeCompare(b.day)),
     stats,
+    firstEventAt,
+    lastEventAt,
   };
 }

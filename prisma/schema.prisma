@@ -359,10 +359,19 @@ model DailySiteStat {
   @@map("daily_site_stat")
 }
 
-/// Cruce sitio × cuenta de un día. Se persiste solo para los sitios más
-/// visitados de ese día: guardar todos los pares llevaría la tabla a decenas
-/// de millones de filas por mes. El cierre del mes verifica que los sitios del
-/// top mensual estén cubiertos y reescanea el día que falte.
+/// Cruce sitio × cuenta de un día. Se persisten **todos** los pares de todos los
+/// sitios (S17): el recorte a diez filas es del render, nunca del almacenamiento.
+/// Truncar acá rompería el denominador del `% of Browsing Time` del drill-down
+/// (S15), que se calcula sobre la suma de los usuarios del sitio.
+///
+/// El costo en filas es real y no está medido: no se diseña alrededor de una
+/// estimación. Si la primera importación real muestra que la tabla es inmanejable,
+/// la salida es persistir solo el top diario y verificar la cobertura al cierre del
+/// mes, nunca truncar el denominador.
+///
+/// El tráfico sin cuenta no entra: `proxyAccountId` es una clave foránea a
+/// `ProxyAccount` y S9 prohíbe inventar una cuenta. Esos hits siguen en
+/// `DailySiteStat` y se reconstruyen como la diferencia.
 model DailySiteUserStat {
   date           DateTime     @db.Date
   site           String

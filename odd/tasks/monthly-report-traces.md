@@ -105,7 +105,7 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
 - **T5** — Clasificación de sitios nacional/internacional/webmail (`lib/reports/classify/`) + tests. Route: inline. Spec: S4. Status: hecho (`2efa0a2`).
 - **T6** — Motor de reglas por categoría (`lib/reports/rules/`) + tests. Route: inline. Spec: S5. Status: hecho (`2efa0a2`).
 - **T7** — Agregación diaria con la semántica de las tablas del informe (`lib/reports/metrics/`) + tests. Route: inline. Spec: S2, S7, S12, S18. Status: hecho (`58ac620`, reloj del sitio separado después).
-- **T8** — Esquema Prisma de informes + migración. Route: inline. Spec: S1, S5, S7, S13. Status: hecho (`b00c317`). Migración creada pero **no aplicada**: `prisma migrate deploy` es una mutación de base de datos y queda a decisión del usuario.
+- **T8** — Esquema Prisma de informes + migración. Route: inline. Spec: S1, S5, S7, S13. Status: hecho (`b00c317`). Migración `20261024120000_add_monthly_reports` **aplicada** contra `db.prisma.io` (ver L26).
 - **T13** — Armado de las tablas de la sección 1 (`lib/reports/assembly/`) + test dorado contra el documento. Route: inline. Spec: S15, S16, S17. Status: hecho (`29516e1`, cabeceras normalizadas en `3c3b3bc`).
 - **T16** — Regla de "sitios más visitados" (S20): las dos tablas se calculan
   como top 10 por hits (`selectTopSites`) y los drill-downs se atan a la tabla
@@ -137,7 +137,7 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
 - **T17** — Modelo mensual: merge de días, cobertura y declaraciones (`lib/reports/model/monthly.ts`). Route: inline. Spec: S7, S12, S19. Status: hecho.
 - **T14** — Arnés de paridad: fixture numérico con los totales de los exports de WebSpy (sitios + usuarios por sitio) y comparación por sitio contra el motor. Route: inline. Spec: S11, S15. Status: nivel 1 hecho (`1307188`); nivel 2 bloqueado por el `access.log` de mayo.
 - **T10** — Paridad mayo 2026. Status: desbloqueado en parte — los exports de WebSpy ya están y confirman el denominador de S15; falta el `access.log` completo de mayo (incluido el 30/04) para comparar hits, bytes y tiempos.
-- **T9** — Servicio de ingesta (stream, hash, idempotencia). Route: inline. Spec: S1, S10, S19. Status: la parte pura está hecha (`lib/reports/ingest.ts`, ver L24): stream → métricas por día local, con los días ajenos declarados. Faltan el hash, la idempotencia y la persistencia, que dependen de la base de datos.
+- **T9** — Servicio de ingesta (stream, hash, idempotencia). Route: inline. Spec: S1, S10, S19. Status: hecho (ver L24 y L26). `lib/reports/ingest.ts` hace stream → métricas por día local; `lib/reports/persistence/import.ts` agrega SHA-256, idempotencia y escritura aditiva; `lib/reports/persistence/load.ts` reconstruye los días desde la base.
 - **T11** — Emisión del documento oficial: contenedor (T18), tablas de la sección
   1 (T19) y secciones 2-7 vacías (T20). Route: inline. Spec: S2, S6, S21.
   Status: hecho el `.docx`. La conversión a PDF queda fuera del sistema: se hace
@@ -1025,3 +1025,83 @@ Con `ingestSquidLog` queda la cadena completa sin persistencia: stream →
 - Dónde se declaran la cobertura y el `Browsing Time` aproximado (S7/S12): el
   modelo los calcula y el `.docx` no tiene un lugar definido.
 - UI de importación, revisión de hallazgos y descarga (T12).
+
+### L26 — Persistencia: se guardan todos los pares
+
+#### La contradicción y su resolución
+
+S17 dice "para cada sitio seleccionado se persisten **todos** sus pares"; el
+comentario de `DailySiteUserStat` decía "solo los sitios más visitados del día".
+No son el mismo eje: S17 prohíbe truncar los **usuarios** de un sitio, porque eso
+rompe el denominador de S15; el comentario hablaba de no guardar los pares de los
+12,119 sitios del mes.
+
+El conflicto real que ninguno de los dos nombraba: la selección de los diez sitios
+solo se conoce al cierre del mes, pero los pares se persisten día a día.
+
+Decisión del usuario (verbatim):
+
+> si dale, aplica la migracion
+
+Se guardan todos los pares de todos los sitios:
+
+- es exacto por construcción: no depende de que el top diario contenga al top
+  mensual ni de que el archivo siga existiendo al cierre;
+- la cifra de "decenas de millones" era una estimación mía, sin medir; el techo
+  duro son los hits por día (~3M);
+- es reversible con una medición: si la primera importación real muestra que la
+  tabla es inmanejable, se pasa al top diario + verificación al cierre, que exige
+  conservar los archivos.
+
+El comentario del schema se reescribió con la regla real. **S17 no cambió.**
+
+#### Migración aplicada
+
+`pnpm exec prisma migrate deploy` aplicó `20261024120000_add_monthly_reports`
+contra `db.prisma.io:5432` (en L10 no era alcanzable). 19 migraciones al día.
+
+#### Qué se implementó
+
+- `lib/reports/ingest.ts`: agrega `firstEventAt`/`lastEventAt` de los registros
+  válidos. Un archivo puede traer días ajenos al período que igual son contenido.
+- `lib/reports/persistence/rows.ts`: métricas → filas. Los pares sin cuenta no se
+  escriben: `proxyAccountId` es clave foránea y S9 prohíbe inventar una cuenta. El
+  tráfico anónimo sigue en `DailySiteStat`.
+- `lib/reports/persistence/import.ts`: `importSquidLogFile(prisma, input)`.
+  - El SHA-256 se calcula sobre los bytes crudos con un `Transform` entre el
+    archivo y el parser: un solo recorrido alimenta el hash y la agregación.
+  - `ImportedLogFile.sha256` es único y se consulta antes de parsear; reimportar
+    devuelve `already-imported`. Dos importaciones simultáneas chocan contra el
+    unique, la transacción se revierte entera y se responde con el archivo que ganó.
+  - La escritura es **aditiva** (`ON CONFLICT ... DO UPDATE SET x = x + EXCLUDED.x`):
+    un día local puede estar repartido entre dos archivos, porque el archivo de un
+    día UTC contiene registros de dos días locales en `America/Havana`. Reemplazar
+    el día perdería la contribución del otro archivo.
+  - Las cuentas se crean con `skipDuplicates` antes de las estadísticas (FK).
+- `lib/reports/persistence/load.ts`: `loadDailyMetrics(prisma, period)` reconstruye
+  los `DailyMetrics` desde las tres tablas. `unidentifiedHits` se deriva como hits
+  de sitios − hits de cuentas; una diferencia negativa falla como corrupción.
+
+#### Verificación
+
+- 157 tests en 20 archivos; 1 archivo (2 tests) saltado por requerir base de datos.
+  `tsc --noEmit` limpio.
+- Suite completa: 189 tests en 24 archivos, 2 saltados.
+- Contra la base real (`REPORTS_DB_TEST=1`), dos pruebas con el año 2099 y limpieza
+  verificada (`leftovers = 0`):
+  1. importar → `imported`, días `2099-01-01`/`2099-01-02`, 6 líneas; reimportar →
+     `already-imported` con el mismo hash; releer → idéntico a la ingesta directa
+     salvo los pares sin cuenta, con `unidentifiedHits = 1` derivado;
+  2. un segundo archivo sobre el mismo día **suma** (6 hits, 5 del usuario) en vez
+     de reemplazar.
+
+#### Lo que queda
+
+- El reloj de `Browsing Time` se corta en el borde entre archivos, igual que en la
+  medianoche local. Es la aproximación que el informe ya declara (S12); se mide
+  cuando haya logs reales.
+- Reimportar un archivo *corregido* (mismo día, otros bytes) suma, no reemplaza.
+  S1 solo promete idempotencia por bytes idénticos. Si hace falta, la salida es un
+  `resetMonth` que borre el mes y reimporte.
+- UI de importación (T12), lugar de las declaraciones S7/S12 y calibración de los
+  dos relojes.
