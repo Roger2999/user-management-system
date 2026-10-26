@@ -44,7 +44,11 @@ describe("pipeline sobre el fragmento real", () => {
 
     expect(metrics.users).toHaveLength(2);
     expect(metrics.sites).toHaveLength(6);
-    expect(accumulator.toSkipped()).toEqual({ unserved: 4, internal: 2 });
+    expect(accumulator.toSkipped()).toEqual({
+      unserved: 4,
+      internal: 2,
+      telemetry: 0,
+    });
 
     // Todas las líneas del fragmento caen en el mismo día local.
     expect([...days.keys()]).toEqual(["2024-05-30"]);

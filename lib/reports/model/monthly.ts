@@ -32,6 +32,8 @@ export type MonthlyTotals = {
   totalElapsedMs: number;
   /** Hits sin cuenta de proxy autenticada. Se declara en la cobertura (S7). */
   unidentifiedHits: number;
+  /** Líneas descartadas del mes por no ser hit, por motivo (S7). */
+  skipped: SkippedLines;
   users: UserTotals[];
   sites: SiteTotals[];
   siteUsers: SiteUserTotals[];
@@ -53,13 +55,8 @@ export type MonthlyReport = {
     browsingTimeApproximate: boolean;
     /** Hay días faltantes: el informe no puede aprobarse sin declararlo (S7). */
     incompleteCoverage: boolean;
-    /**
-     * Líneas descartadas por no ser hit, si el llamador las conoce (S7).
-     *
-     * La base todavía no las guarda: el camino que reconstruye el mes desde la
-     * base no puede declararlas y deja `null`. Persistirlas es parte de T12.
-     */
-    skipped: SkippedLines | null;
+    /** Líneas descartadas por no ser hit, por motivo (S7). */
+    skipped: SkippedLines;
   };
 };
 
@@ -97,6 +94,7 @@ export function mergeDailyMetrics(
   let totalBytesOut = 0;
   let totalElapsedMs = 0;
   let unidentifiedHits = 0;
+  const skipped: SkippedLines = { unserved: 0, internal: 0, telemetry: 0 };
 
   for (const day of days) {
     if (seenDays.has(day.day)) {
@@ -109,6 +107,9 @@ export function mergeDailyMetrics(
     totalBytesOut += day.totalBytesOut;
     totalElapsedMs += day.totalElapsedMs;
     unidentifiedHits += day.unidentifiedHits;
+    skipped.unserved += day.skipped.unserved;
+    skipped.internal += day.skipped.internal;
+    skipped.telemetry += day.skipped.telemetry;
 
     for (const row of day.users) {
       const key = userKey(row.username);
@@ -160,6 +161,7 @@ export function mergeDailyMetrics(
     totalBytesOut,
     totalElapsedMs,
     unidentifiedHits,
+    skipped,
     users: [...users.values()].sort(
       (a, b) =>
         b.browsingMs - a.browsingMs ||
@@ -190,11 +192,6 @@ export type MonthlyReportInput = {
    * Mientras sea falso, el informe declara la aproximación (S12).
    */
   browsingTimeCalibrated?: boolean;
-  /**
-   * Líneas descartadas por no ser hit. Lo entrega `ingestSquidLog` al importar;
-   * sin él la nota de cobertura omite el desglose (S7).
-   */
-  skipped?: SkippedLines;
 };
 
 /**
@@ -237,7 +234,7 @@ export function buildMonthlyReport(input: MonthlyReportInput): MonthlyReport {
     declarations: {
       browsingTimeApproximate: input.browsingTimeCalibrated !== true,
       incompleteCoverage: coverage.missingDays.length > 0,
-      skipped: input.skipped ?? null,
+      skipped: totals.skipped,
     },
   };
 }

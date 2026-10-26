@@ -48,10 +48,18 @@ export type DailySiteUserStatRow = {
   browsingMs: number;
 };
 
+export type DailySkippedRow = {
+  day: string;
+  unserved: number;
+  internal: number;
+  telemetry: number;
+};
+
 export type DailyStatRows = {
   sites: DailySiteStatRow[];
   users: DailyUserStatRow[];
   siteUsers: DailySiteUserStatRow[];
+  skipped: DailySkippedRow[];
 };
 
 /**
@@ -65,8 +73,18 @@ export function toDailyStatRows(days: readonly DailyMetrics[]): DailyStatRows {
   const sites: DailySiteStatRow[] = [];
   const users: DailyUserStatRow[] = [];
   const siteUsers: DailySiteUserStatRow[] = [];
+  const skipped: DailySkippedRow[] = [];
 
   for (const day of days) {
+    // Una fila por día, aunque no tenga descartes: es lo que marca el día como
+    // importado cuando todas sus líneas fueron descartadas (S7).
+    skipped.push({
+      day: day.day,
+      unserved: day.skipped.unserved,
+      internal: day.skipped.internal,
+      telemetry: day.skipped.telemetry,
+    });
+
     for (const row of day.sites) {
       sites.push({
         day: day.day,
@@ -108,7 +126,7 @@ export function toDailyStatRows(days: readonly DailyMetrics[]): DailyStatRows {
     }
   }
 
-  return { sites, users, siteUsers };
+  return { sites, users, siteUsers, skipped };
 }
 
 /**

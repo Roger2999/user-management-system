@@ -10,6 +10,7 @@ function day(overrides: Partial<DailyMetrics> = {}): DailyMetrics {
     totalBytesOut: 0,
     totalElapsedMs: 0,
     unidentifiedHits: 0,
+    skipped: { unserved: 0, internal: 0, telemetry: 0 },
     users: [],
     sites: [],
     siteUsers: [],

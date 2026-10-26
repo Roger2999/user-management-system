@@ -206,7 +206,11 @@ describe("DailyMetricsAccumulator", () => {
 
     expect(metrics.totalHits).toBe(0);
     expect(metrics.sites).toEqual([]);
-    expect(accumulator.toSkipped()).toEqual({ unserved: 4, internal: 0 });
+    expect(accumulator.toSkipped()).toEqual({
+      unserved: 4,
+      internal: 0,
+      telemetry: 0,
+    });
   });
 
   it("no cuenta como hit una respuesta servida a un destino interno", () => {
@@ -223,7 +227,72 @@ describe("DailyMetricsAccumulator", () => {
 
     expect(metrics.totalHits).toBe(0);
     expect(metrics.sites).toEqual([]);
-    expect(accumulator.toSkipped()).toEqual({ unserved: 0, internal: 4 });
+    expect(accumulator.toSkipped()).toEqual({
+      unserved: 0,
+      internal: 4,
+      telemetry: 0,
+    });
+  });
+
+  it("no cuenta como hit la telemetría, la publicidad ni las actualizaciones", () => {
+    const accumulator = new DailyMetricsAccumulator("2026-05-01");
+
+    accumulator.add(
+      record({
+        username: "u1",
+        url: "http://firefox-portal-detection.com/x",
+      }),
+    );
+    accumulator.add(
+      record({ username: "u1", url: "http://6734a28b.otlp.bugsnag.com/x" }),
+    );
+    accumulator.add(
+      record({ username: "u1", url: "http://watson.microsoft.com/x" }),
+    );
+    accumulator.add(
+      record({
+        username: "u1",
+        url: "http://cp801.prod.do.dsp.mp.microsoft.com/x",
+      }),
+    );
+    accumulator.add(
+      record({ username: "u1", url: "http://ad.doubleclick.net/x" }),
+    );
+    accumulator.add(
+      record({ username: "u1", url: "http://ctldl.windowsupdate.com/x" }),
+    );
+    accumulator.add(
+      record({ username: "u1", url: "http://www.youtube.com/watch" }),
+    );
+
+    const metrics = accumulator.toMetrics();
+
+    expect(metrics.totalHits).toBe(1);
+    expect(metrics.sites.map((site) => site.site)).toEqual(["www.youtube.com"]);
+    expect(accumulator.toSkipped()).toEqual({
+      unserved: 0,
+      internal: 0,
+      telemetry: 6,
+    });
+  });
+
+  it("permite reemplazar la lista de telemetría", () => {
+    const accumulator = new DailyMetricsAccumulator("2026-05-01", {
+      telemetryPatterns: ["vendor.com"],
+    });
+
+    accumulator.add(
+      record({ username: "u1", url: "http://telemetry.vendor.com/x" }),
+    );
+    accumulator.add(
+      record({
+        username: "u1",
+        url: "http://firefox-portal-detection.com/x",
+      }),
+    );
+
+    expect(accumulator.toMetrics().totalHits).toBe(1);
+    expect(accumulator.toSkipped().telemetry).toBe(1);
   });
 
   it("cuenta las respuestas 2xx y 3xx a destinos públicos", () => {
@@ -246,7 +315,11 @@ describe("DailyMetricsAccumulator", () => {
     );
 
     expect(accumulator.toMetrics().totalHits).toBe(3);
-    expect(accumulator.toSkipped()).toEqual({ unserved: 0, internal: 0 });
+    expect(accumulator.toSkipped()).toEqual({
+      unserved: 0,
+      internal: 0,
+      telemetry: 0,
+    });
   });
 
   it("ignora los registros fuera de orden sin romper el acumulador", () => {

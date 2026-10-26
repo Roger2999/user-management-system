@@ -328,6 +328,17 @@ model ImportedLogFile {
   @@map("imported_log_file")
 }
 
+/// Líneas descartadas por día, por motivo. Se suman entre archivos: un día
+/// local puede venir repartido en dos archivos UTC.
+model DailySkipped {
+  date      DateTime @db.Date @id
+  unserved  Int      @default(0)
+  internal  Int      @default(0)
+  telemetry Int      @default(0)
+
+  @@map("daily_skipped")
+}
+
 /// Totales del día local por cuenta. Es la base de la tabla
 /// "Los 10 usuarios que más descargaron".
 model DailyUserStat {

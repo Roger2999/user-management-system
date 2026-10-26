@@ -13,6 +13,7 @@ import {
   toDailyStatRows,
   type DailySiteStatRow,
   type DailySiteUserStatRow,
+  type DailySkippedRow,
   type DailyStatRows,
   type DailyUserStatRow,
 } from "./rows";
@@ -216,9 +217,31 @@ async function writeDailyStats(
   tx: Prisma.TransactionClient,
   rows: DailyStatRows,
 ): Promise<void> {
+  await writeSkipped(tx, rows.skipped);
   await writeSites(tx, rows.sites);
   await writeUsers(tx, rows.users);
   await writeSiteUsers(tx, rows.siteUsers);
+}
+
+async function writeSkipped(
+  tx: Prisma.TransactionClient,
+  rows: readonly DailySkippedRow[],
+): Promise<void> {
+  for (const chunk of chunksOf(rows, WRITE_CHUNK)) {
+    await tx.$executeRaw`
+      INSERT INTO daily_skipped (date, unserved, "internal", telemetry)
+      VALUES ${Prisma.join(
+        chunk.map(
+          (row) =>
+            Prisma.sql`(${row.day}::date, ${row.unserved}, ${row.internal}, ${row.telemetry})`,
+        ),
+      )}
+      ON CONFLICT (date) DO UPDATE SET
+        unserved = daily_skipped.unserved + EXCLUDED.unserved,
+        "internal" = daily_skipped."internal" + EXCLUDED."internal",
+        telemetry = daily_skipped.telemetry + EXCLUDED.telemetry
+    `;
+  }
 }
 
 function chunksOf<T>(rows: readonly T[], size: number): T[][] {

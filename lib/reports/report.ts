@@ -11,7 +11,7 @@
  */
 
 import type { TracesSection } from "./assembly/section-traces";
-import type { DailyMetrics, SkippedLines } from "./metrics/aggregate";
+import type { DailyMetrics } from "./metrics/aggregate";
 import { buildDeclarationText, emitDeclaration } from "./document/declarations";
 import { buildMonthlyReport, type MonthlyReport } from "./model/monthly";
 import { DEFAULT_TIME_ZONE } from "./time";
@@ -89,8 +89,6 @@ export type MonthlyDocumentInput = {
   nationalExclusions?: readonly string[];
   limit?: number;
   browsingTimeCalibrated?: boolean;
-  /** Líneas descartadas por no ser hit, si vienen de la ingesta (S7). */
-  skipped?: SkippedLines;
 };
 
 export type MonthlyDocumentResult = {
@@ -110,7 +108,6 @@ export function buildMonthlyDocument(
     nationalExclusions: input.nationalExclusions,
     limit: input.limit,
     browsingTimeCalibrated: input.browsingTimeCalibrated,
-    skipped: input.skipped,
   });
 
   const document = buildReportDocument({

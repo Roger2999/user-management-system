@@ -1,4 +1,9 @@
-import { extractSite, isInternalSite } from "../classify/site";
+import {
+  DEFAULT_TELEMETRY_PATTERNS,
+  extractSite,
+  isInternalSite,
+  isTelemetrySite,
+} from "../classify/site";
 import type { SquidLogRecord } from "../types";
 
 /**
@@ -41,6 +46,8 @@ export type SkippedLines = {
   unserved: number;
   /** Servidas a un destino interno (RFC 1918, loopback, `.local`, ...). */
   internal: number;
+  /** Servidas a telemetría, publicidad, actualizaciones o revocación de certificados. */
+  telemetry: number;
 };
 
 /**
@@ -67,6 +74,11 @@ export type DailyMetricsOptions = {
    */
   siteBrowsingGapMs?: number;
   uploadMethods?: readonly string[];
+  /**
+   * Dominios que no son navegación (telemetría, publicidad, actualizaciones).
+   * Por defecto `DEFAULT_TELEMETRY_PATTERNS`; se puede reemplazar por completo.
+   */
+  telemetryPatterns?: readonly string[];
 };
 
 export type DailyUserMetrics = {
@@ -104,6 +116,8 @@ export type DailyMetrics = {
   totalElapsedMs: number;
   /** Hits sin cuenta de proxy autenticada. */
   unidentifiedHits: number;
+  /** Líneas del día descartadas por no ser hit, por motivo (S7). */
+  skipped: SkippedLines;
   users: DailyUserMetrics[];
   sites: DailySiteMetrics[];
   siteUsers: DailySiteUserMetrics[];
@@ -168,6 +182,7 @@ export class DailyMetricsAccumulator {
   private readonly browsingGapMs: number;
   private readonly siteBrowsingGapMs: number;
   private readonly uploadMethods: Set<string>;
+  private readonly telemetryPatterns: readonly string[];
   private readonly sites = new Map<string, Accumulator>();
   private readonly pairsBySite = new Map<string, Map<string, Accumulator>>();
 
@@ -178,6 +193,7 @@ export class DailyMetricsAccumulator {
   private unidentifiedHits = 0;
   private skippedUnserved = 0;
   private skippedInternal = 0;
+  private skippedTelemetry = 0;
 
   constructor(
     private readonly day: string,
@@ -191,6 +207,8 @@ export class DailyMetricsAccumulator {
         method.toUpperCase(),
       ),
     );
+    this.telemetryPatterns =
+      options.telemetryPatterns ?? DEFAULT_TELEMETRY_PATTERNS;
   }
 
   add(record: SquidLogRecord): void {
@@ -202,6 +220,11 @@ export class DailyMetricsAccumulator {
     const site = extractSite(record.url);
     if (site !== null && isInternalSite(site)) {
       this.skippedInternal += 1;
+      return;
+    }
+
+    if (site !== null && isTelemetrySite(site, this.telemetryPatterns)) {
+      this.skippedTelemetry += 1;
       return;
     }
 
@@ -244,7 +267,11 @@ export class DailyMetricsAccumulator {
 
   /** Líneas descartadas en el día, por motivo. Se declaran en la cobertura (S7). */
   toSkipped(): SkippedLines {
-    return { unserved: this.skippedUnserved, internal: this.skippedInternal };
+    return {
+      unserved: this.skippedUnserved,
+      internal: this.skippedInternal,
+      telemetry: this.skippedTelemetry,
+    };
   }
 
   toMetrics(): DailyMetrics {
@@ -300,6 +327,7 @@ export class DailyMetricsAccumulator {
       totalBytesOut: this.totalBytesOut,
       totalElapsedMs: this.totalElapsedMs,
       unidentifiedHits: this.unidentifiedHits,
+      skipped: this.toSkipped(),
       users: [...users.values()].sort(
         (a, b) =>
           b.hits - a.hits ||

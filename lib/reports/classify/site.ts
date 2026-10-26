@@ -163,3 +163,113 @@ export function isInternalSite(site: string): boolean {
     normalized.endsWith(suffix),
   );
 }
+
+/**
+ * Dominios que no son navegación, aunque estén servidos y sean externos.
+ *
+ * El informe mide lo que las personas visitan. Un chequeo de conectividad del
+ * navegador, la telemetría del sistema operativo, una actualización, la
+ * revocación de un certificado o un píxel de publicidad comparten la misma
+ * propiedad: nadie los eligió como destino. Dejarlos competir por un puesto en
+ * el top 10 desplaza a los sitios reales y ensucia los totales.
+ *
+ * La lista es una configuración: se aplica al importar, junto con la definición
+ * de hit (S2), y cambiarla exige reimportar el período. Las coincidencias se
+ * hacen por dominio o subdominio, nunca por sufijo de texto: `notdoubleclick.net`
+ * no es `doubleclick.net`.
+ */
+export const DEFAULT_TELEMETRY_PATTERNS = [
+  // Conectividad y detección de portal cautivo.
+  "firefox-portal-detection.com",
+  "detectportal.firefox.com",
+  "connectivitycheck.gstatic.com",
+  "msftconnecttest.com",
+  "msftncsi.com",
+  // Telemetría del navegador y del sistema.
+  "telemetry.mozilla.org",
+  "normandy.cdn.mozilla.net",
+  "firefox.settings.services.mozilla.com",
+  "merino.services.mozilla.com",
+  "push.services.mozilla.com",
+  "mozilla-ohttp.fastly-edge.com",
+  "watson.microsoft.com",
+  "watson.telemetry.microsoft.com",
+  "telemetry.microsoft.com",
+  "settings-win.data.microsoft.com",
+  "events.data.microsoft.com",
+  "vortex-win.data.microsoft.com",
+  "pipe.aria.microsoft.com",
+  "dsp.mp.microsoft.com",
+  "nexus.officeapps.live.com",
+  "odc.officeapps.live.com",
+  "bugsnag.com",
+  "sentry.io",
+  "crashlytics.com",
+  "app-measurement.com",
+  // Actualizaciones y revocación de certificados.
+  "windowsupdate.com",
+  "update.microsoft.com",
+  "dl.delivery.mp.microsoft.com",
+  "oneocsp.microsoft.com",
+  "ocsp.msocsp.com",
+  "crl.microsoft.com",
+  "ocsp.digicert.com",
+  "crl3.digicert.com",
+  "crl4.digicert.com",
+  "ocsp.digicert.cn",
+  "crl.digicert.cn",
+  "pki.goog",
+  "ocsp.sectigo.com",
+  "ocsp.globalsign.com",
+  "ocsp.usertrust.com",
+  "ocsp.godaddy.com",
+  "ocsp.certum.pl",
+  "ocsp.comodoca.com",
+  "amazontrust.com",
+  // Publicidad y analítica.
+  "google-analytics.com",
+  "analytics.google.com",
+  "googletagmanager.com",
+  "googlesyndication.com",
+  "doubleclick.net",
+  "analytics.tiktok.com",
+  "analytics.ssmas.com",
+  "analytics.ff.avast.com",
+  "analytics.webpushr.com",
+  "analytics.ahrefs.com",
+  "intake-analytics.wikimedia.org",
+  "hs-analytics.net",
+  "analytics.yahoo.com",
+  "adsanalytics.org",
+  "adttelemetry2.unidadeditorial.es",
+  "tahoe-analytics.publishers.advertising.a2z.com",
+  // Servicios de Google que no son navegación.
+  "dns.google.com",
+  "mozilla.cloudflare-dns.com",
+  "safebrowsing.googleapis.com",
+  "safebrowsing.google.com",
+  "safebrowsing.brave.com",
+  "safebrowsingohttpgateway.googleapis.com",
+  "ohttp-relay-safebrowsing-android.google.fastly-edge.com",
+  "ohttp-relay-safebrowsing-chrome.google.fastly-edge.com",
+  "android.clients.google.com",
+  "clients1.google.com",
+  "clients2.google.com",
+  "clients3.google.com",
+  "clients4.google.com",
+  "clients5.google.com",
+  "clients6.google.com",
+] as const;
+
+/** `true` cuando el sitio es telemetría, publicidad o infraestructura. */
+export function isTelemetrySite(
+  site: string,
+  patterns: readonly string[] = DEFAULT_TELEMETRY_PATTERNS,
+): boolean {
+  const normalized = site.trim().toLowerCase().replace(/\.$/, "");
+  if (normalized.length === 0) return false;
+
+  return patterns.some((pattern) =>
+    matchesDomainOrSubdomain(normalized, pattern),
+  );
+}

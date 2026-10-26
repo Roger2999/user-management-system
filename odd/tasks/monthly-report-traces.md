@@ -19,6 +19,11 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   No cuentan el reto 407, la denegación 403, el error 5xx ni el tráfico a
   servidores internos (RFC 1918, loopback, link-local, `.local`, nombres de una
   etiqueta). Confirmado por el especialista (L29) tras medir un día real.
+  **Tampoco cuenta la telemetría, la publicidad, las actualizaciones ni la
+  revocación de certificados** (decisión del especialista, L31): son respuestas
+  servidas a destinos externos que nadie eligió como navegación. La lista es
+  configurable (`DEFAULT_TELEMETRY_PATTERNS`), se aplica al importar junto con
+  la definición de hit y se declara como motivo de descarte en S7.
 - **S3** — El formato de salida es exacto: enteros con separador de miles
   (`129,351`), megabytes con 2 decimales (`3,676.86`), tiempos `h:m:s` sin tope
   de 24 horas (`699:52:18`), porcentajes a 1 decimal (`0.1%`, `0.0%`).
@@ -33,12 +38,13 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   2-7 se emiten presentes y vacías: encabezado, numeración y tablas con sus
   cabeceras, celdas sin contenido.
 - **S7** — El informe declara cobertura: días esperados vs días importados y las
-  líneas descartadas por no ser hit, separadas por motivo (respuestas no servidas
-  y destinos internos). Un mes con días faltantes no puede aprobarse sin
-  declararlo. El conteo se obtiene al importar (`IngestSquidLogResult.skipped`);
-  persistirlo es parte de T12. La nota va en un párrafo al cierre de la sección
-  1, antes del encabezado que abre las secciones 2-7 (decisión del especialista,
-  L30).
+  líneas descartadas por no ser hit, separadas por motivo (respuestas no servidas,
+  destinos internos y telemetría). Un mes con días faltantes no puede aprobarse
+  sin declararlo. El conteo se obtiene al importar (`IngestSquidLogResult.skipped`)
+  y **se persiste por día en `DailySkipped`** (T27), así la nota se regenera
+  desde la base sin volver a leer los logs. La nota va en un párrafo al cierre
+  de la sección 1, antes del encabezado que abre las secciones 2-7 (decisión del
+  especialista, L30).
 - **S8** — No existe tabla IP→usuario. Los usuarios se autentican en el proxy
   contra el AD (Windows Server 2022) y el username viaja en el log (`%[un`).
 - **S9** — Las cuentas del proxy son personales (política de la empresa): una
@@ -92,7 +98,9 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   `S4`. El
   `Browsing Time` **no** selecciona sitios: es la métrica del drill-down, donde
   ordena a los 10 usuarios de cada sitio (S15). Los drill-downs son los sitios
-  de la tabla internacional, en ese mismo orden. El informe de mayo 2026 no es
+  de la tabla internacional, en ese mismo orden. El universo de la selección
+  excluye la telemetría y la publicidad (S2, L31): no son navegación y no deben
+  competir por un puesto ni inflar los totales. El informe de mayo 2026 no es
   oráculo de la selección: su tabla internacional no es el top 10 por hits
   (omite `google.com` e incluye sitios muy por debajo del corte) y la nacional
   también está intervenida a mano.
@@ -164,6 +172,17 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   sección 1, antes del encabezado que abre las secciones 2-7. Route: inline.
   Spec: S7, S12. Status: hecho; 205 tests, `tsc` y `eslint` limpios; verificado
   en el documento real (ver L30).
+- **T26** — Excluir la telemetría del universo de navegación:
+  `DEFAULT_TELEMETRY_PATTERNS` + `isTelemetrySite` en `classify/site.ts`;
+  `DailyMetricsAccumulator` descarta antes de sumar y expone
+  `skipped.telemetry`. Route: inline. Spec: S2, S7, S20. Status: hecho; tests
+  en `site.test.ts`, `aggregate.test.ts` y la nota (ver L32).
+- **T27** — Persistir los descartes por día: `DailySkipped` (date, unserved,
+  internal, telemetry), `DailyMetrics.skipped`, escritura aditiva en
+  `importSquidLogFile` y lectura en `loadDailyMetrics`. La nota de S7 ya no
+  depende de un parámetro opcional. Route: inline. Spec: S7. Status: hecho;
+  migración `20261026130000_add_daily_skipped` **aplicada** contra
+  `db.prisma.io`; prueba de base con `REPORTS_DB_TEST=1` (ver L32).
 
 Route declaration: todas las tareas de esta sesión son `inline` — no hay unidades
 independientes en paralelo ni presión de contexto que justifiquen un writer.
@@ -1288,3 +1307,47 @@ Verificación:
 
 Pendiente: el camino que reconstruye el mes desde la base no tiene `skipped`, así
 que la nota omite el desglose de descartes. Persistirlo es T12.
+
+### L31 — Cabos sueltos, telemetría y commit de lo pendiente (verbatim)
+
+> vamos entonces, con respecto a los cabos sueltos aplicalos como sugieres y el top 10 no debe incluir esa telemetria/sitios, solo la navegacion que los usuarios a sitios reales, etc, finalmente haz commit de lo pendiente (.npmrc, pnpm-workspace.yaml, layout.tsx, lib/auth.ts)
+
+Decisiones:
+
+- La telemetría, la publicidad, las actualizaciones y la revocación de
+  certificados no son navegación: se descartan antes de sumar, con su propio
+  motivo (`skipped.telemetry`). La lista es configuración
+  (`DEFAULT_TELEMETRY_PATTERNS`) y se aplica al importar.
+- Los descartes se persisten por día en `DailySkipped`; la nota de S7 se
+  regenera desde la base.
+- El commit de los cambios del usuario se hace después de revisar que `.npmrc`
+  no contenga credenciales (solo cambia el registry a npmjs.org).
+
+### L32 — Evidencia de T26/T27
+
+- `isTelemetrySite` reconoce por dominio o subdominio, nunca por sufijo de
+  texto (`notdoubleclick.net` no coincide). Lista por defecto: conectividad
+  (portal cautivo, `msftconnecttest`, `msftncsi`), telemetría de navegador y
+  sistema (Mozilla, `watson`, `events.data.microsoft`, `dsp.mp.microsoft`,
+  `officeapps.live.com`, `bugsnag`, `sentry`, `crashlytics`, `app-measurement`),
+  actualizaciones y certificados (`windowsupdate`, `update.microsoft`,
+  `dl.delivery.mp.microsoft`, OCSP/CRL de Microsoft, DigiCert, Google,
+  Sectigo, GlobalSign, USERTRUST, GoDaddy, Amazon) y publicidad/analítica
+  (Google Analytics, Tag Manager, AdSense, DoubleClick, TikTok, Ahrefs,
+  Yahoo, Wikimedia, `hs-analytics`).
+- Día real 12/10/2026: 9.763 respuestas de telemetría descartadas; los hits
+  bajan de 42.470 a 32.707. Descartes finales:
+  `{ unserved: 673.982, internal: 40.906, telemetry: 9.763 }`. El top
+  internacional queda encabezado por Telegram, `gateway.facebook.com`,
+  `cache.lolaup.com`, `cdn.solred.app`, `www.google.com`, `www.youtube.com`.
+- `gator.volces.com` (429 hits) queda fuera de la lista por defecto: no se pudo
+  verificar qué es y no se excluye por sospecha. Queda como candidato a revisar.
+- `DailySkipped` guarda una fila por día aunque todos los contadores estén en
+  cero: así un día importado sin hits cuenta como presente en la cobertura.
+- Migración `20261026130000_add_daily_skipped` aplicada contra `db.prisma.io`
+  (`prisma migrate deploy`): `CREATE TABLE daily_skipped`, sin pérdida de datos.
+- Prueba de base real (`REPORTS_DB_TEST=1`, año 2099): 3/3, incluido el día con
+  un hit real y un descarte por cada motivo; limpieza con 0 residuos.
+- 212 tests en 26 archivos, `tsc --noEmit` limpio. La nota de la sección 1 ya
+  incluye la telemetría: "Se descartaron 10 respuestas no servidas, 20 accesos a
+  destinos internos y 30 accesos de telemetría."

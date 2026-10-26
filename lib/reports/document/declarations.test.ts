@@ -22,7 +22,7 @@ function input(overrides: Partial<DeclarationInput> = {}): DeclarationInput {
     declarations: {
       browsingTimeApproximate: false,
       incompleteCoverage: false,
-      skipped: null,
+      skipped: { unserved: 0, internal: 0, telemetry: 0 },
     },
     ...overrides,
   };
@@ -62,7 +62,7 @@ describe("buildDeclarationText", () => {
         declarations: {
           browsingTimeApproximate: true,
           incompleteCoverage: true,
-          skipped: { unserved: 673982, internal: 40906 },
+          skipped: { unserved: 673982, internal: 40906, telemetry: 0 },
         },
       }),
     );
@@ -88,7 +88,7 @@ describe("buildDeclarationText", () => {
         declarations: {
           browsingTimeApproximate: false,
           incompleteCoverage: true,
-          skipped: null,
+          skipped: { unserved: 0, internal: 0, telemetry: 0 },
         },
       }),
     );
@@ -106,7 +106,7 @@ describe("buildDeclarationText", () => {
         declarations: {
           browsingTimeApproximate: false,
           incompleteCoverage: true,
-          skipped: null,
+          skipped: { unserved: 0, internal: 0, telemetry: 0 },
         },
       }),
     );
@@ -121,7 +121,7 @@ describe("buildDeclarationText", () => {
         declarations: {
           browsingTimeApproximate: false,
           incompleteCoverage: false,
-          skipped: { unserved: 0, internal: 40906 },
+          skipped: { unserved: 0, internal: 40906, telemetry: 0 },
         },
       }),
     );
@@ -129,6 +129,23 @@ describe("buildDeclarationText", () => {
     expect(text).toBe(
       "Cobertura completa: 31 de 31 días importados. " +
         "Se descartaron 40,906 accesos a destinos internos.",
+    );
+  });
+
+  it("incluye la telemetría en la lista de descartes", () => {
+    const text = buildDeclarationText(
+      input({
+        declarations: {
+          browsingTimeApproximate: false,
+          incompleteCoverage: false,
+          skipped: { unserved: 10, internal: 20, telemetry: 30 },
+        },
+      }),
+    );
+
+    expect(text).toBe(
+      "Cobertura completa: 31 de 31 días importados. " +
+        "Se descartaron 10 respuestas no servidas, 20 accesos a destinos internos y 30 accesos de telemetría.",
     );
   });
 });

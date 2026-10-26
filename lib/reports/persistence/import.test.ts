@@ -25,6 +25,7 @@ const FILE_PREFIX = "__reports_test__";
 
 const JAN_1 = Date.UTC(2099, 0, 1, 16, 0, 0);
 const JAN_2 = Date.UTC(2099, 0, 2, 16, 0, 0);
+const JAN_3 = Date.UTC(2099, 0, 3, 16, 0, 0);
 const TEST_DATES = PERIOD.days.map((day) => new Date(`${day}T00:00:00.000Z`));
 
 function line(timestampMs: number, url: string, username: string | null): string {
@@ -33,6 +34,19 @@ function line(timestampMs: number, url: string, username: string | null): string
   const account = username ?? "-";
 
   return `${seconds}.${millis}    100 10.0.0.1 TCP_MISS/200 500 GET ${url} ${account} HIER_DIRECT/1.2.3.4 text/html`;
+}
+
+function rejectedLine(
+  timestampMs: number,
+  url: string,
+  username: string | null,
+  status: number,
+): string {
+  const seconds = Math.floor(timestampMs / 1000);
+  const millis = String(timestampMs % 1000).padStart(3, "0");
+  const account = username ?? "-";
+
+  return `${seconds}.${millis}    100 10.0.0.1 TCP_DENIED/${status} 500 GET ${url} ${account} HIER_DIRECT/1.2.3.4 text/html`;
 }
 
 const FIRST_LOG = [
@@ -48,6 +62,14 @@ const FIRST_LOG = [
 const SECOND_LOG = [
   line(JAN_1 + 10_000, "http://www.example.com/c", USER),
   line(JAN_1 + 11_000, "http://www.example.com/d", USER),
+].join("\n");
+
+/** Tercer archivo: un día con un hit real y tres descartes, uno por motivo. */
+const SKIPPED_LOG = [
+  line(JAN_3, "http://www.example.com/", USER),
+  rejectedLine(JAN_3 + 1000, "http://www.example.com/x", USER, 407),
+  line(JAN_3 + 2000, "http://10.0.0.5/x", USER),
+  line(JAN_3 + 3000, "http://firefox-portal-detection.com/x", USER),
 ].join("\n");
 
 function streamOf(text: string): Readable {
@@ -71,6 +93,7 @@ describe.skipIf(!enabled)("persistencia del log diario", () => {
   }
 
   async function cleanup(): Promise<void> {
+    await db().dailySkipped.deleteMany({ where: { date: { in: TEST_DATES } } });
     await db().dailySiteUserStat.deleteMany({ where: { date: { in: TEST_DATES } } });
     await db().dailyUserStat.deleteMany({ where: { date: { in: TEST_DATES } } });
     await db().dailySiteStat.deleteMany({ where: { date: { in: TEST_DATES } } });
@@ -94,9 +117,13 @@ describe.skipIf(!enabled)("persistencia del log diario", () => {
     const leftovers = await prisma.dailySiteStat.count({
       where: { date: { in: TEST_DATES } },
     });
+    const skippedLeftovers = await prisma.dailySkipped.count({
+      where: { date: { in: TEST_DATES } },
+    });
     await prisma.$disconnect();
 
     expect(leftovers).toBe(0);
+    expect(skippedLeftovers).toBe(0);
   });
 
   it("importa un archivo, no lo duplica y lo relee igual", async () => {
@@ -145,5 +172,25 @@ describe.skipIf(!enabled)("persistencia del log diario", () => {
     // reemplazo que borraría la primera contribución.
     expect(january1?.totalHits).toBe(6);
     expect(january1?.users[0]).toMatchObject({ username: USER, hits: 5 });
+  });
+
+  it("persiste los descartes por día y los relee sin reimportar", async () => {
+    const third = await importSquidLogFile(db(), {
+      fileName: `${FILE_PREFIX}c.log`,
+      stream: streamOf(SKIPPED_LOG),
+      period: PERIOD,
+    });
+
+    expect(third.status).toBe("imported");
+
+    const loaded = await loadDailyMetrics(db(), PERIOD);
+    const january3 = loaded.find((day) => day.day === "2099-01-03");
+
+    expect(january3?.totalHits).toBe(1);
+    expect(january3?.skipped).toEqual({
+      unserved: 1,
+      internal: 1,
+      telemetry: 1,
+    });
   });
 });

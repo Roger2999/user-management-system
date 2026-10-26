@@ -12,8 +12,7 @@
 
 import { formatInteger } from "../format";
 import type { MonthlyReport } from "../model/monthly";
-import type { SkippedLines } from "../metrics/aggregate";
-import { DEFAULT_BLANK_SECTIONS } from "./blank-sections";
+import type { SkippedLines } from "../metrics/aggregate";import { DEFAULT_BLANK_SECTIONS } from "./blank-sections";
 import { escapeXml, paragraphText, topLevelBlocks } from "./blocks";
 import { MONTHS } from "./period";
 
@@ -85,9 +84,12 @@ function extraDaysSentence(report: DeclarationInput): string | null {
   return `${verb} el ${formatDayList(extraDays)} por estar fuera del período.`;
 }
 
-function skippedSentence(skipped: SkippedLines | null): string | null {
-  if (skipped === null) return null;
+function joinParts(parts: readonly string[]): string {
+  if (parts.length <= 1) return parts.join("");
+  return `${parts.slice(0, -1).join(", ")} y ${parts.at(-1)}`;
+}
 
+function skippedSentence(skipped: SkippedLines): string | null {
   const parts: string[] = [];
   if (skipped.unserved > 0) {
     parts.push(`${formatInteger(skipped.unserved)} respuestas no servidas`);
@@ -95,10 +97,13 @@ function skippedSentence(skipped: SkippedLines | null): string | null {
   if (skipped.internal > 0) {
     parts.push(`${formatInteger(skipped.internal)} accesos a destinos internos`);
   }
+  if (skipped.telemetry > 0) {
+    parts.push(`${formatInteger(skipped.telemetry)} accesos de telemetría`);
+  }
 
   if (parts.length === 0) return null;
 
-  return `Se descartaron ${parts.join(" y ")}.`;
+  return `Se descartaron ${joinParts(parts)}.`;
 }
 
 function browsingSentence(report: DeclarationInput): string | null {

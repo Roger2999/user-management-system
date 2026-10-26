@@ -51,8 +51,8 @@ export type IngestSquidLogResult = {
    * Líneas del período descartadas por no ser hit, por motivo (S7).
    *
    * No incluye las líneas de días fuera del período: esas se declaran aparte en
-   * `outsidePeriod`. Tampoco se persisten todavía: la cobertura las declara al
-   * importar.
+   * `outsidePeriod`. Se persisten por día en `DailySkipped`, así la cobertura se
+   * regenera sin volver a importar.
    */
   skipped: SkippedLines;
   stats: ParseStats;
@@ -105,11 +105,12 @@ export async function ingestSquidLog(
     },
   });
 
-  const skipped: SkippedLines = { unserved: 0, internal: 0 };
+  const skipped: SkippedLines = { unserved: 0, internal: 0, telemetry: 0 };
   for (const accumulator of accumulators.values()) {
     const daySkipped = accumulator.toSkipped();
     skipped.unserved += daySkipped.unserved;
     skipped.internal += daySkipped.internal;
+    skipped.telemetry += daySkipped.telemetry;
   }
 
   return {

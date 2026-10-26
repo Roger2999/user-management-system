@@ -4,6 +4,7 @@ import {
   extractSite,
   isInternalSite,
   isNationalSite,
+  isTelemetrySite,
   isWebmailSite,
   matchesDomainOrSubdomain,
 } from "./site";
@@ -108,5 +109,31 @@ describe("isInternalSite", () => {
     expect(isInternalSite("www.youtube.com")).toBe(false);
     expect(isInternalSite("149.154.175.50")).toBe(false);
     expect(isInternalSite("2001:db8::1")).toBe(false);
+  });
+});
+
+describe("isTelemetrySite", () => {
+  it("reconoce telemetría, publicidad, actualizaciones y certificados", () => {
+    expect(isTelemetrySite("firefox-portal-detection.com")).toBe(true);
+    expect(isTelemetrySite("6734a28b.otlp.bugsnag.com")).toBe(true);
+    expect(isTelemetrySite("cp801.prod.do.dsp.mp.microsoft.com")).toBe(true);
+    expect(isTelemetrySite("ad.doubleclick.net")).toBe(true);
+    expect(isTelemetrySite("ctldl.windowsupdate.com")).toBe(true);
+    expect(isTelemetrySite("ocsp.digicert.com")).toBe(true);
+    expect(isTelemetrySite("www.google-analytics.com")).toBe(true);
+  });
+
+  it("no confunde un dominio parecido ni un sitio real", () => {
+    expect(isTelemetrySite("notdoubleclick.net")).toBe(false);
+    expect(isTelemetrySite("telemetry.vendor.com")).toBe(false);
+    expect(isTelemetrySite("www.youtube.com")).toBe(false);
+    expect(isTelemetrySite("gateway.facebook.com")).toBe(false);
+  });
+
+  it("acepta una lista propia en lugar de la de por defecto", () => {
+    expect(isTelemetrySite("telemetry.vendor.com", ["vendor.com"])).toBe(true);
+    expect(
+      isTelemetrySite("firefox-portal-detection.com", ["vendor.com"]),
+    ).toBe(false);
   });
 });

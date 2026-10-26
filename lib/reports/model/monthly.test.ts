@@ -9,6 +9,7 @@ function day(overrides: Partial<DailyMetrics> & { day: string }): DailyMetrics {
     totalBytesOut: 0,
     totalElapsedMs: 0,
     unidentifiedHits: 0,
+    skipped: { unserved: 0, internal: 0, telemetry: 0 },
     users: [],
     sites: [],
     siteUsers: [],
@@ -281,5 +282,29 @@ describe("buildMonthlyReport", () => {
 
     expect(approximate.declarations.browsingTimeApproximate).toBe(true);
     expect(calibrated.declarations.browsingTimeApproximate).toBe(false);
+  });
+
+  it("suma los descartes de los días y los declara", () => {
+    const report = buildMonthlyReport({
+      year: 2026,
+      month: 5,
+      daily: [
+        day({
+          day: "2026-05-01",
+          skipped: { unserved: 10, internal: 2, telemetry: 3 },
+        }),
+        day({
+          day: "2026-05-02",
+          skipped: { unserved: 5, internal: 0, telemetry: 7 },
+        }),
+      ],
+    });
+
+    expect(report.totals.skipped).toEqual({
+      unserved: 15,
+      internal: 2,
+      telemetry: 10,
+    });
+    expect(report.declarations.skipped).toEqual(report.totals.skipped);
   });
 });

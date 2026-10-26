@@ -4,6 +4,7 @@ import type {
   DailySiteMetrics,
   DailySiteUserMetrics,
   DailyUserMetrics,
+  SkippedLines,
 } from "../metrics/aggregate";
 import type { MonthlyPeriod } from "../time";
 
@@ -18,9 +19,11 @@ import type { MonthlyPeriod } from "../time";
  * **Los hits sin cuenta se reconstruyen, no se guardan.** `DailySiteStat` suma
  * los hits y `DailyUserStat` solo los identificados; la diferencia es el tráfico
  * servido sin autenticar. Con la definición vigente (respuesta servida, S2) es 0
- * salvo que una respuesta servida no se haya autenticado. Las líneas descartadas
- * (retos, denegaciones, destinos internos) no se persisten todavía: la cobertura
- * las declara al importar (S7).
+ * salvo que una respuesta servida no se haya autenticado.
+ *
+ * **Las líneas descartadas sí se guardan**, por día y por motivo, en
+ * `DailySkipped`: la cobertura de S7 se regenera sin volver a importar. Una fila
+ * con todo en cero también marca el día como importado, aunque no tenga hits.
  *
  * Una diferencia negativa es corrupción de datos, no un caso a tolerar: significa
  * que hay más hits de cuentas que hits totales.
@@ -31,6 +34,7 @@ type DayBucket = {
   sites: DailySiteMetrics[];
   users: DailyUserMetrics[];
   siteUsers: DailySiteUserMetrics[];
+  skipped: SkippedLines;
 };
 
 function dayOf(date: Date): string {
@@ -45,7 +49,13 @@ function bucketFor(buckets: Map<string, DayBucket>, day: string): DayBucket {
   const existing = buckets.get(day);
   if (existing !== undefined) return existing;
 
-  const created: DayBucket = { day, sites: [], users: [], siteUsers: [] };
+  const created: DayBucket = {
+    day,
+    sites: [],
+    users: [],
+    siteUsers: [],
+    skipped: { unserved: 0, internal: 0, telemetry: 0 },
+  };
   buckets.set(day, created);
   return created;
 }
@@ -57,13 +67,23 @@ export async function loadDailyMetrics(
 ): Promise<DailyMetrics[]> {
   const dates = period.days.map((day) => new Date(`${day}T00:00:00.000Z`));
 
-  const [siteRows, userRows, siteUserRows] = await Promise.all([
+  const [siteRows, userRows, siteUserRows, skippedRows] = await Promise.all([
     prisma.dailySiteStat.findMany({ where: { date: { in: dates } } }),
     prisma.dailyUserStat.findMany({ where: { date: { in: dates } } }),
     prisma.dailySiteUserStat.findMany({ where: { date: { in: dates } } }),
+    prisma.dailySkipped.findMany({ where: { date: { in: dates } } }),
   ]);
 
   const buckets = new Map<string, DayBucket>();
+
+  for (const row of skippedRows) {
+    const bucket = bucketFor(buckets, dayOf(row.date));
+    bucket.skipped = {
+      unserved: row.unserved,
+      internal: row.internal,
+      telemetry: row.telemetry,
+    };
+  }
 
   for (const row of siteRows) {
     bucketFor(buckets, dayOf(row.date)).sites.push({
@@ -118,6 +138,7 @@ export async function loadDailyMetrics(
         totalBytesOut: bucket.sites.reduce((sum, row) => sum + row.bytesOut, 0),
         totalElapsedMs: bucket.sites.reduce((sum, row) => sum + row.elapsedMs, 0),
         unidentifiedHits,
+        skipped: bucket.skipped,
         users: bucket.users.sort(
           (a, b) =>
             b.hits - a.hits ||
