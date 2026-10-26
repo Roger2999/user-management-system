@@ -14,7 +14,11 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   reimportarlo no duplica datos.
 - **S2** — El sistema reproduce las métricas de las tablas que hoy se exportan
   de WebSpy Giga Analyzer: `Hits`, `Incoming (MB)`, `Outgoing (MB)`,
-  `Download Time (h:m:s)`, `Browsing Time (h:m:s)`, `% of Hits`.
+  `Download Time (h:m:s)`, `Browsing Time (h:m:s)`, `% of Hits`. Un **hit** es
+  una respuesta servida por el sitio (2xx/3xx) a un destino que no es interno.
+  No cuentan el reto 407, la denegación 403, el error 5xx ni el tráfico a
+  servidores internos (RFC 1918, loopback, link-local, `.local`, nombres de una
+  etiqueta). Confirmado por el especialista (L29) tras medir un día real.
 - **S3** — El formato de salida es exacto: enteros con separador de miles
   (`129,351`), megabytes con 2 decimales (`3,676.86`), tiempos `h:m:s` sin tope
   de 24 horas (`699:52:18`), porcentajes a 1 decimal (`0.1%`, `0.0%`).
@@ -28,9 +32,11 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
 - **S6** — El sistema emite el documento completo de 7 secciones. Las secciones
   2-7 se emiten presentes y vacías: encabezado, numeración y tablas con sus
   cabeceras, celdas sin contenido.
-- **S7** — El informe declara cobertura: días esperados vs días importados, y
-  cantidad de hits sin cuenta de proxy identificada. Un mes con días faltantes
-  no puede aprobarse sin declararlo.
+- **S7** — El informe declara cobertura: días esperados vs días importados y las
+  líneas descartadas por no ser hit, separadas por motivo (respuestas no servidas
+  y destinos internos). Un mes con días faltantes no puede aprobarse sin
+  declararlo. El conteo se obtiene al importar (`IngestSquidLogResult.skipped`);
+  persistirlo es parte de T12.
 - **S8** — No existe tabla IP→usuario. Los usuarios se autentican en el proxy
   contra el AD (Windows Server 2022) y el username viaja en el log (`%[un`).
 - **S9** — Las cuentas del proxy son personales (política de la empresa): una
@@ -78,8 +84,9 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   y un día fuera del período —como el 30/04 en un informe de mayo— se reporta
   como ajeno al período en lugar de sumarse.
 - **S20** — Las dos tablas de sitios de la sección 1 las calcula el sistema: no
-  se declaran. Internacional = top 10 por hits descendente; nacional = top 10
-  por hits descendente, aplicando las exclusiones institucionales de `S4`. El
+  se declaran. Internacional = top 10 por hits (S2) descendente; nacional = top
+  10 por hits (S2) descendente, aplicando las exclusiones institucionales de
+  `S4`. El
   `Browsing Time` **no** selecciona sitios: es la métrica del drill-down, donde
   ordena a los 10 usuarios de cada sitio (S15). Los drill-downs son los sitios
   de la tabla internacional, en ese mismo orden. El informe de mayo 2026 no es
@@ -143,6 +150,12 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   Status: hecho el `.docx`. La conversión a PDF queda fuera del sistema: se hace
   con LibreOffice o Word, y no se automatiza en esta unidad.
 - **T12** — UI de importación, revisión de hallazgos y documento. Status: pendiente.
+- **T24** — Hit = respuesta servida sin destinos internos: `isServedResponse`
+  (2xx/3xx) e `isInternalSite` (RFC 1918, loopback, link-local, `.local`,
+  nombres de una etiqueta) aplicados en `DailyMetricsAccumulator`, y
+  `IngestSquidLogResult.skipped` con el desglose. Route: inline. Spec: S2, S7.
+  Status: hecho; 196 tests, `tsc` y `eslint` limpios; un día real da 42.470 hits
+  de 757.358 líneas (ver L29).
 
 Route declaration: todas las tareas de esta sesión son `inline` — no hay unidades
 independientes en paralelo ni presión de contexto que justifiquen un writer.
@@ -1196,9 +1209,45 @@ Mayo no arbitra: su tabla está intervenida a mano (S20) y sus hits son compatib
 con "toda línea" en youtube pero no en picta.cu; el tráfico de mayo y octubre no
 es comparable.
 
-#### R6 (abierta)
+#### R6 — resuelta en L29
 
-¿Un hit es toda línea o solo la respuesta servida? Decisión del especialista.
-Recomendación: respuesta servida 2xx/3xx, porque toda servida tiene cuenta y el
-reto 407 es la misma petición. Consecuencia: S7 deja de contar retos como "hits
-sin cuenta" y pasa a declarar los intentos no servidos como calidad de dato.
+¿Un hit es toda línea o solo la respuesta servida? El especialista confirmó la
+respuesta servida sin destinos internos (L29). S7 deja de contar retos como
+"hits sin cuenta" y pasa a declarar las líneas descartadas por motivo.
+
+### L29 — Hit = respuesta servida sin destinos internos
+
+El especialista confirmó: **"confirmo que hit es respuesta servida sin destinos
+internos"**.
+
+Implementado en T24:
+
+- `isServedResponse`: solo 2xx/3xx.
+- `isInternalSite`: IPv4 privadas (RFC 1918), loopback, link-local, `0.0.0.0/8`,
+  CGNAT; IPv6 loopback/ULA/link-local; dominios `.local`/`.lan`/`.internal`/
+  `.home.arpa`; nombres de una etiqueta.
+- El acumulador descarta antes de sumar y expone `toSkipped()`; la ingesta
+  devuelve `skipped` con `unserved` e `internal`.
+
+Medición del día real (`squid-2026-10-12.log`) con la regla nueva:
+
+| | Antes (toda línea) | Ahora |
+| --- | --- | --- |
+| Hits | 757.358 | 42.470 |
+| Sin cuenta | 628.120 | 0 |
+| Descartadas | — | 673.982 no servidas + 40.906 internas |
+| Sitios | 2.183 | 1.606 |
+| Pares | 6.198 | 3.233 |
+
+Top internacional: Telegram `149.154.175.50` (1.856), `gateway.facebook.com`
+(1.572), `cache.lolaup.com` (1.331), `cdn.solred.app` (1.296),
+`www.google.com` (1.099), `www.youtube.com` (798). Top nacional:
+`videos.picta.cu` (2.118), `www.picta.cu` (779), `api.picta.cu` (461). Top
+usuarios: `brian` (11.558), `infojovellanos` (5.208), `yosmel` (3.181).
+`aperez` baja de 36.105 a 2.007 hits: sus 34.000 servidos eran el WSUS.
+
+Documento de octubre emitido desde el día real: 201.598 bytes, ZIP válido,
+tablas y drill-downs completos.
+
+Pendiente: persistir `skipped` (T12) para que la cobertura S7 se regenere sin
+volver a importar.

@@ -194,6 +194,61 @@ describe("DailyMetricsAccumulator", () => {
     expect(metrics.users[0].browsingMs).toBe(5 * MINUTE);
   });
 
+  it("no cuenta como hit lo que el sitio no sirvió", () => {
+    const accumulator = new DailyMetricsAccumulator("2026-05-01");
+
+    accumulator.add(record({ username: "u1", httpStatus: 407 }));
+    accumulator.add(record({ username: "u1", httpStatus: 403 }));
+    accumulator.add(record({ username: "u1", httpStatus: 500 }));
+    accumulator.add(record({ username: "u1", httpStatus: null }));
+
+    const metrics = accumulator.toMetrics();
+
+    expect(metrics.totalHits).toBe(0);
+    expect(metrics.sites).toEqual([]);
+    expect(accumulator.toSkipped()).toEqual({ unserved: 4, internal: 0 });
+  });
+
+  it("no cuenta como hit una respuesta servida a un destino interno", () => {
+    const accumulator = new DailyMetricsAccumulator("2026-05-01");
+
+    accumulator.add(record({ username: "u1", url: "172.19.152.80:8530" }));
+    accumulator.add(record({ username: "u1", url: "http://10.0.0.5/x" }));
+    accumulator.add(
+      record({ username: "u1", url: "http://update.services.local/x" }),
+    );
+    accumulator.add(record({ username: "u1", url: "http://srvsiscont/x" }));
+
+    const metrics = accumulator.toMetrics();
+
+    expect(metrics.totalHits).toBe(0);
+    expect(metrics.sites).toEqual([]);
+    expect(accumulator.toSkipped()).toEqual({ unserved: 0, internal: 4 });
+  });
+
+  it("cuenta las respuestas 2xx y 3xx a destinos públicos", () => {
+    const accumulator = new DailyMetricsAccumulator("2026-05-01");
+
+    accumulator.add(record({ username: "u1", httpStatus: 200 }));
+    accumulator.add(
+      record({
+        username: "u1",
+        httpStatus: 204,
+        url: "http://telemetry.vendor.com/ping",
+      }),
+    );
+    accumulator.add(
+      record({
+        username: "u1",
+        httpStatus: 304,
+        url: "http://cdn.example.com/x",
+      }),
+    );
+
+    expect(accumulator.toMetrics().totalHits).toBe(3);
+    expect(accumulator.toSkipped()).toEqual({ unserved: 0, internal: 0 });
+  });
+
   it("ignora los registros fuera de orden sin romper el acumulador", () => {
     const accumulator = new DailyMetricsAccumulator("2026-05-01");
 

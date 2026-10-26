@@ -1,4 +1,4 @@
-import { extractSite } from "../classify/site";
+import { extractSite, isInternalSite } from "../classify/site";
 import type { SquidLogRecord } from "../types";
 
 /**
@@ -7,8 +7,11 @@ import type { SquidLogRecord } from "../types";
  * Reglas que no son obvias y que están acá porque son las que hacen que los
  * números coincidan con el documento:
  *
- * - `Hits` es la cantidad de líneas, incluidos los túneles `CONNECT`.
- * - `Incoming` es la suma del campo `bytes` (respuesta).
+ * - `Hits` es la cantidad de respuestas servidas por el sitio (2xx/3xx) a un
+ *   destino que no es interno. El reto 407, la denegación 403 y el error 5xx no
+ *   son visitas: el reto es la misma petición que después se registra
+ *   autenticada, y el destino interno (el WSUS, por ejemplo) no es navegación.
+ * - `Incoming` es la suma del campo `bytes` de esos hits.
  * - `Outgoing` es la suma del campo `bytes` para métodos de subida.
  * - `Download Time` es la suma de `elapsed`, o sea tiempo de proceso del proxy,
  *   no tiempo de descarga del usuario.
@@ -31,6 +34,24 @@ export const UNIDENTIFIED_ACCOUNT = "";
 export const DEFAULT_BROWSING_GAP_MS = 30 * 60 * 1000;
 
 export const DEFAULT_UPLOAD_METHODS = ["POST", "PUT"] as const;
+
+/** Líneas descartadas del informe y por qué. Se declaran en la cobertura (S7). */
+export type SkippedLines = {
+  /** No servidas por el sitio: 4xx, 5xx, 000 o sin código HTTP. */
+  unserved: number;
+  /** Servidas a un destino interno (RFC 1918, loopback, `.local`, ...). */
+  internal: number;
+};
+
+/**
+ * `true` cuando el proxy obtuvo respuesta del sitio.
+ *
+ * Solo 2xx y 3xx: un 407 es el reto de autenticación, un 403 una denegación y
+ * un 5xx un fallo. Ninguno de los tres es una visita.
+ */
+export function isServedResponse(httpStatus: number | null): boolean {
+  return httpStatus !== null && httpStatus >= 200 && httpStatus < 400;
+}
 
 export type DailyMetricsOptions = {
   /** Umbral de corte para el tiempo de navegación por par (sitio, usuario). */
@@ -155,6 +176,8 @@ export class DailyMetricsAccumulator {
   private totalBytesOut = 0;
   private totalElapsedMs = 0;
   private unidentifiedHits = 0;
+  private skippedUnserved = 0;
+  private skippedInternal = 0;
 
   constructor(
     private readonly day: string,
@@ -171,7 +194,18 @@ export class DailyMetricsAccumulator {
   }
 
   add(record: SquidLogRecord): void {
-    const site = extractSite(record.url) ?? UNKNOWN_SITE;
+    if (!isServedResponse(record.httpStatus)) {
+      this.skippedUnserved += 1;
+      return;
+    }
+
+    const site = extractSite(record.url);
+    if (site !== null && isInternalSite(site)) {
+      this.skippedInternal += 1;
+      return;
+    }
+
+    const resolvedSite = site ?? UNKNOWN_SITE;
     const account = record.username ?? UNIDENTIFIED_ACCOUNT;
     const bytesOut = this.uploadMethods.has(record.method.toUpperCase())
       ? record.bytes
@@ -186,17 +220,17 @@ export class DailyMetricsAccumulator {
     // El sitio y el par (sitio, usuario) son dos agregaciones distintas, cada una
     // con su propio reloj: el mismo tráfico produce tiempos de navegación
     // diferentes. Sumar los pares no reproduce el Browsing Time del sitio.
-    let siteAccumulator = this.sites.get(site);
+    let siteAccumulator = this.sites.get(resolvedSite);
     if (siteAccumulator === undefined) {
       siteAccumulator = createAccumulator();
-      this.sites.set(site, siteAccumulator);
+      this.sites.set(resolvedSite, siteAccumulator);
     }
     accumulateRecord(siteAccumulator, record, bytesOut, this.siteBrowsingGapMs);
 
-    let pairs = this.pairsBySite.get(site);
+    let pairs = this.pairsBySite.get(resolvedSite);
     if (pairs === undefined) {
       pairs = new Map<string, Accumulator>();
-      this.pairsBySite.set(site, pairs);
+      this.pairsBySite.set(resolvedSite, pairs);
     }
 
     let accumulator = pairs.get(account);
@@ -206,6 +240,11 @@ export class DailyMetricsAccumulator {
     }
 
     accumulateRecord(accumulator, record, bytesOut, this.browsingGapMs);
+  }
+
+  /** Líneas descartadas en el día, por motivo. Se declaran en la cobertura (S7). */
+  toSkipped(): SkippedLines {
+    return { unserved: this.skippedUnserved, internal: this.skippedInternal };
   }
 
   toMetrics(): DailyMetrics {

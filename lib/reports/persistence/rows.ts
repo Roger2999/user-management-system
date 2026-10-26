@@ -11,10 +11,11 @@ import type { DailyMetrics } from "../metrics/aggregate";
  * una clave foránea a `ProxyAccount`, y crear una cuenta ficticia para el tráfico
  * anónimo rompería S9 ("una cuenta = una persona"). El tráfico sin identificar
  * no se pierde: sigue en `DailySiteStat`, y los hits sin cuenta se reconstruyen
- * como la diferencia entre los hits de los sitios y los de las cuentas. Las
- * tablas del documento excluyen ese tráfico de todas formas (`buildSiteUserTableRows`
- * filtra `username === null`), así que la ida y vuelta no pierde nada que se
- * imprima.
+ * como la diferencia entre los hits de los sitios y los de las cuentas. Con la
+ * definición de hit vigente (respuesta servida, S2) esa diferencia es 0 salvo
+ * que una respuesta servida no se haya autenticado. Las tablas del documento
+ * excluyen ese tráfico de todas formas (`buildSiteUserTableRows` filtra
+ * `username === null`), así que la ida y vuelta no pierde nada que se imprima.
  */
 
 export type DailySiteStatRow = {

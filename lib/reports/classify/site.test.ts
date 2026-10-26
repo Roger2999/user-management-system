@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   classifySite,
   extractSite,
+  isInternalSite,
   isNationalSite,
   isWebmailSite,
   matchesDomainOrSubdomain,
@@ -77,5 +78,35 @@ describe("isWebmailSite", () => {
     const webmail = ["gmail.com", "outlook.com"];
     expect(isWebmailSite("mail.gmail.com", webmail)).toBe(true);
     expect(isWebmailSite("www.youtube.com", webmail)).toBe(false);
+  });
+});
+
+describe("isInternalSite", () => {
+  it("reconoce los rangos privados y reservados de IPv4", () => {
+    expect(isInternalSite("172.19.152.80")).toBe(true);
+    expect(isInternalSite("10.0.0.5")).toBe(true);
+    expect(isInternalSite("192.168.1.1")).toBe(true);
+    expect(isInternalSite("127.0.0.1")).toBe(true);
+    expect(isInternalSite("169.254.1.1")).toBe(true);
+    expect(isInternalSite("100.64.0.1")).toBe(true);
+    expect(isInternalSite("0.1.0.1")).toBe(true);
+  });
+
+  it("reconoce las IPv6 internas", () => {
+    expect(isInternalSite("[::1]")).toBe(true);
+    expect(isInternalSite("fd00::1")).toBe(true);
+    expect(isInternalSite("fe80::1")).toBe(true);
+  });
+
+  it("reconoce dominios y nombres internos", () => {
+    expect(isInternalSite("update.services.local")).toBe(true);
+    expect(isInternalSite("intranet.empresa.lan")).toBe(true);
+    expect(isInternalSite("srvsiscont")).toBe(true);
+  });
+
+  it("no marca un destino público", () => {
+    expect(isInternalSite("www.youtube.com")).toBe(false);
+    expect(isInternalSite("149.154.175.50")).toBe(false);
+    expect(isInternalSite("2001:db8::1")).toBe(false);
   });
 });

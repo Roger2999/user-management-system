@@ -16,9 +16,11 @@ import type { MonthlyPeriod } from "../time";
  * memoria hasta el cierre.
  *
  * **Los hits sin cuenta se reconstruyen, no se guardan.** `DailySiteStat` suma
- * todos los registros y `DailyUserStat` solo los identificados; la diferencia es
- * exactamente el tráfico anónimo que el informe declara (S7). Guardarlo aparte
- * sería un segundo lugar donde puede quedar desincronizado.
+ * los hits y `DailyUserStat` solo los identificados; la diferencia es el tráfico
+ * servido sin autenticar. Con la definición vigente (respuesta servida, S2) es 0
+ * salvo que una respuesta servida no se haya autenticado. Las líneas descartadas
+ * (retos, denegaciones, destinos internos) no se persisten todavía: la cobertura
+ * las declara al importar (S7).
  *
  * Una diferencia negativa es corrupción de datos, no un caso a tolerar: significa
  * que hay más hits de cuentas que hits totales.

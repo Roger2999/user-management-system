@@ -14,7 +14,12 @@
  * llama.
  */
 
-import { DailyMetricsAccumulator, type DailyMetrics, type DailyMetricsOptions } from "./metrics/aggregate";
+import {
+  DailyMetricsAccumulator,
+  type DailyMetrics,
+  type DailyMetricsOptions,
+  type SkippedLines,
+} from "./metrics/aggregate";
 import {
   parseSquidLogStream,
   type SquidLogColumn,
@@ -42,6 +47,14 @@ export type IngestSquidLogResult = {
   days: DailyMetrics[];
   /** Días locales fuera del período que traía el archivo. */
   outsidePeriod: OutsidePeriodDay[];
+  /**
+   * Líneas del período descartadas por no ser hit, por motivo (S7).
+   *
+   * No incluye las líneas de días fuera del período: esas se declaran aparte en
+   * `outsidePeriod`. Tampoco se persisten todavía: la cobertura las declara al
+   * importar.
+   */
+  skipped: SkippedLines;
   stats: ParseStats;
   /**
    * Instante UTC del primer y último registro válido del archivo, o `null` si no
@@ -92,6 +105,13 @@ export async function ingestSquidLog(
     },
   });
 
+  const skipped: SkippedLines = { unserved: 0, internal: 0 };
+  for (const accumulator of accumulators.values()) {
+    const daySkipped = accumulator.toSkipped();
+    skipped.unserved += daySkipped.unserved;
+    skipped.internal += daySkipped.internal;
+  }
+
   return {
     days: [...accumulators.values()]
       .map((accumulator) => accumulator.toMetrics())
@@ -99,6 +119,7 @@ export async function ingestSquidLog(
     outsidePeriod: [...outside.entries()]
       .map(([day, hits]) => ({ day, hits }))
       .sort((a, b) => a.day.localeCompare(b.day)),
+    skipped,
     stats,
     firstEventAt,
     lastEventAt,

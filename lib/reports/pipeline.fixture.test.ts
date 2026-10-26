@@ -16,7 +16,7 @@ const FIXTURE_PATH = fileURLToPath(
  * este test falla si cualquiera de las dos capas cambia una definición.
  */
 describe("pipeline sobre el fragmento real", () => {
-  it("agrega el día completo sin perder líneas", async () => {
+  it("cuenta como hit solo lo servido a un destino público", async () => {
     const accumulator = new DailyMetricsAccumulator("2024-05-30");
     const days = new Map<string, number>();
 
@@ -34,14 +34,17 @@ describe("pipeline sobre el fragmento real", () => {
 
     const metrics = accumulator.toMetrics();
 
-    expect(metrics.totalHits).toBe(12);
-    expect(metrics.totalBytesIn).toBe(52780);
-    expect(metrics.totalElapsedMs).toBe(11247);
+    // 12 líneas: 4 no servidas (CONNECT sin estado, 403, 502, 404) y 2 servidas
+    // a dominios `.local`. Quedan 6 hits reales.
+    expect(metrics.totalHits).toBe(6);
+    expect(metrics.totalBytesIn).toBe(34269);
+    expect(metrics.totalElapsedMs).toBe(4159);
     expect(metrics.totalBytesOut).toBe(0);
-    expect(metrics.unidentifiedHits).toBe(10);
+    expect(metrics.unidentifiedHits).toBe(5);
 
-    expect(metrics.users).toHaveLength(3);
-    expect(metrics.sites).toHaveLength(12);
+    expect(metrics.users).toHaveLength(2);
+    expect(metrics.sites).toHaveLength(6);
+    expect(accumulator.toSkipped()).toEqual({ unserved: 4, internal: 2 });
 
     // Todas las líneas del fragmento caen en el mismo día local.
     expect([...days.keys()]).toEqual(["2024-05-30"]);
@@ -60,8 +63,9 @@ describe("pipeline sobre el fragmento real", () => {
         .users.map((user) => [user.username, user.bytesIn]),
     );
 
-    expect(byUsername.get("juan.perez")).toBe(341);
     expect(byUsername.get("maria.gomez")).toBe(6120);
-    expect(byUsername.get(null)).toBe(46319);
+    expect(byUsername.get(null)).toBe(28149);
+    // Su única línea va a `update.services.local`: destino interno, no es hit.
+    expect(byUsername.has("juan.perez")).toBe(false);
   });
 });
