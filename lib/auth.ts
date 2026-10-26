@@ -8,7 +8,8 @@ import { resend } from "./resend";
 // La cookie de sesion solo debe marcarse como "Secure" cuando la app se
 // sirve realmente por HTTPS. Si se fuerza en produccion sin un terminador TLS
 // delante, el navegador descarta la cookie y la sesion nunca persiste.
-const secureCookies = process.env.BETTER_AUTH_URL?.startsWith("https://") ?? false;
+const secureCookies =
+  process.env.BETTER_AUTH_URL?.startsWith("https://") ?? false;
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: "postgresql" }),
@@ -62,10 +63,7 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
-    // El alta de usuarios se hace desde Configuracion por un ADMIN. No hay
-    // autoservicio: cualquiera en la red podria crearse una cuenta.
     disableSignUp: true,
-    // requireEmailVerification: true,
     autoSignIn: true,
     maxPasswordLength: 128,
     minPasswordLength: 8,
@@ -87,7 +85,6 @@ export const auth = betterAuth({
       }
     },
   },
-
   trustedOrigins: [
     "http://localhost:3000",
     "http://172.19.152.250:3000",

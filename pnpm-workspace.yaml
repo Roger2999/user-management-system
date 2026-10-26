@@ -1,13 +1,12 @@
 overrides:
   zod: ">=3.25"
 
-# Store de pnpm fuera del directorio del proyecto: el store por defecto caia
-# en /opt/user-management-system/.local (867 MB) y no estaba en .gitignore.
-storeDir: /opt/pnpm-store
-
-# Cache de pnpm fuera del directorio del proyecto (por defecto caia en
-# /opt/user-management-system/.cache, que no estaba en .gitignore).
-cacheDir: /opt/pnpm-cache
+# Store y cache: se usan las rutas por defecto de pnpm ($XDG_DATA_HOME/pnpm/store
+# y $XDG_CACHE_HOME/pnpm), que ya quedan fuera del repositorio. No fijar rutas
+# absolutas aca: storeDir/cacheDir apuntaban a /opt/pnpm-* y /opt no es
+# escribible por el usuario de desarrollo, asi que el install fallaba con EACCES.
+# En el servidor, definir XDG_DATA_HOME/XDG_CACHE_HOME en el entorno del servicio
+# en lugar de hardcodear rutas en este archivo.
 
 # Directorios de agent skills donde pnpm enlaza las skills que publican las
 # dependencias (dotenv). Sin esto, `pnpm install` falla con
@@ -18,9 +17,10 @@ skills:
     - .claude/skills
 
 # `pnpm exec` / `pnpm run` no deben disparar un `pnpm install` implicito.
-# El .env define NODE_ENV=production y ese install podaria las devDependencies
-# (prisma, tsx, typescript), rompiendo `prisma migrate deploy` y el build.
-# Las dependencias se instalan de forma explicita y separada.
+# En despliegue el servicio corre con NODE_ENV=production, y ese install
+# implicito podaria las devDependencies (prisma, tsx, typescript), rompiendo
+# `prisma migrate deploy` y el build. Las dependencias se instalan de forma
+# explicita y separada. Nota: el .env del repositorio ya NO define NODE_ENV.
 verifyDepsBeforeRun: false
 
 allowBuilds:
