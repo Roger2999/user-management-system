@@ -90,6 +90,10 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   `Users | Hits | Incoming (MB) | Download Time (h:m:s) | Browsing Time (h:m:s) |
   % of Browsing Time (h:m:s)`. No existe variante por hits, aunque el documento
   de mayo la tenga en `clarity.ms` y `windy.com`.
+- **S22** — El documento se emite fechado y con el mes del período: la fecha es la
+  de generación en `America/Havana`, la línea "Informe mensual correspondiente al
+  mes" lleva el mes y el año informados, y la prosa de la sección 1 menciona ese
+  mismo mes. No puede quedar el mes de la plantilla.
 
 ## Tasks
 
@@ -120,6 +124,10 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   conserva encabezados, numeración, etiquetas y cabeceras de tabla, y borra los
   valores del mes anterior. Route: inline. Spec: S6. Status: hecho (ver L21),
   verificado contra el documento de mayo.
+- **T21** — Campos del período (`lib/reports/document/period.ts`): fecha de emisión
+  en `America/Havana`, mes y año del período y mención del mes en la prosa de la
+  sección 1. Route: inline. Spec: S10, S22. Status: hecho (ver L22), verificado
+  contra el documento de mayo.
 - **T17** — Modelo mensual: merge de días, cobertura y declaraciones (`lib/reports/model/monthly.ts`). Route: inline. Spec: S7, S12, S19. Status: hecho.
 - **T14** — Arnés de paridad: fixture numérico con los totales de los exports de WebSpy (sitios + usuarios por sitio) y comparación por sitio contra el motor. Route: inline. Spec: S11, S15. Status: nivel 1 hecho (`1307188`); nivel 2 bloqueado por el `access.log` de mayo.
 - **T10** — Paridad mayo 2026. Status: desbloqueado en parte — los exports de WebSpy ya están y confirman el denominador de S15; falta el `access.log` completo de mayo (incluido el 30/04) para comparar hits, bytes y tiempos.
@@ -811,8 +819,9 @@ no se declara verificado.
 
 #### De paso
 
-S20 citaba `S22`, que nunca existió: las exclusiones institucionales están en S4.
-Corregido en las dos referencias.
+S20 citaba `S22`, que entonces no existía: las exclusiones institucionales están
+en S4. Corregido en las dos referencias. (`S22` se usa hoy para los campos del
+período, ver L22.)
 
 #### Lo que no se tocó
 
@@ -876,3 +885,47 @@ datos del mes anterior.
   consecuencia de la regla.
 - La tabla de virus queda con diez renglones vacíos (sus viñetas se ven) y "Nota:"
   queda solo, sin el texto de las fotocopiadoras.
+
+### L22 — El documento se fecha y declara el mes (verbatim)
+
+#### La decisión
+
+La plantilla trae el mes en tres lugares: la fecha ("Matanzas, 9 de Mayo de 2026"),
+la línea "Informe mensual correspondiente al mes mayo de 2026" y la prosa de la
+sección 1 ("En la evaluación de las trazas del mes de Mayo..."). Se preguntó y la
+respuesta fue:
+
+> Fecha y mes automáticos
+
+#### La regla
+
+- Fecha: día de generación en `America/Havana`. Un `new Date()` en UTC a las 22:00
+  de La Habana ya es el día siguiente, y el documento saldría fechado un día
+  después.
+- La fecha usa el mes de emisión, no el del período: un informe de mayo puede
+  firmarse en junio.
+- Línea del informe: mes y año del período, en minúscula como el original.
+- Prosa de la sección 1: se reemplaza "mes de <Mes>" por el mes informado.
+- Falla si no encuentra la fecha o la línea del informe: emitir el documento con
+  el mes de la plantilla es un error que nadie nota hasta que está firmado.
+
+#### Verificación
+
+- 144 tests en 17 archivos; `tsc --noEmit` limpio.
+- Documento de mayo con período junio 2026 y emisión 3 de julio 02:00 UTC:
+  "Matanzas, 2 de Julio de 2026" (día local), "Informe mensual correspondiente al
+  mes junio de 2026" y "En la evaluación de las trazas del mes de Junio...".
+  Ninguna mención de mayo en todo el texto; 11 páginas.
+
+#### Dos errores que los tests destaparon
+
+- La fecha usaba el mes del período. Con período junio y emisión en julio salía
+  "2 de Junio"; ahora toma el mes de la fecha local.
+- El reemplazo en la prosa perdía el prefijo: "del mes de Mayo" quedaba
+  "del MayoJunio". El grupo de captura era el nombre del mes, no el prefijo.
+
+#### Extracción
+
+`blocks.ts`: el escaneo de bloques y el reemplazo de texto estaban duplicados
+entre el vaciado de las secciones 2-7 y los campos del período; quedaron en un
+módulo compartido.

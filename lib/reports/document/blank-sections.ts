@@ -21,12 +21,14 @@
  * regla.
  */
 
-import { escapeXml } from "./table-xml";
+import {
+  emptyText,
+  paragraphText,
+  replaceParagraphText,
+  topLevelBlocks,
+} from "./blocks";
 
-const TABLE_PATTERN = /<w:tbl(?:\s[^>]*)?>[\s\S]*?<\/w:tbl>/g;
 const ROW_PATTERN = /<w:tr(?:\s[^>]*)?>[\s\S]*?<\/w:tr>/g;
-const PARAGRAPH_PATTERN = /<w:p(?:\s[^>]*)?>[\s\S]*?<\/w:p>/g;
-const TEXT_PATTERN = /<w:t(\s[^>]*)?>[\s\S]*?<\/w:t>/g;
 
 /** Una tabla de las secciones 2-7 y cuántas filas de arriba son cabecera. */
 export type BlankTableSpec = {
@@ -55,41 +57,6 @@ export const DEFAULT_BLANK_SECTIONS: BlankSectionsSpec = {
     { tableIndex: 22, headerRows: 3 },
   ],
 };
-
-type Block =
-  | { kind: "table"; tableIndex: number; start: number; end: number; xml: string }
-  | { kind: "paragraph"; start: number; end: number; xml: string };
-
-const TEXT_CONTENT = /<w:t(?:\s[^>]*)?>([\s\S]*?)<\/w:t>/g;
-
-function textOf(fragment: string): string {
-  return [...fragment.matchAll(TEXT_CONTENT)]
-    .map((match) => match[1] ?? "")
-    .join("")
-    .trim();
-}
-
-function escape(text: string): string {
-  return escapeXml(text);
-}
-
-function replaceParagraphText(paragraphXml: string, text: string): string {
-  let written = false;
-
-  return paragraphXml.replace(TEXT_PATTERN, (_match, attributes: string) => {
-    const opening = `<w:t${attributes ?? ""}>`;
-    if (written) return `${opening}</w:t>`;
-    written = true;
-    return `${opening}${escape(text)}</w:t>`;
-  });
-}
-
-function emptyText(fragment: string): string {
-  return fragment.replace(
-    TEXT_PATTERN,
-    (_match, attributes: string) => `<w:t${attributes ?? ""}></w:t>`,
-  );
-}
 
 const IDENTIFIER = /^[A-ZÁÉÍÓÚÜÑ0-9_\-\s]+$/;
 const UNDERSCORE_VALUE = /_{1,}[^_\s]{1,4}_{1,}/g;
@@ -129,7 +96,7 @@ export function blankParagraphText(text: string): string {
 }
 
 function blankParagraph(paragraphXml: string): string {
-  const text = textOf(paragraphXml);
+  const text = paragraphText(paragraphXml);
   const target = blankParagraphText(text);
 
   if (target === text) return paragraphXml;
@@ -158,30 +125,6 @@ function blankTableRows(tableXml: string, headerRows: number): string {
   return out + tableXml.slice(cursor);
 }
 
-function blocksOf(documentXml: string): Block[] {
-  const tables = [...documentXml.matchAll(TABLE_PATTERN)].map((match, position) => ({
-    kind: "table" as const,
-    tableIndex: position + 1,
-    start: match.index,
-    end: match.index + match[0].length,
-    xml: match[0],
-  }));
-
-  const insideTable = (position: number) =>
-    tables.some((table) => position >= table.start && position < table.end);
-
-  const paragraphs = [...documentXml.matchAll(PARAGRAPH_PATTERN)]
-    .filter((match) => !insideTable(match.index))
-    .map((match) => ({
-      kind: "paragraph" as const,
-      start: match.index,
-      end: match.index + match[0].length,
-      xml: match[0],
-    }));
-
-  return [...tables, ...paragraphs].sort((a, b) => a.start - b.start);
-}
-
 /**
  * Vuelve vacías las secciones 2-7 conservando encabezados, numeración, etiquetas
  * y cabeceras de tabla.
@@ -194,10 +137,10 @@ export function blankSections(
   documentXml: string,
   spec: BlankSectionsSpec = DEFAULT_BLANK_SECTIONS,
 ): string {
-  const blocks = blocksOf(documentXml);
+  const blocks = topLevelBlocks(documentXml);
   const start = blocks.findIndex(
     (block) =>
-      block.kind === "paragraph" && textOf(block.xml) === spec.fromHeading,
+      block.kind === "paragraph" && paragraphText(block.xml) === spec.fromHeading,
   );
 
   if (start < 0) {
