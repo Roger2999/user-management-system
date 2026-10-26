@@ -11,7 +11,8 @@
  */
 
 import type { TracesSection } from "./assembly/section-traces";
-import type { DailyMetrics } from "./metrics/aggregate";
+import type { DailyMetrics, SkippedLines } from "./metrics/aggregate";
+import { buildDeclarationText, emitDeclaration } from "./document/declarations";
 import { buildMonthlyReport, type MonthlyReport } from "./model/monthly";
 import { DEFAULT_TIME_ZONE } from "./time";
 import {
@@ -32,6 +33,11 @@ export type ReportDocumentInput = {
   /** Instante de emisión; la fecha del documento se calcula en la zona local. */
   generatedAt: number;
   timeZone?: string;
+  /**
+   * Nota de cobertura y `Browsing Time` (S7, S12). Se inserta al cierre de la
+   * sección 1. Sin texto no se agrega párrafo.
+   */
+  declaration?: string;
 };
 
 /** Devuelve el `.docx` del informe listo para abrir en Word. */
@@ -62,7 +68,14 @@ export function buildReportDocument(input: ReportDocumentInput): Uint8Array {
     timeZone: input.timeZone ?? DEFAULT_TIME_ZONE,
   });
 
-  return replaceDocumentXml(input.template, dated);
+  // La nota se inserta después de fechar: no es un campo del período y no debe
+  // pasar por el reemplazo de meses de la prosa.
+  const declared =
+    input.declaration === undefined
+      ? dated
+      : emitDeclaration(dated, input.declaration);
+
+  return replaceDocumentXml(input.template, declared);
 }
 
 export type MonthlyDocumentInput = {
@@ -76,6 +89,8 @@ export type MonthlyDocumentInput = {
   nationalExclusions?: readonly string[];
   limit?: number;
   browsingTimeCalibrated?: boolean;
+  /** Líneas descartadas por no ser hit, si vienen de la ingesta (S7). */
+  skipped?: SkippedLines;
 };
 
 export type MonthlyDocumentResult = {
@@ -95,6 +110,7 @@ export function buildMonthlyDocument(
     nationalExclusions: input.nationalExclusions,
     limit: input.limit,
     browsingTimeCalibrated: input.browsingTimeCalibrated,
+    skipped: input.skipped,
   });
 
   const document = buildReportDocument({
@@ -103,6 +119,7 @@ export function buildMonthlyDocument(
     period: input.period,
     generatedAt: input.generatedAt,
     timeZone: input.timeZone,
+    declaration: buildDeclarationText(report),
   });
 
   return { report, document };

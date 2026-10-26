@@ -178,6 +178,17 @@ describe("buildReportDocument", () => {
     ]);
     expect(result).toContain("www.internacional.com");
     expect(result).toContain("Matanzas, 2 de Julio de 2026");
+
+    // La nota de S7/S12 cierra la sección 1, antes del encabezado de la 2.
+    const declaration = result.indexOf("Cobertura incompleta:");
+    const anchor = result.indexOf(
+      "Uso de correo por webmail en servidores nacionales:",
+    );
+
+    expect(declaration).toBeGreaterThan(0);
+    expect(declaration).toBeLessThan(anchor);
+    expect(result).toContain("Cobertura incompleta: 1 de 30 días importados");
+    expect(result).toContain("El Browsing Time es aproximado");
   });
 
   it("corre las tablas de las secciones 2-7 si sobran ranuras de drill-down", () => {

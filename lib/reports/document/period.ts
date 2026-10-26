@@ -17,7 +17,7 @@
 import { DEFAULT_TIME_ZONE, toLocalDay } from "../time";
 import { paragraphText, replaceParagraphText, topLevelBlocks } from "./blocks";
 
-const MONTHS = [
+export const MONTHS = [
   "enero",
   "febrero",
   "marzo",

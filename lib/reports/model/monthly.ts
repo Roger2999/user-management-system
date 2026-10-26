@@ -1,6 +1,6 @@
 import type { SiteTotals, SiteUserTotals, TracesSection, UserTotals } from "../assembly/section-traces";
 import { buildTracesSection } from "../assembly/section-traces";
-import type { DailyMetrics } from "../metrics/aggregate";
+import type { DailyMetrics, SkippedLines } from "../metrics/aggregate";
 import { checkCoverage, monthlyPeriod } from "../time";
 import type { MonthlyPeriod, PeriodCoverage } from "../time";
 
@@ -53,6 +53,13 @@ export type MonthlyReport = {
     browsingTimeApproximate: boolean;
     /** Hay días faltantes: el informe no puede aprobarse sin declararlo (S7). */
     incompleteCoverage: boolean;
+    /**
+     * Líneas descartadas por no ser hit, si el llamador las conoce (S7).
+     *
+     * La base todavía no las guarda: el camino que reconstruye el mes desde la
+     * base no puede declararlas y deja `null`. Persistirlas es parte de T12.
+     */
+    skipped: SkippedLines | null;
   };
 };
 
@@ -183,6 +190,11 @@ export type MonthlyReportInput = {
    * Mientras sea falso, el informe declara la aproximación (S12).
    */
   browsingTimeCalibrated?: boolean;
+  /**
+   * Líneas descartadas por no ser hit. Lo entrega `ingestSquidLog` al importar;
+   * sin él la nota de cobertura omite el desglose (S7).
+   */
+  skipped?: SkippedLines;
 };
 
 /**
@@ -225,6 +237,7 @@ export function buildMonthlyReport(input: MonthlyReportInput): MonthlyReport {
     declarations: {
       browsingTimeApproximate: input.browsingTimeCalibrated !== true,
       incompleteCoverage: coverage.missingDays.length > 0,
+      skipped: input.skipped ?? null,
     },
   };
 }

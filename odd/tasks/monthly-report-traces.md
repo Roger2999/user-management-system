@@ -36,7 +36,9 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   líneas descartadas por no ser hit, separadas por motivo (respuestas no servidas
   y destinos internos). Un mes con días faltantes no puede aprobarse sin
   declararlo. El conteo se obtiene al importar (`IngestSquidLogResult.skipped`);
-  persistirlo es parte de T12.
+  persistirlo es parte de T12. La nota va en un párrafo al cierre de la sección
+  1, antes del encabezado que abre las secciones 2-7 (decisión del especialista,
+  L30).
 - **S8** — No existe tabla IP→usuario. Los usuarios se autentican en el proxy
   contra el AD (Windows Server 2022) y el username viaja en el log (`%[un`).
 - **S9** — Las cuentas del proxy son personales (política de la empresa): una
@@ -53,7 +55,8 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
 - **S12** — `Browsing Time` es una métrica derivada, no un campo del log. Tiene
   **dos relojes independientes**: el del sitio y el del par (sitio, usuario). Cada
   uno tiene su umbral de sesión configurable y deben calibrarse contra WebSpy por
-  separado; si no se reproducen exactos, el informe declara la aproximación.
+  separado; si no se reproducen exactos, el informe declara la aproximación en la
+  misma nota de cierre de la sección 1 (S7, L30).
 - **S13** — Todo importar, generar, aprobar y exportar queda auditado con los
   hashes de los artefactos.
 - **S14** — El parser acepta las dos formas de registro que conviven en el
@@ -156,6 +159,11 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   `IngestSquidLogResult.skipped` con el desglose. Route: inline. Spec: S2, S7.
   Status: hecho; 196 tests, `tsc` y `eslint` limpios; un día real da 42.470 hits
   de 757.358 líneas (ver L29).
+- **T25** — Nota de cobertura y `Browsing Time` aproximado en el `.docx`:
+  `buildDeclarationText` + `emitDeclaration` insertan un párrafo al cierre de la
+  sección 1, antes del encabezado que abre las secciones 2-7. Route: inline.
+  Spec: S7, S12. Status: hecho; 205 tests, `tsc` y `eslint` limpios; verificado
+  en el documento real (ver L30).
 
 Route declaration: todas las tareas de esta sesión son `inline` — no hay unidades
 independientes en paralelo ni presión de contexto que justifiquen un writer.
@@ -1251,3 +1259,32 @@ tablas y drill-downs completos.
 
 Pendiente: persistir `skipped` (T12) para que la cobertura S7 se regenere sin
 volver a importar.
+
+### L30 — Nota de cobertura y Browsing Time en el documento
+
+El especialista aprobó la ubicación propuesta: un párrafo corto al cierre de la
+sección 1, antes de "Uso de correo por webmail en servidores nacionales:".
+
+Implementado en T25:
+
+- `buildDeclarationText` arma la nota con lo que el modelo sabe: cobertura
+  (esperados, importados, faltantes, días ajenos), descartes por motivo si el
+  llamador los conoce (`skipped`) y la aproximación de `Browsing Time`.
+- `emitDeclaration` inserta un párrafo propio antes del encabezado que abre las
+  secciones 2-7, con el formato del cuerpo (Arial 10 pt, 1.5, justificado).
+- La nota se inserta después de fechar el documento: no pasa por el reemplazo de
+  meses de la prosa.
+- `buildMonthlyDocument` acepta `skipped`; sin él la nota omite el desglose.
+
+Verificación:
+
+- 205 tests en 26 archivos, `tsc` y `eslint` limpios.
+- Documento de octubre desde el día real: 201.796 bytes, ZIP válido, PDF de
+  449 KB. La nota sale después de la tabla de webmail internacional y antes de
+  "2. Uso de correo por webmail en servidores nacionales:", en tres líneas
+  justificadas: "Cobertura incompleta: 1 de 31 días importados; faltan 30. Se
+  descartaron 673.982 respuestas no servidas y 40.906 accesos a destinos
+  internos. El Browsing Time es aproximado...".
+
+Pendiente: el camino que reconstruye el mes desde la base no tiene `skipped`, así
+que la nota omite el desglose de descartes. Persistirlo es T12.
