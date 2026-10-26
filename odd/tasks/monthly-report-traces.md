@@ -1105,3 +1105,47 @@ contra `db.prisma.io:5432` (en L10 no era alcanzable). 19 migraciones al día.
   `resetMonth` que borre el mes y reimporte.
 - UI de importación (T12), lugar de las declaraciones S7/S12 y calibración de los
   dos relojes.
+
+### L27 — Fragmento real de octubre 2026: el proxy duplica cada petición
+
+Fragmento aportado por el especialista: 34 segundos del 12/10/2026 12:33 local
+(`America/Havana`), 10 campos, con todas las formas de línea que aparecen en el
+archivo.
+
+Verificación con 16 líneas que cubren todas esas formas
+(`/tmp/opencode/real-fragment-sample.log`): **16 válidas, 0 inválidas, 0
+`legacy_connect`**. El `CONNECT` real trae 10 campos; el de 8 campos del fragmento
+de mayo no aparece acá, y el parser acepta las dos formas.
+
+#### El patrón
+
+El proxy autentica en dos tiempos: primero responde el reto (407, sin cuenta, con
+la página de error como bytes) y después registra la petición autenticada (503,
+con cuenta, 0 bytes). Para el mismo sitio y el mismo instante:
+
+```
+1791822836.448   1 ... TCP_DENIED/407 3190 CONNECT www.opensubtitles.com:443 -        ...
+1791822836.485  11 ... TAG_NONE/503      0 CONNECT www.opensubtitles.com:443 liudmila ...
+```
+
+En la muestra: **16 hits, 8 sin cuenta (50%)**.
+
+#### Consecuencia sobre las métricas
+
+- `Hits` cuenta el reto y la petición: una misma navegación suma 2-4 líneas.
+- `Incoming` suma páginas de error del proxy (3.190 bytes por reto), no tráfico del
+  sitio.
+- El reloj del par (sitio, usuario) no se contamina: solo la línea autenticada
+  tiene cuenta. El reloj del sitio sí incluye los retos.
+- En el fragmento muchos `CONNECT` autenticados terminan en `TAG_NONE/503` con 0
+  bytes: el tráfico que llega al sitio es mínimo y lo que se contabiliza son las
+  respuestas del proxy.
+- `TAG_NONE_ABORTED/000` y `TCP_MISS_ABORTED/000` llegan con 0 bytes y tiempos de
+  hasta 31 s: entran al `Download Time` sin aportar volumen.
+
+#### R5 (abierta)
+
+¿WebSpy cuenta las líneas de reto? Si las cuenta, el motor ya reproduce su
+criterio; si las filtra, los hits y los MB están inflados 2-4×. No se puede
+decidir desde el fragmento. Para cerrarlo hace falta un día completo de log y un
+export de WebSpy del mismo día (o el `access.log` de mayo).
