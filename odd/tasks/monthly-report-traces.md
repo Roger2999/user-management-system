@@ -1149,3 +1149,56 @@ En la muestra: **16 hits, 8 sin cuenta (50%)**.
 criterio; si las filtra, los hits y los MB están inflados 2-4×. No se puede
 decidir desde el fragmento. Para cerrarlo hace falta un día completo de log y un
 export de WebSpy del mismo día (o el `access.log` de mayo).
+
+### L28 — Un día real completo: 757.358 líneas, 83.094 respuestas servidas
+
+Archivo: `~/Escritorio/squid-2026-10-12.log`, 93 MB, **757.358 líneas**, día local
+12/10/2026 completo (04:00:01Z → 13/10 03:59:57Z).
+
+Ingesta: **9 s**, 0 inválidas, 0 `legacy_connect`, 1 día, 2.183 destinos, 142
+cuentas (+ el cubo sin cuenta), 6.198 pares (sitio, usuario).
+
+#### Composición del archivo
+
+| Líneas | Qué son |
+| --- | --- |
+| 578.888 (76,4%) | `TCP_DENIED/407` — reto de autenticación del proxy |
+| 77.121 (10,2%) | `TCP_DENIED/403` — denegación |
+| 83.094 (11,0%) | respuestas servidas por el sitio (2xx/3xx) |
+| 628.120 (82,9%) | líneas sin cuenta |
+
+**Hallazgo:** toda línea con respuesta servida tiene cuenta. Las 628.120 sin
+cuenta son exactamente retos y denegaciones. En este log **no hay usuarios sin
+identificar**: hay peticiones que el proxy no sirvió.
+
+#### Conteo actual (toda línea = hit)
+
+| Destino | Hits | Nota |
+| --- | --- | --- |
+| incoming.telemetry.mozilla.org | 133.942 | 121.815 son 407 |
+| detectportal.firefox.com | 96.075 | 92.442 son 407 |
+| mozilla-ohttp.fastly-edge.com | 85.199 | 84.823 son 407 |
+| push.services.mozilla.com | 66.646 | 65.359 son 407 |
+| 172.19.152.80 | 46.538 | WSUS interno |
+
+Ningún sitio humano hasta el puesto 5. `172.19.152.80:8530` es el WSUS
+(`SimpleAuthWebService`, `/Content/*.wim`, `.msu`): actualizaciones internas de
+Windows, no navegación.
+
+#### Conteo con respuestas servidas
+
+`videos.picta.cu` (2.118), Telegram `149.154.175.50` (1.856),
+`gateway.facebook.com` (1.572), `cache.lolaup.com` (1.331), `cdn.solred.app`
+(1.296), `www.google.com` (1.099), `www.youtube.com` (798). Los 40.906 del WSUS
+salen por ser destino privado, no por el filtro de estado.
+
+Mayo no arbitra: su tabla está intervenida a mano (S20) y sus hits son compatibles
+con "toda línea" en youtube pero no en picta.cu; el tráfico de mayo y octubre no
+es comparable.
+
+#### R6 (abierta)
+
+¿Un hit es toda línea o solo la respuesta servida? Decisión del especialista.
+Recomendación: respuesta servida 2xx/3xx, porque toda servida tiene cuenta y el
+reto 407 es la misma petición. Consecuencia: S7 deja de contar retos como "hits
+sin cuenta" y pasa a declarar los intentos no servidos como calidad de dato.
