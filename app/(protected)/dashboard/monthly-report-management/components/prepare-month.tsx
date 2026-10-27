@@ -3,65 +3,70 @@
 import { useCallback, useRef, useState } from "react";
 import { coverageSummary } from "@/lib/reports/coverage-text";
 import { MONTHS } from "@/lib/reports/document/period";
-import type { PeriodCoverage } from "@/lib/reports/time";
-import { reportCoverageAction } from "../actions";
+import type { PeriodFileRow } from "@/lib/reports/persistence/load";
+import { DEFAULT_TIME_ZONE, type PeriodCoverage } from "@/lib/reports/time";
+import { reportPeriodStateAction } from "../actions";
 import GenerateForm from "./generate-form";
 import ImportForm from "./import-form";
 
+type PeriodState = { coverage: PeriodCoverage; files: PeriodFileRow[] };
+
+function format(value: number): string {
+  return value.toLocaleString("es-CU");
+}
+
 /**
- * Preparación del mes: un solo período para las dos etapas y la cobertura a la
- * vista antes de generar.
+ * Preparación del mes: un solo período para las dos etapas, la cobertura y los
+ * archivos cargados a la vista antes de generar.
  *
  * El período vive acá, no en cada formulario, para que no pueda importarse un
- * mes y generar otro. La cobertura inicial llega calculada del servidor y se
- * vuelve a pedir al cambiar el período o al terminar una importación.
+ * mes y generar otro. El estado inicial llega calculado del servidor y se vuelve
+ * a pedir al cambiar el período o al terminar una importación.
  */
 export default function PrepareMonth({
   defaultYear,
   defaultMonth,
-  initialCoverage,
+  initialState,
 }: {
   defaultYear: number;
   defaultMonth: number;
-  initialCoverage: PeriodCoverage;
+  initialState: PeriodState;
 }) {
   const [year, setYear] = useState(defaultYear);
   const [month, setMonth] = useState(defaultMonth);
-  const [coverage, setCoverage] = useState<PeriodCoverage>(initialCoverage);
-  const [loadingCoverage, setLoadingCoverage] = useState(false);
+  const [state, setState] = useState<PeriodState>(initialState);
+  const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState(false);
   const requestId = useRef(0);
 
-  const refreshCoverage = useCallback(
-    async (nextYear: number, nextMonth: number) => {
-      if (!Number.isInteger(nextYear) || !Number.isInteger(nextMonth)) return;
+  const refresh = useCallback(async (nextYear: number, nextMonth: number) => {
+    if (!Number.isInteger(nextYear) || !Number.isInteger(nextMonth)) return;
 
-      const current = requestId.current + 1;
-      requestId.current = current;
-      setLoadingCoverage(true);
+    const current = requestId.current + 1;
+    requestId.current = current;
+    setLoading(true);
 
-      try {
-        const next = await reportCoverageAction(nextYear, nextMonth);
-        // Una respuesta vieja no puede pisar a la del período actual.
-        if (next !== null && requestId.current === current) setCoverage(next);
-      } finally {
-        if (requestId.current === current) setLoadingCoverage(false);
-      }
-    },
-    [],
-  );
+    try {
+      const next = await reportPeriodStateAction(nextYear, nextMonth);
+      // Una respuesta vieja no puede pisar a la del período actual.
+      if (next !== null && requestId.current === current) setState(next);
+    } finally {
+      if (requestId.current === current) setLoading(false);
+    }
+  }, []);
 
   function changeMonth(value: number): void {
     setMonth(value);
-    void refreshCoverage(year, value);
+    void refresh(year, value);
   }
 
   function changeYear(value: number): void {
     setYear(value);
-    void refreshCoverage(value, month);
+    void refresh(value, month);
   }
 
-  const summary = coverageSummary(coverage);
+  const summary = coverageSummary(state.coverage);
+  const files = state.files;
   const monthName = MONTHS[month - 1] ?? "";
   const monthTitle = `${monthName.charAt(0).toUpperCase()}${monthName.slice(1)}`;
 
@@ -116,22 +121,49 @@ export default function PrepareMonth({
         >
           <p className="text-sm font-medium">{summary.headline}</p>
           <p className="text-muted-foreground text-sm">
-            {loadingCoverage ? "Actualizando la cobertura…" : summary.detail}
+            {loading ? "Actualizando…" : summary.detail}
           </p>
           {summary.extra !== null && (
             <p className="text-muted-foreground mt-1 text-xs">{summary.extra}</p>
           )}
         </div>
+
+        <h3 className="mt-5 text-sm font-semibold">
+          Archivos cargados ({files.length})
+        </h3>
+
+        {files.length === 0 ? (
+          <p className="text-muted-foreground mt-1 text-sm">
+            Todavía no hay archivos cargados en este período.
+          </p>
+        ) : (
+          <ul className="mt-2 max-h-56 space-y-1 overflow-auto text-sm">
+            {files.map((file) => (
+              <li
+                key={file.id}
+                className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 rounded border px-3 py-2"
+              >
+                <span className="font-medium break-all">{file.fileName}</span>
+                <span className="text-muted-foreground text-xs tabular-nums">
+                  {format(file.linesTotal)} líneas · {file.days.join(", ")} ·{" "}
+                  {file.importedAt.toLocaleDateString("es-CU", {
+                    timeZone: DEFAULT_TIME_ZONE,
+                  })}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       <ImportForm
         year={year}
         month={month}
         onBusyChange={setBusy}
-        onFinished={() => void refreshCoverage(year, month)}
+        onFinished={() => void refresh(year, month)}
       />
 
-      <GenerateForm year={year} month={month} coverage={coverage} />
+      <GenerateForm year={year} month={month} coverage={state.coverage} />
     </div>
   );
 }

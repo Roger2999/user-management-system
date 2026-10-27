@@ -6,7 +6,7 @@ import { requireAdmin } from "@/helpers/requireAdmin";
 import { optionalTextField, textField } from "@/lib/form-data";
 import prisma from "@/lib/prisma";
 import { generateMonthlyReport, ReportGenerationError } from "@/lib/reports/generate";
-import { listImportedDays } from "@/lib/reports/persistence/load";
+import { listImportedDays, listPeriodFiles } from "@/lib/reports/persistence/load";
 import { checkCoverage, monthlyPeriod, type PeriodCoverage } from "@/lib/reports/time";
 import { FindingDisposition } from "@/generated/prisma/enums";
 
@@ -112,25 +112,34 @@ export async function updateFindingAction(formData: FormData): Promise<void> {
   revalidatePath("/dashboard/monthly-report-management", "layout");
 }
 
+export type PeriodState = {
+  coverage: PeriodCoverage;
+  files: Awaited<ReturnType<typeof listPeriodFiles>>;
+};
+
 /**
- * Cobertura del período para la pantalla de preparación.
+ * Estado del período para la pantalla de preparación: qué días están cargados y
+ * con qué archivos.
  *
- * Es de lectura y no crea nada: se pide antes de generar para saber qué días
- * faltan, cuando todavía no existe un informe que consultar.
+ * Es de lectura y no crea nada: se pide antes de generar, cuando todavía no
+ * existe un informe que consultar, y después de cada importación.
  */
-export async function reportCoverageAction(
+export async function reportPeriodStateAction(
   year: number,
   month: number,
-): Promise<PeriodCoverage | null> {
+): Promise<PeriodState | null> {
   await requireAdmin();
 
   if (!Number.isInteger(year) || year < 2000 || year > 2100) return null;
   if (!Number.isInteger(month) || month < 1 || month > 12) return null;
 
   const period = monthlyPeriod(year, month);
-  const presentDays = await listImportedDays(prisma, period);
+  const [presentDays, files] = await Promise.all([
+    listImportedDays(prisma, period),
+    listPeriodFiles(prisma, period),
+  ]);
 
-  return checkCoverage(period, presentDays);
+  return { coverage: checkCoverage(period, presentDays), files };
 }
 
 /** Revisión en bloque: aplica la misma revisión a los hallazgos elegidos. */

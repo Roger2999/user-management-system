@@ -6,7 +6,7 @@ import type {
   DailyUserMetrics,
   SkippedLines,
 } from "../metrics/aggregate";
-import type { MonthlyPeriod } from "../time";
+import { toLocalDay, type MonthlyPeriod } from "../time";
 
 /**
  * Reconstrucción de los días agregados desde la base de datos.
@@ -179,4 +179,85 @@ export async function listImportedDays(
   });
 
   return rows.map((row) => dayOf(row.date));
+}
+
+export type PeriodFileRow = {
+  id: string;
+  fileName: string;
+  linesTotal: number;
+  importedAt: Date;
+  /** Días locales del período a los que aporta el archivo. */
+  days: string[];
+};
+
+/** Techo de días que se expanden por archivo, para un archivo atípico enorme. */
+const MAX_SPAN_DAYS = 400;
+
+function daysBetween(firstDay: string, lastDay: string): string[] {
+  const days: string[] = [];
+  const cursor = new Date(`${firstDay}T00:00:00.000Z`);
+  const end = new Date(`${lastDay}T00:00:00.000Z`).getTime();
+
+  for (let index = 0; index < MAX_SPAN_DAYS; index += 1) {
+    days.push(cursor.toISOString().slice(0, 10));
+    if (cursor.getTime() >= end) break;
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+
+  return days;
+}
+
+/**
+ * Archivos cargados que aportan al período.
+ *
+ * `ImportedLogFile` no guarda a qué días aportó cada archivo, así que se deduce
+ * de su primer y último evento en la zona local. Un archivo diario toca dos días
+ * locales como máximo (el de su medianoche UTC y el siguiente en La Habana). La
+ * ventana UTC se abre un día a cada lado para no perder los archivos que caen
+ * justo sobre el borde del mes.
+ */
+export async function listPeriodFiles(
+  prisma: PrismaClient,
+  period: Pick<MonthlyPeriod, "days">,
+): Promise<PeriodFileRow[]> {
+  const first = period.days[0];
+  const last = period.days[period.days.length - 1];
+  if (first === undefined || last === undefined) return [];
+
+  const from = new Date(`${first}T00:00:00.000Z`);
+  from.setUTCDate(from.getUTCDate() - 1);
+  const to = new Date(`${last}T23:59:59.999Z`);
+  to.setUTCDate(to.getUTCDate() + 1);
+
+  const rows = await prisma.importedLogFile.findMany({
+    where: { firstEventAt: { lte: to }, lastEventAt: { gte: from } },
+    orderBy: { importedAt: "desc" },
+    select: {
+      id: true,
+      fileName: true,
+      linesTotal: true,
+      importedAt: true,
+      firstEventAt: true,
+      lastEventAt: true,
+    },
+  });
+
+  const expected = new Set(period.days);
+
+  return rows
+    .map((row) => {
+      const days = daysBetween(
+        toLocalDay(row.firstEventAt.getTime()),
+        toLocalDay(row.lastEventAt.getTime()),
+      ).filter((day) => expected.has(day));
+
+      return {
+        id: row.id,
+        fileName: row.fileName,
+        linesTotal: row.linesTotal,
+        importedAt: row.importedAt,
+        days,
+      };
+    })
+    .filter((row) => row.days.length > 0);
 }

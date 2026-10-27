@@ -52,12 +52,21 @@ function uploadFile(
   file: File,
   year: number,
   month: number,
+  signal: AbortSignal,
   onProgress: (loaded: number) => void,
   onUploaded: () => void,
 ): Promise<ImportResponse> {
   return new Promise((resolve, reject) => {
+    if (signal.aborted) {
+      reject(new DOMException("Importación cancelada.", "AbortError"));
+      return;
+    }
+
     const request = new XMLHttpRequest();
     request.open("POST", "/api/reports/import");
+
+    const cancel = () => request.abort();
+    signal.addEventListener("abort", cancel, { once: true });
     request.setRequestHeader(
       "x-file-name",
       encodeURIComponent(relativeName(file)),
@@ -71,6 +80,7 @@ function uploadFile(
     request.upload.onload = () => onUploaded();
 
     request.onload = () => {
+      signal.removeEventListener("abort", cancel);
       let data: ImportResponse;
       try {
         data = JSON.parse(request.responseText) as ImportResponse;
@@ -87,7 +97,13 @@ function uploadFile(
     };
 
     request.onerror = () => {
+      signal.removeEventListener("abort", cancel);
       reject(new Error("Se cortó la conexión durante la importación."));
+    };
+
+    request.onabort = () => {
+      signal.removeEventListener("abort", cancel);
+      reject(new DOMException("Importación cancelada.", "AbortError"));
     };
 
     request.send(file);
@@ -183,6 +199,29 @@ export default function ImportForm({
   const [results, setResults] = useState<FileResult[]>([]);
   const [error, setError] = useState<string | null>(null);
   const folderInput = useRef<HTMLInputElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
+
+  // Al salir de la pantalla se corta la importación en curso: si no, el bucle
+  // sigue subiendo archivos a espaldas del usuario y la cobertura cambia sola.
+  useEffect(() => {
+    return () => {
+      abortRef.current?.abort();
+    };
+  }, []);
+
+  // Cerrar o recargar la pestaña a mitad de una importación perdería trabajo:
+  // el navegador pide confirmación mientras haya archivos en vuelo.
+  useEffect(() => {
+    if (!uploading) return;
+
+    const warn = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [uploading]);
 
   // `webkitdirectory` no está en los tipos de React: se pone sobre el nodo para
   // que el input abra el selector de carpeta en Chromium, Edge y Safari.
@@ -235,8 +274,12 @@ export default function ImportForm({
     const total = files.reduce((sum, file) => sum + file.size, 0);
     let completed = 0;
     const collected: FileResult[] = [];
+    const controller = new AbortController();
+    abortRef.current = controller;
 
     for (const [index, file] of files.entries()) {
+      if (controller.signal.aborted) break;
+
       const name = relativeName(file);
       setPhase("sending");
       setCurrent({ index, name, loaded: 0, total: file.size });
@@ -246,6 +289,7 @@ export default function ImportForm({
           file,
           year,
           month,
+          controller.signal,
           (loaded) => {
             setCurrent({ index, name, loaded, total: file.size });
             setProgress(
@@ -258,6 +302,8 @@ export default function ImportForm({
         );
         collected.push({ file: name, response });
       } catch (uploadError) {
+        if (controller.signal.aborted) break;
+
         collected.push({
           file: name,
           error:
@@ -271,6 +317,10 @@ export default function ImportForm({
       setProgress(total === 0 ? 100 : Math.round((completed / total) * 100));
       setResults([...collected]);
     }
+
+    abortRef.current = null;
+    // Cancelada al desmontar: no se toca el estado de una pantalla que ya no está.
+    if (controller.signal.aborted) return;
 
     setUploading(false);
     setCurrent(null);

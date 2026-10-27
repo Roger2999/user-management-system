@@ -1,4 +1,7 @@
-import { listImportedDays } from "@/lib/reports/persistence/load";
+import {
+  listImportedDays,
+  listPeriodFiles,
+} from "@/lib/reports/persistence/load";
 import prisma from "@/lib/prisma";
 import { checkCoverage, monthlyPeriod, toLocalDay } from "@/lib/reports/time";
 import PrepareMonth from "../components/prepare-month";
@@ -12,13 +15,16 @@ export default async function NewReportPage() {
   const month = Number(today.slice(5, 7));
 
   const period = monthlyPeriod(year, month);
-  const presentDays = await listImportedDays(prisma, period);
+  const [presentDays, files] = await Promise.all([
+    listImportedDays(prisma, period),
+    listPeriodFiles(prisma, period),
+  ]);
 
   return (
     <PrepareMonth
       defaultYear={year}
       defaultMonth={month}
-      initialCoverage={checkCoverage(period, presentDays)}
+      initialState={{ coverage: checkCoverage(period, presentDays), files }}
     />
   );
 }

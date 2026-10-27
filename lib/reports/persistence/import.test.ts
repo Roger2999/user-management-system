@@ -5,7 +5,7 @@ import { ingestSquidLog } from "../ingest";
 import type { DailyMetrics } from "../metrics/aggregate";
 import { monthlyPeriod } from "../time";
 import { importSquidLogFile } from "./import";
-import { listImportedDays, loadDailyMetrics } from "./load";
+import { listImportedDays, listPeriodFiles, loadDailyMetrics } from "./load";
 
 /**
  * Prueba de la persistencia contra la base real.
@@ -208,6 +208,21 @@ describe.skipIf(!enabled)("persistencia del log diario", () => {
         }),
       ]),
     );
+  });
+
+  it("lista los archivos cargados que aportan al período", async () => {
+    const files = await listPeriodFiles(db(), PERIOD);
+
+    expect(files.map((file) => file.fileName).sort()).toEqual(
+      [`${FILE_PREFIX}a.log`, `${FILE_PREFIX}b.log`, `${FILE_PREFIX}c.log`].sort(),
+    );
+    expect(files.every((file) => file.days.length > 0)).toBe(true);
+    expect(
+      files.find((file) => file.fileName === `${FILE_PREFIX}c.log`)?.days,
+    ).toEqual(["2099-01-03"]);
+
+    // Un período sin archivos propios no hereda los del mes vecino.
+    expect(await listPeriodFiles(db(), monthlyPeriod(2099, 2))).toEqual([]);
   });
 
   it("enumera los días cargados sin cargar el resto del período", async () => {
