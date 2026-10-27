@@ -49,6 +49,10 @@ métricas ni en el documento emitido.
 - **S20** — Salir de la pantalla cancela la importación en curso. No hay datos a
   medias: cada archivo se escribe en una sola transacción, y lo ya importado
   queda reimportable sin duplicar (SHA-256).
+- **S21** — Mientras importa, un botón `Cancelar` corta el archivo en vuelo y los
+  pendientes. Lo ya procesado queda guardado y la cobertura se refresca; el
+  usuario ve un aviso de qué pasó. Cancelar no deshace: para eso haría falta
+  vaciar el período (ver L5, decisión abierta).
 
 ## Tasks
 
@@ -67,6 +71,8 @@ métricas ni en el documento emitido.
   Status: hecho (`df9d0c3`).
 - **T7** — Archivos cargados, aviso al cerrar y cancelación al desmontar (S18-S20).
   Status: hecho (`9029122`).
+- **T8** — Botón `Cancelar` durante la importación (S21).
+  Status: hecho (`34633af`).
 
 ## Log
 
@@ -125,3 +131,34 @@ importado".
 Verificación: `tsc` limpio, 259 tests, `eslint` 0 errores, `next build` compila.
 `REPORTS_DB_TEST=1`: 12/12 en `persistence/`, incluida la prueba nueva de
 `listPeriodFiles` (lista los archivos del período y no hereda los del mes vecino).
+
+### L5 — Cancelar mientras importa, y deshacer después
+
+Pedido: un botón para cancelar la importación. Son dos cosas distintas y solo
+una es posible hoy.
+
+**Cancelar lo que está en curso** (S21): hecho. `AbortController` ya existía para
+el desmontaje; ahora también lo dispara el botón, el bucle corta y espera.
+Alcance real: detiene el archivo en vuelo y los pendientes. Lo ya enviado está
+commiteado y no se deshace; un archivo que el servidor ya estaba procesando puede
+terminar igual, porque el handler no observa la desconexión. Por eso el aviso dice
+"los archivos ya procesados quedaron guardados" y la cobertura se refresca: la
+lista de archivos es la fuente de verdad.
+
+**Deshacer una importación terminada**: no es posible por archivo con el esquema
+actual. Los agregados se suman con `ON CONFLICT ... DO UPDATE SET hits = hits +
+EXCLUDED.hits` sobre `(date, site)`, `(date, proxyAccountId)` y
+`(date, site, proxyAccountId)`, y `ImportedLogFile` guarda solo hash, nombre,
+tamaño y primer/último evento: no hay contribución por archivo ni se conservan los
+bytes. Restar la contribución de un archivo exigiría volver a parsearlo, y el
+archivo ya no está.
+
+Lo único exacto es **vaciar el período**: borrar `daily_*` del rango de fechas del
+mes y los `ImportedLogFile` de esos días, y reimportar la carpeta correcta. Es
+destructivo y cambia un informe ya generado de ese mes. Decisión abierta: si se
+quiere, se implementa en `/new` detrás de confirmación escrita, bloqueado cuando
+el mes tenga un informe `EXPORTED`.
+
+Verificación de S21: `tsc` limpio, 259 tests, `eslint` 0 errores, `next build`
+compila. Sin prueba de componente (el repo no tiene arnés para eso): el botón se
+verifica en el navegador.

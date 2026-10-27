@@ -197,14 +197,19 @@ export default function ImportForm({
     total: number;
   } | null>(null);
   const [results, setResults] = useState<FileResult[]>([]);
+  const [cancelled, setCancelled] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const folderInput = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const mounted = useRef(true);
 
   // Al salir de la pantalla se corta la importación en curso: si no, el bucle
   // sigue subiendo archivos a espaldas del usuario y la cobertura cambia sola.
   useEffect(() => {
+    mounted.current = true;
+
     return () => {
+      mounted.current = false;
       abortRef.current?.abort();
     };
   }, []);
@@ -269,6 +274,7 @@ export default function ImportForm({
     setUploading(true);
     setProgress(0);
     setResults([]);
+    setCancelled(false);
     setError(null);
 
     const total = files.reduce((sum, file) => sum + file.size, 0);
@@ -320,11 +326,24 @@ export default function ImportForm({
 
     abortRef.current = null;
     // Cancelada al desmontar: no se toca el estado de una pantalla que ya no está.
-    if (controller.signal.aborted) return;
+    if (!mounted.current) return;
 
     setUploading(false);
     setCurrent(null);
     onFinished?.();
+  }
+
+  /**
+   * Corta la importación en curso.
+   *
+   * Detiene el archivo que está en vuelo y los que faltan. Lo ya enviado está en
+   * la base: cada archivo se escribe en una transacción, así que no se deshace y
+   * tampoco queda a medias. Un archivo que el servidor ya estaba procesando
+   * puede terminar igual; la cobertura que se recarga dice la verdad.
+   */
+  function cancel(): void {
+    abortRef.current?.abort();
+    setCancelled(true);
   }
 
   return (
@@ -410,6 +429,15 @@ export default function ImportForm({
               ? `Importando ${progress}%`
               : `Importar${files.length > 0 ? ` (${files.length})` : ""}`}
           </button>
+          {uploading && (
+            <button
+              type="button"
+              onClick={cancel}
+              className="bg-background rounded-md border px-4 py-2 text-sm"
+            >
+              Cancelar
+            </button>
+          )}
         </div>
 
         {files.length > 0 && (
@@ -460,6 +488,13 @@ export default function ImportForm({
 
       {error !== null && (
         <p className="text-destructive mt-4 text-sm">{error}</p>
+      )}
+
+      {cancelled && !uploading && (
+        <p role="status" className="text-muted-foreground mt-4 text-sm">
+          Importación cancelada. Los archivos ya procesados quedaron guardados y
+          la cobertura de arriba ya está actualizada.
+        </p>
       )}
 
       {results.length > 0 && <Results results={results} />}
