@@ -262,11 +262,11 @@ async function writeSites(
 ): Promise<void> {
   for (const chunk of chunksOf(rows, WRITE_CHUNK)) {
     await tx.$executeRaw`
-      INSERT INTO daily_site_stat (date, site, hits, "bytesIn", "bytesOut", "elapsedMs", "browsingMs")
+      INSERT INTO daily_site_stat (date, site, hits, "bytesIn", "bytesOut", "elapsedMs", "browsingMs", "isTelemetry")
       VALUES ${Prisma.join(
         chunk.map(
           (row) =>
-            Prisma.sql`(${row.day}::date, ${row.site}, ${row.hits}, ${BigInt(row.bytesIn)}, ${BigInt(row.bytesOut)}, ${BigInt(row.elapsedMs)}, ${BigInt(row.browsingMs)})`,
+            Prisma.sql`(${row.day}::date, ${row.site}, ${row.hits}, ${BigInt(row.bytesIn)}, ${BigInt(row.bytesOut)}, ${BigInt(row.elapsedMs)}, ${BigInt(row.browsingMs)}, ${row.isTelemetry})`,
         ),
       )}
       ON CONFLICT (date, site) DO UPDATE SET
@@ -274,7 +274,11 @@ async function writeSites(
         "bytesIn" = daily_site_stat."bytesIn" + EXCLUDED."bytesIn",
         "bytesOut" = daily_site_stat."bytesOut" + EXCLUDED."bytesOut",
         "elapsedMs" = daily_site_stat."elapsedMs" + EXCLUDED."elapsedMs",
-        "browsingMs" = daily_site_stat."browsingMs" + EXCLUDED."browsingMs"
+        "browsingMs" = daily_site_stat."browsingMs" + EXCLUDED."browsingMs",
+        -- Un día puede venir en dos archivos: si alguno clasificó el sitio como
+        -- telemetría, se queda fuera de las tablas. Cambiar el veredicto exige
+        -- reimportar, no reescribir la fila.
+        "isTelemetry" = daily_site_stat."isTelemetry" OR EXCLUDED."isTelemetry"
     `;
   }
 }

@@ -357,14 +357,21 @@ model DailyUserStat {
 
 /// Totales del día local por sitio. Es la base de la tabla de sitios más
 /// visitados y de la separación nacional / internacional.
+///
+/// La telemetría también se escribe acá, marcada con `isTelemetry`: sus hits
+/// cuentan en los totales del informe (son respuestas servidas, y son el
+/// denominador real de `% of Hits`), pero no compiten en las tablas de sitios.
+/// Se persiste el veredicto, no el patrón: cambiar la lista de telemetría exige
+/// reimportar para que los totales y la marca sigan describiendo el mismo dato.
 model DailySiteStat {
-  date       DateTime @db.Date
-  site       String
-  hits       Int
-  bytesIn    BigInt
-  bytesOut   BigInt
-  elapsedMs  BigInt
-  browsingMs BigInt
+  date        DateTime @db.Date
+  site        String
+  hits        Int
+  bytesIn     BigInt
+  bytesOut    BigInt
+  elapsedMs   BigInt
+  browsingMs  BigInt
+  isTelemetry Boolean  @default(false)
 
   @@id([date, site])
   @@map("daily_site_stat")

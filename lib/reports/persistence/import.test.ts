@@ -174,7 +174,7 @@ describe.skipIf(!enabled)("persistencia del log diario", () => {
     expect(january1?.users[0]).toMatchObject({ username: USER, hits: 5 });
   });
 
-  it("persiste los descartes por día y los relee sin reimportar", async () => {
+  it("persiste los descartes por día y la marca de telemetría sin reimportar", async () => {
     const third = await importSquidLogFile(db(), {
       fileName: `${FILE_PREFIX}c.log`,
       stream: streamOf(SKIPPED_LOG),
@@ -186,11 +186,27 @@ describe.skipIf(!enabled)("persistencia del log diario", () => {
     const loaded = await loadDailyMetrics(db(), PERIOD);
     const january3 = loaded.find((day) => day.day === "2099-01-03");
 
-    expect(january3?.totalHits).toBe(1);
+    // example.com es un hit; la telemetría también cuenta como hit (S26). Lo que
+    // se descarta son la respuesta no servida y el destino interno.
+    expect(january3?.totalHits).toBe(2);
     expect(january3?.skipped).toEqual({
       unserved: 1,
       internal: 1,
       telemetry: 1,
     });
+    expect(january3?.sites).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          site: "www.example.com",
+          hits: 1,
+          telemetry: false,
+        }),
+        expect.objectContaining({
+          site: "firefox-portal-detection.com",
+          hits: 1,
+          telemetry: true,
+        }),
+      ]),
+    );
   });
 });

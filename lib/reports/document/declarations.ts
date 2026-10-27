@@ -90,20 +90,30 @@ function joinParts(parts: readonly string[]): string {
 }
 
 function skippedSentence(skipped: SkippedLines): string | null {
-  const parts: string[] = [];
+  const discarded: string[] = [];
   if (skipped.unserved > 0) {
-    parts.push(`${formatInteger(skipped.unserved)} respuestas no servidas`);
+    discarded.push(`${formatInteger(skipped.unserved)} respuestas no servidas`);
   }
   if (skipped.internal > 0) {
-    parts.push(`${formatInteger(skipped.internal)} accesos a destinos internos`);
+    discarded.push(
+      `${formatInteger(skipped.internal)} accesos a destinos internos`,
+    );
+  }
+
+  // La telemetría no se descarta: cuenta en Hits y Size. Solo se excluye de las
+  // tablas de sitios, y eso hay que decirlo (S26).
+  const sentences: string[] = [];
+  if (discarded.length > 0) {
+    sentences.push(`Se descartaron ${joinParts(discarded)}.`);
   }
   if (skipped.telemetry > 0) {
-    parts.push(`${formatInteger(skipped.telemetry)} accesos de telemetría`);
+    sentences.push(
+      `Se excluyeron de las tablas de sitios ${formatInteger(skipped.telemetry)} accesos de telemetría, que sí cuentan en los totales.`,
+    );
   }
 
-  if (parts.length === 0) return null;
-
-  return `Se descartaron ${joinParts(parts)}.`;
+  if (sentences.length === 0) return null;
+  return sentences.join(" ");
 }
 
 function browsingSentence(report: DeclarationInput): string | null {

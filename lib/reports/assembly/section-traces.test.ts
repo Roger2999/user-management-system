@@ -428,4 +428,15 @@ describe("selectTopSites", () => {
       "www.youtube.com",
     ]);
   });
+
+  it("excluye la telemetría aunque tenga más hits (S26)", () => {
+    const selected = selectTopSites([
+      site({ site: "www.youtube.com", hits: 10 }),
+      site({ site: "ctldl.windowsupdate.com", hits: 9000, telemetry: true }),
+      site({ site: "watson.microsoft.com", hits: 8000, telemetry: true }),
+    ]);
+
+    // La telemetría sigue en los totales: solo deja de competir por un puesto.
+    expect(selected.map((row) => row.site)).toEqual(["www.youtube.com"]);
+  });
 });

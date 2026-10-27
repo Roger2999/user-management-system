@@ -132,7 +132,7 @@ describe("buildDeclarationText", () => {
     );
   });
 
-  it("incluye la telemetría en la lista de descartes", () => {
+  it("declara la telemetría como exclusión de las tablas, no como descarte", () => {
     const text = buildDeclarationText(
       input({
         declarations: {
@@ -145,7 +145,25 @@ describe("buildDeclarationText", () => {
 
     expect(text).toBe(
       "Cobertura completa: 31 de 31 días importados. " +
-        "Se descartaron 10 respuestas no servidas, 20 accesos a destinos internos y 30 accesos de telemetría.",
+        "Se descartaron 10 respuestas no servidas y 20 accesos a destinos internos. " +
+        "Se excluyeron de las tablas de sitios 30 accesos de telemetría, que sí cuentan en los totales.",
+    );
+  });
+
+  it("declara solo la telemetría cuando no hay otros descartes", () => {
+    const text = buildDeclarationText(
+      input({
+        declarations: {
+          browsingTimeApproximate: false,
+          incompleteCoverage: false,
+          skipped: { unserved: 0, internal: 0, telemetry: 7 },
+        },
+      }),
+    );
+
+    expect(text).toBe(
+      "Cobertura completa: 31 de 31 días importados. " +
+        "Se excluyeron de las tablas de sitios 7 accesos de telemetría, que sí cuentan en los totales.",
     );
   });
 });

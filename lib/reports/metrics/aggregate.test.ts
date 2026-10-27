@@ -22,8 +22,23 @@ function record(overrides: Partial<SquidLogRecord>): SquidLogRecord {
 }
 
 describe("DailyMetricsAccumulator", () => {
-  it("acumula totales por usuario y por sitio", () => {
+  it("usa 5 minutos como umbral de sesión por defecto", () => {
     const accumulator = new DailyMetricsAccumulator("2026-05-01");
+
+    accumulator.add(record({ username: "u1", timestampMs: 0 }));
+    accumulator.add(record({ username: "u1", timestampMs: 5 * MINUTE }));
+    accumulator.add(record({ username: "u1", timestampMs: 11 * MINUTE }));
+
+    const [user] = accumulator.toMetrics().users;
+
+    // 5 min entra (≤ umbral), 6 min corta: la sesión vale 5 min, no 11.
+    expect(user.browsingMs).toBe(5 * MINUTE);
+  });
+
+  it("acumula totales por usuario y por sitio", () => {
+    const accumulator = new DailyMetricsAccumulator("2026-05-01", {
+      browsingGapMs: 30 * MINUTE,
+    });
 
     accumulator.add(
       record({ username: "u1", bytes: 1024, elapsedMs: 100, timestampMs: 0 }),
@@ -81,7 +96,9 @@ describe("DailyMetricsAccumulator", () => {
   });
 
   it("corta la sesión cuando el hueco supera el umbral", () => {
-    const accumulator = new DailyMetricsAccumulator("2026-05-01");
+    const accumulator = new DailyMetricsAccumulator("2026-05-01", {
+      browsingGapMs: 30 * MINUTE,
+    });
 
     accumulator.add(record({ username: "u1", timestampMs: 0 }));
     accumulator.add(record({ username: "u1", timestampMs: 10 * MINUTE }));
@@ -95,8 +112,10 @@ describe("DailyMetricsAccumulator", () => {
     expect(user.browsingMs).toBe(11 * MINUTE);
   });
 
-  it("suma el tiempo de navegación por par, no por reloj de pared", () => {
-    const accumulator = new DailyMetricsAccumulator("2026-05-01");
+  it("no deriva el Browsing Time del usuario sumando sus pares (sitio, usuario)", () => {
+    const accumulator = new DailyMetricsAccumulator("2026-05-01", {
+      browsingGapMs: 30 * MINUTE,
+    });
 
     accumulator.add(record({ username: "u1", timestampMs: 0 }));
     accumulator.add(record({ username: "u1", timestampMs: 10 * MINUTE }));
@@ -115,10 +134,17 @@ describe("DailyMetricsAccumulator", () => {
       }),
     );
 
-    const [user] = accumulator.toMetrics().users;
+    const metrics = accumulator.toMetrics();
+    const [user] = metrics.users;
+    const sumaDePares = metrics.siteUsers.reduce(
+      (total, par) => total + par.browsingMs,
+      0,
+    );
 
-    // 10 min en youtube + 10 min en facebook, aunque el reloj cubra 25 min.
-    expect(user.browsingMs).toBe(20 * MINUTE);
+    // El reloj del usuario ve 0, 10, 15, 25: suma 25 min. Sus dos pares suman
+    // 10 + 10 = 20: las sesiones de sitios distintos se solapan.
+    expect(user.browsingMs).toBe(25 * MINUTE);
+    expect(sumaDePares).toBe(20 * MINUTE);
   });
 
   it("separa las subidas y cuenta los hits sin cuenta identificada", () => {
@@ -155,7 +181,9 @@ describe("DailyMetricsAccumulator", () => {
   });
 
   it("no deriva el Browsing Time del sitio sumando sus usuarios", () => {
-    const accumulator = new DailyMetricsAccumulator("2026-05-01");
+    const accumulator = new DailyMetricsAccumulator("2026-05-01", {
+      browsingGapMs: 30 * MINUTE,
+    });
 
     accumulator.add(record({ username: "u1", timestampMs: 0 }));
     accumulator.add(record({ username: "u2", timestampMs: 5 * MINUTE }));
@@ -177,10 +205,9 @@ describe("DailyMetricsAccumulator", () => {
     expect(sumaLosPares).toBe(30 * MINUTE);
   });
 
-  it("usa su propio umbral para el reloj del sitio", () => {
+  it("aplica el mismo umbral al reloj del sitio y al del usuario", () => {
     const accumulator = new DailyMetricsAccumulator("2026-05-01", {
-      browsingGapMs: 30 * MINUTE,
-      siteBrowsingGapMs: 4 * MINUTE,
+      browsingGapMs: 4 * MINUTE,
     });
 
     accumulator.add(record({ username: "u1", timestampMs: 0 }));
@@ -188,10 +215,10 @@ describe("DailyMetricsAccumulator", () => {
 
     const metrics = accumulator.toMetrics();
 
-    // El mismo hueco de 5 min: el umbral del sitio lo corta, el del par lo acepta.
+    // Un solo umbral: el hueco de 5 min corta en los tres relojes.
     expect(metrics.sites[0].browsingMs).toBe(0);
-    expect(metrics.siteUsers[0].browsingMs).toBe(5 * MINUTE);
-    expect(metrics.users[0].browsingMs).toBe(5 * MINUTE);
+    expect(metrics.siteUsers[0].browsingMs).toBe(0);
+    expect(metrics.users[0].browsingMs).toBe(0);
   });
 
   it("no cuenta como hit lo que el sitio no sirvió", () => {
@@ -234,13 +261,14 @@ describe("DailyMetricsAccumulator", () => {
     });
   });
 
-  it("no cuenta como hit la telemetría, la publicidad ni las actualizaciones", () => {
+  it("cuenta la telemetría en los totales y la excluye de las tablas de sitios", () => {
     const accumulator = new DailyMetricsAccumulator("2026-05-01");
 
     accumulator.add(
       record({
         username: "u1",
         url: "http://firefox-portal-detection.com/x",
+        bytes: 100,
       }),
     );
     accumulator.add(
@@ -267,8 +295,17 @@ describe("DailyMetricsAccumulator", () => {
 
     const metrics = accumulator.toMetrics();
 
-    expect(metrics.totalHits).toBe(1);
-    expect(metrics.sites.map((site) => site.site)).toEqual(["www.youtube.com"]);
+    // Hits y bytes incluyen la telemetría: es tráfico servido y es el
+    // denominador real de `% of Hits` (S26).
+    expect(metrics.totalHits).toBe(7);
+    expect(metrics.totalBytesIn).toBe(100);
+    expect(metrics.users[0].hits).toBe(7);
+
+    // Las tablas de sitios no la muestran, pero la fila existe marcada.
+    expect(metrics.sites.filter((site) => !site.telemetry)).toEqual([
+      expect.objectContaining({ site: "www.youtube.com", hits: 1 }),
+    ]);
+    expect(metrics.sites.filter((site) => site.telemetry)).toHaveLength(6);
     expect(accumulator.toSkipped()).toEqual({
       unserved: 0,
       internal: 0,
@@ -291,7 +328,12 @@ describe("DailyMetricsAccumulator", () => {
       }),
     );
 
-    expect(accumulator.toMetrics().totalHits).toBe(1);
+    const metrics = accumulator.toMetrics();
+
+    expect(metrics.totalHits).toBe(2);
+    expect(
+      metrics.sites.filter((site) => !site.telemetry).map((site) => site.site),
+    ).toEqual(["firefox-portal-detection.com"]);
     expect(accumulator.toSkipped().telemetry).toBe(1);
   });
 

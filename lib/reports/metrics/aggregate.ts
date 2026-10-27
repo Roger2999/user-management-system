@@ -18,12 +18,18 @@ import type { SquidLogRecord } from "../types";
  *   autenticada, y el destino interno (el WSUS, por ejemplo) no es navegación.
  * - `Incoming` es la suma del campo `bytes` de esos hits.
  * - `Outgoing` es la suma del campo `bytes` para métodos de subida.
- * - `Download Time` es la suma de `elapsed`, o sea tiempo de proceso del proxy,
- *   no tiempo de descarga del usuario.
- * - `Browsing Time` NO es un campo del log: se acumula por par (sitio, usuario)
- *   como la suma de los intervalos entre hits consecutivos que no superan un
- *   umbral de corte. El total por usuario es la suma de sus pares, y por eso
- *   puede superar las 720 horas de un mes, igual que en el informe actual.
+ * - `Download Time` es la suma de `elapsed`: el tiempo que el proxy tardó en
+ *   bajar el recurso. WebSpy lo toma directo del log, no lo calcula.
+ * - `Browsing Time` NO es un campo del log: se agrupan los hits en sesiones
+ *   (huecos entre hits consecutivos ≤ umbral) y cada sesión vale
+ *   `último − primero`. Se acumulan **tres relojes independientes** sobre los
+ *   mismos hits, porque WebSpy calcula el agregado sobre el summary del nodo:
+ *   el del sitio, el del par (sitio, usuario) y el del usuario.
+ *
+ *   Ninguno se deriva de otro. El reloj del usuario no es la suma de sus pares:
+ *   las sesiones de sitios distintos se solapan en el tiempo y sumarlas cuenta
+ *   dos veces. La KB de WebSpy lo dice con un ejemplo: un usuario con 6 h puede
+ *   mostrar 4 h en un sitio, 5 h en otro y 6 h en otro.
  */
 
 export const UNKNOWN_SITE = "(desconocido)";
@@ -32,11 +38,15 @@ export const UNIDENTIFIED_ACCOUNT = "";
 /**
  * Umbral de corte de sesión, en milisegundos.
  *
- * Pendiente de calibrar contra la salida real de WebSpy Giga Analyzer (riesgo R1
- * del plan): si
- * el valor no se reproduce exacto, se declara la aproximación en el informe.
+ * Es **uno solo y global**, como en WebSpy (`Tools | Options | General`,
+ * `Session Threshold`), y su default es 5 minutos. No hay un umbral distinto
+ * por nivel de agregación: lo que cambia entre el reloj del sitio y el del
+ * usuario es la entidad sobre la que se calculan las sesiones, no el corte.
+ *
+ * Pendiente de calibrar contra la salida real de WebSpy (R1): si el valor no se
+ * reproduce exacto, el informe declara la aproximación (S12).
  */
-export const DEFAULT_BROWSING_GAP_MS = 30 * 60 * 1000;
+export const DEFAULT_BROWSING_GAP_MS = 5 * 60 * 1000;
 
 export const DEFAULT_UPLOAD_METHODS = ["POST", "PUT"] as const;
 
@@ -46,7 +56,11 @@ export type SkippedLines = {
   unserved: number;
   /** Servidas a un destino interno (RFC 1918, loopback, `.local`, ...). */
   internal: number;
-  /** Servidas a telemetría, publicidad, actualizaciones o revocación de certificados. */
+  /**
+   * Servidas a telemetría, publicidad, actualizaciones o revocación de
+   * certificados. **No** son descartes del informe: entran en `Hits`, `Incoming`
+   * y en las métricas de usuario, y se excluyen solo de las tablas de sitios.
+   */
   telemetry: number;
 };
 
@@ -61,22 +75,14 @@ export function isServedResponse(httpStatus: number | null): boolean {
 }
 
 export type DailyMetricsOptions = {
-  /** Umbral de corte para el tiempo de navegación por par (sitio, usuario). */
+  /** Umbral de corte de sesión, compartido por los tres relojes. */
   browsingGapMs?: number;
-  /**
-   * Umbral de corte para el tiempo de navegación **del sitio**.
-   *
-   * Es un acumulador separado a propósito: WebSpy calcula el Browsing Time del
-   * sitio y el de sus usuarios con resultados distintos. Para `www.bing.com` del
-   * informe de mayo el sitio marca `53:56:25` y la suma de sus 45 usuarios da
-   * `37:25:15`. Sumar los pares para obtener el sitio daría el segundo valor, no
-   * el primero.
-   */
-  siteBrowsingGapMs?: number;
   uploadMethods?: readonly string[];
   /**
    * Dominios que no son navegación (telemetría, publicidad, actualizaciones).
    * Por defecto `DEFAULT_TELEMETRY_PATTERNS`; se puede reemplazar por completo.
+   * Solo deciden qué sitios se excluyen de las tablas: sus hits siguen contando
+   * en los totales.
    */
   telemetryPatterns?: readonly string[];
 };
@@ -87,6 +93,7 @@ export type DailyUserMetrics = {
   bytesIn: number;
   bytesOut: number;
   elapsedMs: number;
+  /** Reloj del usuario: sesiones sobre todos sus hits, sin importar el sitio. */
   browsingMs: number;
 };
 
@@ -96,7 +103,13 @@ export type DailySiteMetrics = {
   bytesIn: number;
   bytesOut: number;
   elapsedMs: number;
+  /** Reloj del sitio: sesiones sobre todos los hits de ese sitio. */
   browsingMs: number;
+  /**
+   * El sitio es telemetría, publicidad o infraestructura: entra en los totales
+   * pero no en las tablas de sitios ni en sus drill-downs (S26).
+   */
+  telemetry: boolean;
 };
 
 export type DailySiteUserMetrics = {
@@ -105,6 +118,7 @@ export type DailySiteUserMetrics = {
   hits: number;
   bytesIn: number;
   elapsedMs: number;
+  /** Reloj del par (sitio, usuario): sesiones de esa cuenta en ese sitio. */
   browsingMs: number;
 };
 
@@ -180,11 +194,12 @@ function accountSortKey(username: string | null): string {
  */
 export class DailyMetricsAccumulator {
   private readonly browsingGapMs: number;
-  private readonly siteBrowsingGapMs: number;
   private readonly uploadMethods: Set<string>;
   private readonly telemetryPatterns: readonly string[];
   private readonly sites = new Map<string, Accumulator>();
   private readonly pairsBySite = new Map<string, Map<string, Accumulator>>();
+  private readonly usersByIdentity = new Map<string, Accumulator>();
+  private readonly telemetrySites = new Set<string>();
 
   private totalHits = 0;
   private totalBytesIn = 0;
@@ -200,8 +215,6 @@ export class DailyMetricsAccumulator {
     options: DailyMetricsOptions = {},
   ) {
     this.browsingGapMs = options.browsingGapMs ?? DEFAULT_BROWSING_GAP_MS;
-    this.siteBrowsingGapMs =
-      options.siteBrowsingGapMs ?? this.browsingGapMs;
     this.uploadMethods = new Set(
       (options.uploadMethods ?? DEFAULT_UPLOAD_METHODS).map((method) =>
         method.toUpperCase(),
@@ -223,12 +236,14 @@ export class DailyMetricsAccumulator {
       return;
     }
 
-    if (site !== null && isTelemetrySite(site, this.telemetryPatterns)) {
-      this.skippedTelemetry += 1;
-      return;
-    }
+    // La telemetría no se descarta: entra en Hits, Incoming y en el reloj del
+    // usuario. Solo se marca para que no compita en las tablas de sitios (S26).
+    const telemetry =
+      site !== null && isTelemetrySite(site, this.telemetryPatterns);
+    if (telemetry) this.skippedTelemetry += 1;
 
     const resolvedSite = site ?? UNKNOWN_SITE;
+    if (telemetry) this.telemetrySites.add(resolvedSite);
     const account = record.username ?? UNIDENTIFIED_ACCOUNT;
     const bytesOut = this.uploadMethods.has(record.method.toUpperCase())
       ? record.bytes
@@ -240,15 +255,14 @@ export class DailyMetricsAccumulator {
     this.totalElapsedMs += record.elapsedMs;
     if (record.username === null) this.unidentifiedHits += 1;
 
-    // El sitio y el par (sitio, usuario) son dos agregaciones distintas, cada una
-    // con su propio reloj: el mismo tráfico produce tiempos de navegación
-    // diferentes. Sumar los pares no reproduce el Browsing Time del sitio.
+    // Tres relojes sobre los mismos hits, cada uno con la misma entidad que el
+    // summary de WebSpy: el sitio, el par (sitio, usuario) y el usuario.
     let siteAccumulator = this.sites.get(resolvedSite);
     if (siteAccumulator === undefined) {
       siteAccumulator = createAccumulator();
       this.sites.set(resolvedSite, siteAccumulator);
     }
-    accumulateRecord(siteAccumulator, record, bytesOut, this.siteBrowsingGapMs);
+    accumulateRecord(siteAccumulator, record, bytesOut, this.browsingGapMs);
 
     let pairs = this.pairsBySite.get(resolvedSite);
     if (pairs === undefined) {
@@ -261,8 +275,14 @@ export class DailyMetricsAccumulator {
       accumulator = createAccumulator();
       pairs.set(account, accumulator);
     }
-
     accumulateRecord(accumulator, record, bytesOut, this.browsingGapMs);
+
+    let userAccumulator = this.usersByIdentity.get(account);
+    if (userAccumulator === undefined) {
+      userAccumulator = createAccumulator();
+      this.usersByIdentity.set(account, userAccumulator);
+    }
+    accumulateRecord(userAccumulator, record, bytesOut, this.browsingGapMs);
   }
 
   /** Líneas descartadas en el día, por motivo. Se declaran en la cobertura (S7). */
@@ -275,41 +295,31 @@ export class DailyMetricsAccumulator {
   }
 
   toMetrics(): DailyMetrics {
-    const users = new Map<string, DailyUserMetrics>();
     const siteUsers: DailySiteUserMetrics[] = [];
 
     for (const [site, pairs] of this.pairsBySite) {
       for (const [account, accumulator] of pairs) {
-        const username = account === UNIDENTIFIED_ACCOUNT ? null : account;
-
         siteUsers.push({
           site,
-          username,
+          username: account === UNIDENTIFIED_ACCOUNT ? null : account,
           hits: accumulator.hits,
           bytesIn: accumulator.bytesIn,
           elapsedMs: accumulator.elapsedMs,
           browsingMs: accumulator.browsingMs,
         });
-
-        const user = users.get(account);
-        if (user === undefined) {
-          users.set(account, {
-            username,
-            hits: accumulator.hits,
-            bytesIn: accumulator.bytesIn,
-            bytesOut: accumulator.bytesOut,
-            elapsedMs: accumulator.elapsedMs,
-            browsingMs: accumulator.browsingMs,
-          });
-        } else {
-          user.hits += accumulator.hits;
-          user.bytesIn += accumulator.bytesIn;
-          user.bytesOut += accumulator.bytesOut;
-          user.elapsedMs += accumulator.elapsedMs;
-          user.browsingMs += accumulator.browsingMs;
-        }
       }
     }
+
+    // El total por usuario sale de su propio reloj, no de sumar sus pares: los
+    // pares se solapan en el tiempo y la suma sobreestima (S25).
+    const users = [...this.usersByIdentity].map(([account, accumulator]) => ({
+      username: account === UNIDENTIFIED_ACCOUNT ? null : account,
+      hits: accumulator.hits,
+      bytesIn: accumulator.bytesIn,
+      bytesOut: accumulator.bytesOut,
+      elapsedMs: accumulator.elapsedMs,
+      browsingMs: accumulator.browsingMs,
+    }));
 
     const sites = [...this.sites].map(([site, accumulator]) => ({
       site,
@@ -318,6 +328,7 @@ export class DailyMetricsAccumulator {
       bytesOut: accumulator.bytesOut,
       elapsedMs: accumulator.elapsedMs,
       browsingMs: accumulator.browsingMs,
+      telemetry: this.telemetrySites.has(site),
     }));
 
     return {
@@ -328,7 +339,7 @@ export class DailyMetricsAccumulator {
       totalElapsedMs: this.totalElapsedMs,
       unidentifiedHits: this.unidentifiedHits,
       skipped: this.toSkipped(),
-      users: [...users.values()].sort(
+      users: users.sort(
         (a, b) =>
           b.hits - a.hits ||
           accountSortKey(a.username).localeCompare(accountSortKey(b.username)),

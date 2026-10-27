@@ -93,6 +93,7 @@ export async function loadDailyMetrics(
       bytesOut: Number(row.bytesOut),
       elapsedMs: Number(row.elapsedMs),
       browsingMs: Number(row.browsingMs),
+      telemetry: row.isTelemetry,
     });
   }
 

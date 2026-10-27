@@ -129,7 +129,15 @@ export function mergeDailyMetrics(
     for (const row of day.sites) {
       const current = sites.get(row.site);
       if (current === undefined) {
-        sites.set(row.site, { ...row });
+        sites.set(row.site, {
+          site: row.site,
+          hits: row.hits,
+          bytesIn: row.bytesIn,
+          bytesOut: row.bytesOut,
+          elapsedMs: row.elapsedMs,
+          browsingMs: row.browsingMs,
+          telemetry: row.telemetry,
+        });
         continue;
       }
 
@@ -138,6 +146,8 @@ export function mergeDailyMetrics(
       current.bytesOut += row.bytesOut;
       current.elapsedMs += row.elapsedMs;
       current.browsingMs += row.browsingMs;
+      // Un sitio es telemetría si algún día se clasificó como tal.
+      current.telemetry = current.telemetry === true || row.telemetry;
     }
 
     for (const row of day.siteUsers) {

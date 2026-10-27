@@ -42,8 +42,9 @@ const DEFAULT_CANDIDATES_MS = [
 /**
  * Umbrales candidatos por defecto.
  *
- * El de 30 minutos es la hipótesis de partida y está incluido a propósito: si el
- * export lo confirma, la calibración lo devuelve con error cero.
+ * El de 5 minutos es el default documentado de WebSpy (`Tools | Options |
+ * General`, `Session Threshold`) y el punto de partida: la calibración lo
+ * confirma o encuentra el valor real con error cero.
  */
 export function defaultGapCandidates(): number[] {
   return [...DEFAULT_CANDIDATES_MS];

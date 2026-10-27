@@ -80,6 +80,11 @@ export type SiteTotals = {
   bytesOut: number;
   elapsedMs: number;
   browsingMs: number;
+  /**
+   * Telemetría, publicidad o infraestructura: suma en los totales, pero no
+   * compite en las tablas de sitios (S26).
+   */
+  telemetry?: boolean;
 };
 
 export type SiteUserTotals = {
@@ -350,6 +355,7 @@ export function selectTopSites(
   const kind = options.kind ?? "international";
 
   return [...sites]
+    .filter((site) => site.telemetry !== true)
     .filter(
       (site) => classifySite(site.site, options.nationalExclusions) === kind,
     )

@@ -58,6 +58,7 @@ describe("toDailyStatRows", () => {
             bytesOut: 0,
             elapsedMs: 100,
             browsingMs: 0,
+            telemetry: false,
           },
         ],
         users: [

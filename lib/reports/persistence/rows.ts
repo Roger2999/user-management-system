@@ -26,6 +26,7 @@ export type DailySiteStatRow = {
   bytesOut: number;
   elapsedMs: number;
   browsingMs: number;
+  isTelemetry: boolean;
 };
 
 export type DailyUserStatRow = {
@@ -94,6 +95,7 @@ export function toDailyStatRows(days: readonly DailyMetrics[]): DailyStatRows {
         bytesOut: row.bytesOut,
         elapsedMs: row.elapsedMs,
         browsingMs: row.browsingMs,
+        isTelemetry: row.telemetry,
       });
     }
 

@@ -45,6 +45,7 @@ describe("mergeDailyMetrics", () => {
             bytesOut: 30,
             elapsedMs: 3_000,
             browsingMs: 12_000,
+            telemetry: false,
           },
         ],
         siteUsers: [
@@ -83,6 +84,7 @@ describe("mergeDailyMetrics", () => {
             bytesOut: 10,
             elapsedMs: 1_000,
             browsingMs: 4_000,
+            telemetry: false,
           },
         ],
         siteUsers: [
@@ -136,6 +138,142 @@ describe("mergeDailyMetrics", () => {
     ).toThrow(/importado dos veces/);
   });
 
+  it("suma el reloj del usuario entre días y no lo reemplaza por sus pares", () => {
+    const totals = mergeDailyMetrics([
+      day({
+        day: "2026-05-01",
+        totalHits: 2,
+        users: [
+          {
+            username: "brian",
+            hits: 2,
+            bytesIn: 0,
+            bytesOut: 0,
+            elapsedMs: 0,
+            browsingMs: 3_600_000,
+          },
+        ],
+        sites: [
+          {
+            site: "www.youtube.com",
+            hits: 2,
+            bytesIn: 0,
+            bytesOut: 0,
+            elapsedMs: 0,
+            browsingMs: 3_600_000,
+            telemetry: false,
+          },
+        ],
+        siteUsers: [
+          {
+            site: "www.youtube.com",
+            username: "brian",
+            hits: 2,
+            bytesIn: 0,
+            elapsedMs: 0,
+            browsingMs: 3_600_000,
+          },
+        ],
+      }),
+      day({
+        day: "2026-05-02",
+        totalHits: 2,
+        users: [
+          {
+            username: "brian",
+            hits: 2,
+            bytesIn: 0,
+            bytesOut: 0,
+            elapsedMs: 0,
+            browsingMs: 1_200_000,
+          },
+        ],
+        sites: [
+          {
+            site: "www.youtube.com",
+            hits: 1,
+            bytesIn: 0,
+            bytesOut: 0,
+            elapsedMs: 0,
+            browsingMs: 900_000,
+            telemetry: false,
+          },
+          {
+            site: "www.facebook.com",
+            hits: 1,
+            bytesIn: 0,
+            bytesOut: 0,
+            elapsedMs: 0,
+            browsingMs: 900_000,
+            telemetry: false,
+          },
+        ],
+        siteUsers: [
+          {
+            site: "www.youtube.com",
+            username: "brian",
+            hits: 1,
+            bytesIn: 0,
+            elapsedMs: 0,
+            browsingMs: 900_000,
+          },
+          {
+            site: "www.facebook.com",
+            username: "brian",
+            hits: 1,
+            bytesIn: 0,
+            elapsedMs: 0,
+            browsingMs: 900_000,
+          },
+        ],
+      }),
+    ]);
+
+    // 1 h del día 1 + 20 min del día 2: el reloj del usuario tal como lo midió
+    // cada día. La suma de sus pares daría 1 h + 15 min + 15 min = 1 h 30 min,
+    // que es exactamente el error que no se quiere repetir.
+    expect(totals.users[0].browsingMs).toBe(4_800_000);
+    expect(
+      totals.siteUsers.reduce((sum, row) => sum + row.browsingMs, 0),
+    ).toBe(5_400_000);
+    expect(totals.totalHits).toBe(4);
+  });
+
+  it("propaga la marca de telemetría del sitio al total del mes", () => {
+    const totals = mergeDailyMetrics([
+      day({
+        day: "2026-05-01",
+        sites: [
+          {
+            site: "ctldl.windowsupdate.com",
+            hits: 5,
+            bytesIn: 0,
+            bytesOut: 0,
+            elapsedMs: 0,
+            browsingMs: 0,
+            telemetry: true,
+          },
+        ],
+      }),
+      day({
+        day: "2026-05-02",
+        sites: [
+          {
+            site: "ctldl.windowsupdate.com",
+            hits: 5,
+            bytesIn: 0,
+            bytesOut: 0,
+            elapsedMs: 0,
+            browsingMs: 0,
+            telemetry: true,
+          },
+        ],
+      }),
+    ]);
+
+    expect(totals.sites[0]).toMatchObject({ hits: 10, telemetry: true });
+  });
+
   it("no mezcla la cuenta sin identificar con una cuenta real", () => {
     const totals = mergeDailyMetrics([
       day({
@@ -181,6 +319,7 @@ describe("buildMonthlyReport", () => {
           bytesOut: 0,
           elapsedMs: 60_000,
           browsingMs: 3_600_000,
+          telemetry: false,
         },
       ],
       siteUsers: [
