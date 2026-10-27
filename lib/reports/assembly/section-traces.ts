@@ -270,6 +270,11 @@ export function buildTopUsersTableRows(
  *
  * Un usuario puede aparecer en varios dominios de la misma red; sus valores se
  * suman antes de ordenar. Las conexiones directas por IP no se clasifican.
+ *
+ * Única métrica aproximada del informe (S27): el reloj de la red se obtiene
+ * sumando relojes de pares (dominio, usuario) que se solapan entre dominios.
+ * Reproducirlo exacto exigiría persistir los hits con marca de tiempo por red;
+ * por eso el informe declara el `Browsing Time` como aproximado (S12).
  */
 export function buildSocialSection(
   rows: readonly SiteUserTotals[],

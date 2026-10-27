@@ -133,8 +133,9 @@ function Results({ results }: { results: FileResult[] }) {
                     response.skipped !== undefined && (
                       <p>
                         Descartadas: {format(response.skipped.unserved)} no
-                        servidas, {format(response.skipped.internal)} internas y{" "}
-                        {format(response.skipped.telemetry)} de telemetría.
+                        servidas e {format(response.skipped.internal)} internas.
+                        Telemetría fuera de las tablas:{" "}
+                        {format(response.skipped.telemetry)}.
                       </p>
                     )}
                   {response !== undefined &&

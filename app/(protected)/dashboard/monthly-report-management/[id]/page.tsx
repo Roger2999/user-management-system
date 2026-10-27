@@ -176,7 +176,9 @@ export default async function ReportDetailPage({
         </div>
 
         <div className="rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs uppercase">Descartes</p>
+          <p className="text-muted-foreground text-xs uppercase">
+            Descartes y telemetría
+          </p>
           {skipped === undefined ? (
             <p className="text-muted-foreground mt-1 text-sm">
               Sin desglose guardado
@@ -185,7 +187,9 @@ export default async function ReportDetailPage({
             <ul className="mt-1 space-y-0.5 text-sm tabular-nums">
               <li>No servidas: {format(skipped.unserved)}</li>
               <li>Internas: {format(skipped.internal)}</li>
-              <li>Telemetría: {format(skipped.telemetry)}</li>
+              <li>
+                Telemetría (fuera de las tablas): {format(skipped.telemetry)}
+              </li>
             </ul>
           )}
         </div>

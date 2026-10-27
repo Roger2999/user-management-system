@@ -32,7 +32,7 @@ export type MonthlyTotals = {
   totalElapsedMs: number;
   /** Hits sin cuenta de proxy autenticada. Se declara en la cobertura (S7). */
   unidentifiedHits: number;
-  /** Líneas descartadas del mes por no ser hit, por motivo (S7). */
+  /** No servidas, internas y telemetría excluida de las tablas, del mes (S7, S26). */
   skipped: SkippedLines;
   users: UserTotals[];
   sites: SiteTotals[];
@@ -51,11 +51,11 @@ export type MonthlyReport = {
   totals: MonthlyTotals;
   traces: TracesSection;
   declarations: {
-    /** `Browsing Time` es una aproximación hasta calibrar los dos relojes (S12). */
+    /** `Browsing Time` es una aproximación hasta calibrar el umbral (S12). */
     browsingTimeApproximate: boolean;
     /** Hay días faltantes: el informe no puede aprobarse sin declararlo (S7). */
     incompleteCoverage: boolean;
-    /** Líneas descartadas por no ser hit, por motivo (S7). */
+    /** No servidas, internas y telemetría fuera de las tablas (S7, S26). */
     skipped: SkippedLines;
   };
 };
@@ -198,8 +198,8 @@ export type MonthlyReportInput = {
   /** Recorte de filas al renderizar. No afecta el merge ni los denominadores. */
   limit?: number;
   /**
-   * Si los dos relojes de `Browsing Time` ya se calibraron contra WebSpy.
-   * Mientras sea falso, el informe declara la aproximación (S12).
+   * Si el umbral de `Browsing Time` ya se calibró contra WebSpy. Mientras sea
+   * falso, el informe declara la aproximación (S12).
    */
   browsingTimeCalibrated?: boolean;
 };
