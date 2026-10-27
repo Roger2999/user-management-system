@@ -41,6 +41,14 @@ métricas ni en el documento emitido.
   vez. Los contadores muestran el total, no el subconjunto filtrado.
 - **S17** — Ninguna ruta nueva: la cobertura se pide con una server action de
   lectura. `/summary` sigue redirigiendo.
+- **S18** — `/new` lista los archivos ya cargados del período (nombre, líneas,
+  días que aporta y fecha de carga), para que la cobertura no sea un número
+  huérfano: se distingue "faltа subir" de "se cortó".
+- **S19** — Cerrar o recargar la pestaña con una importación en curso pide
+  confirmación.
+- **S20** — Salir de la pantalla cancela la importación en curso. No hay datos a
+  medias: cada archivo se escribe en una sola transacción, y lo ya importado
+  queda reimportable sin duplicar (SHA-256).
 
 ## Tasks
 
@@ -57,6 +65,8 @@ métricas ni en el documento emitido.
   Status: hecho (`df9d0c3`).
 - **T6** — Lista sin estado, sidebar, card, `loading` y copia (S7-S13).
   Status: hecho (`df9d0c3`).
+- **T7** — Archivos cargados, aviso al cerrar y cancelación al desmontar (S18-S20).
+  Status: hecho (`9029122`).
 
 ## Log
 
@@ -97,3 +107,21 @@ resume como `1–8 y 27–31`.
 
 Pendiente: revisar las pantallas en el navegador. No hay pruebas de render ni
 e2e para las páginas; lo verificado es tipos, compilación y la lógica con pruebas.
+
+### L4 — Importación interrumpida (pregunta del especialista)
+
+Pregunta: qué pasa si se importa una carpeta y el usuario navega a otra página.
+Respuesta verificada en el código: cada archivo es atómico (`$transaction` después
+del parseo completo), así que nunca hay días a medias ni duplicados; lo que se
+perdía era la visibilidad. Antes, una navegación interna dejaba el bucle de subida
+corriendo a espaldas del usuario, y cerrar la pestaña destruía los archivos en
+vuelo sin aviso.
+
+Aplicado: `listPeriodFiles` (S18), confirmación con `beforeunload` (S19) y
+`AbortController` al desmontar (S20). Recuperación: volver a elegir la carpeta
+reimporta solo lo que falta; los archivos ya cargados responden "Ya estaba
+importado".
+
+Verificación: `tsc` limpio, 259 tests, `eslint` 0 errores, `next build` compila.
+`REPORTS_DB_TEST=1`: 12/12 en `persistence/`, incluida la prueba nueva de
+`listPeriodFiles` (lista los archivos del período y no hereda los del mes vecino).
