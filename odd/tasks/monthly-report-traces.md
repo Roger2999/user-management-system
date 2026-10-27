@@ -58,11 +58,13 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   informe oficial. **Excepción (S20):** la selección de sitios no se compara
   contra mayo, porque ese documento no sigue la regla del top 10 por hits ni en
   la tabla internacional ni en la nacional. Se usa como referencia de formato.
-- **S12** — `Browsing Time` es una métrica derivada, no un campo del log. Tiene
-  **dos relojes independientes**: el del sitio y el del par (sitio, usuario). Cada
-  uno tiene su umbral de sesión configurable y deben calibrarse contra WebSpy por
-  separado; si no se reproducen exactos, el informe declara la aproximación en la
-  misma nota de cierre de la sección 1 (S7, L30).
+- **S12** — `Browsing Time` es una métrica derivada, no un campo del log. Se
+  calculan **tres relojes independientes** sobre los mismos hits, cada uno sobre
+  la entidad que WebSpy agrega: el del sitio, el del par (sitio, usuario) y el del
+  usuario. Los tres usan el **mismo umbral de sesión, único y global** (5 minutos,
+  el default documentado de WebSpy, `Tools | Options | General`); no hay umbrales
+  distintos por nivel. Si el umbral no reproduce la salida real, el informe declara
+  la aproximación en la misma nota de cierre de la sección 1 (S7, L30).
 - **S13** — Todo importar, generar, aprobar y exportar queda auditado con los
   hashes de los artefactos.
 - **S14** — El parser acepta las dos formas de registro que conviven en el
@@ -83,10 +85,16 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   (sitio, usuario), no solo el top 10. El recorte a 10 filas ocurre al renderizar:
   truncar al persistir rompería el denominador de S15 y los porcentajes dejarían
   de coincidir con el documento.
-- **S18** — El `Browsing Time` del sitio y el del par (sitio, usuario) se
-  acumulan por separado, cada uno con su propio reloj y umbral. El del sitio no se
-  obtiene sumando los pares: los pares se solapan en el tiempo y la suma no
-  reproduce el valor del sitio.
+- **S18** — Ninguno de los tres relojes de `Browsing Time` se obtiene de otro. El
+  del sitio no es la suma de sus pares y el del usuario tampoco: las sesiones de
+  sitios distintos se solapan en el tiempo y sumarlas cuenta de más. La KB de
+  WebSpy lo documenta con un ejemplo (un usuario con 6 h puede mostrar 4 h en un
+  sitio, 5 h en otro y 6 h en otro). Consecuencias que el informe respeta:
+  la tabla de sitios usa el reloj del sitio; cada drill-down usa el reloj del par
+  y su `% of Browsing Time` se calcula sobre la suma de los pares de ese sitio;
+  la tabla de "Los 10 usuarios que más descargaron" y el `% of Browsing Time` de
+  esa tabla usan el reloj del usuario, que es el total real de navegación de la
+  persona en el mes, no la suma de sus sitios.
 - **S19** — El período es el **mes calendario local** del mes que se importa
   (`01` al último día, en `America/Havana`); no se deduce de los archivos
   presentes ni se extiende a 32 días. Un día faltante se reporta como faltante,
@@ -98,16 +106,22 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   `S4`. El
   `Browsing Time` **no** selecciona sitios: es la métrica del drill-down, donde
   ordena a los 10 usuarios de cada sitio (S15). Los drill-downs son los sitios
-  de la tabla internacional, en ese mismo orden. El universo de la selección
-  excluye la telemetría y la publicidad (S2, L31): no son navegación y no deben
-  competir por un puesto ni inflar los totales. El informe de mayo 2026 no es
+  de la tabla internacional, en ese mismo orden. La telemetría, la publicidad y
+  las actualizaciones (S2, L31) **no compiten por un puesto**: se excluyen de las
+  dos tablas de sitios y de sus drill-downs. **Sí cuentan en los totales** (`Hits`,
+  `Incoming`, `Outgoing`, `Download Time` y el reloj del usuario): son respuestas
+  servidas y son parte del denominador real de `% of Hits` (S26). El informe de
+  mayo 2026 no es
   oráculo de la selección: su tabla internacional no es el top 10 por hits
   (omite `google.com` e incluye sitios muy por debajo del corte) y la nacional
   también está intervenida a mano.
 - **S21** — Los diez drill-downs usan la misma cabecera y la misma métrica:
   `Users | Hits | Incoming (MB) | Download Time (h:m:s) | Browsing Time (h:m:s) |
-  % of Browsing Time (h:m:s)`. No existe variante por hits, aunque el documento
-  de mayo la tenga en `clarity.ms` y `windy.com`.
+  % of Browsing Time (h:m:s)`. Es una elección de columnas, no una limitación de
+  WebSpy: el `Users Export` del 10/10/2026 demuestra que la herramienta sí
+  exporta la variante por hits (`% of Hits`, ordenada por hits). El informe no
+  la usa; por eso `clarity.ms` y `windy.com` del documento de mayo se unifican
+  con el resto de los drill-downs (L41).
 - **S22** — El documento se emite fechado y con el mes del período: la fecha es la
   de generación en `America/Havana`, la línea "Informe mensual correspondiente al
   mes" lleva el mes y el año informados, y la prosa de la sección 1 menciona ese
@@ -136,6 +150,16 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   La ruta activa se calcula por el prefijo más largo: en `/new` gana "Nuevo
   informe"; en `/[id]` gana "Informes". El sidebar de escritorio aparece en
   `md` con etiquetas; el móvil se oculta en `md`.
+- **S26** — La telemetría se persiste marcada, no se borra: cada fila de sitio
+  guarda si es telemetría, de modo que el total del mes y la exclusión de las
+  tablas se puedan reconstruir desde la base sin reimportar. La nota de cobertura
+  la declara como exclusión de las tablas **y** aclara que suma en los totales; no
+  se declara como línea descartada.
+- **S27** — El `Browsing Time` de la red social (S23) es la única métrica que
+  **no** puede reproducirse exacta: se calcula sumando los relojes de los pares
+  (dominio, usuario) de la red, que se solapan entre dominios. Reproducirlo
+  exigiría guardar los hits con su marca de tiempo por red, y eso no se persiste.
+  Se mantiene la aproximación y se documenta; no se presenta como un valor exacto.
 
 ## Tasks
 
@@ -196,11 +220,12 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   sección 1, antes del encabezado que abre las secciones 2-7. Route: inline.
   Spec: S7, S12. Status: hecho; 205 tests, `tsc` y `eslint` limpios; verificado
   en el documento real (ver L30).
-- **T26** — Excluir la telemetría del universo de navegación:
+- **T26** — Telemetría fuera de las tablas de sitios, dentro de los totales:
   `DEFAULT_TELEMETRY_PATTERNS` + `isTelemetrySite` en `classify/site.ts`;
-  `DailyMetricsAccumulator` descarta antes de sumar y expone
-  `skipped.telemetry`. Route: inline. Spec: S2, S7, S20. Status: hecho; tests
-  en `site.test.ts`, `aggregate.test.ts` y la nota (ver L32).
+  `DailyMetricsAccumulator` ya **no** descarta: marca el sitio y cuenta el hit en
+  `Hits`, `Incoming` y el reloj del usuario. Route: inline. Spec: S2, S7, S20, S26.
+  Status: rehecho (ver L40); la versión anterior descartaba esos hits de los
+  totales e inflaba `% of Hits`.
 - **T27** — Persistir los descartes por día: `DailySkipped` (date, unserved,
   internal, telemetry), `DailyMetrics.skipped`, escritura aditiva en
   `importSquidLogFile` y lectura en `loadDailyMetrics`. La nota de S7 ya no
@@ -243,6 +268,23 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   compatibilidad en `summary/page.tsx`, sidebar "Informes"/"Nuevo informe",
   `activeRouteHref` + test, redirects de las actions y revalidación por layout.
   Route: inline. Spec: S25. Status: hecho; tests/tsc/eslint limpios.
+- **T34** — Tercer reloj: `Browsing Time` del usuario sobre todos sus hits,
+  independiente de sus pares. `DailyMetricsAccumulator` acumula un reloj por
+  cuenta, `toMetrics()` deja de sumar pares y `mergeDailyMetrics` lo conserva.
+  Route: inline. Spec: S12, S18. Status: hecho; tests de acumulador y de merge.
+- **T35** — Umbral único y global de 5 minutos: se elimina
+  `siteBrowsingGapMs`; sitio, par y usuario usan `browsingGapMs`, con
+  `DEFAULT_BROWSING_GAP_MS = 5 min`. Route: inline. Spec: S12. Status: hecho;
+  test del default y test de umbral compartido.
+- **T36** — Marca de telemetría persistida: `DailySiteStat.isTelemetry`,
+  migración `20261027120000_add_site_telemetry_flag` **aplicada** contra
+  `db.prisma.io`, `rows.ts`/`load.ts`/`import.ts` y `selectTopSites` filtrando
+  por la marca; la nota de cobertura la declara como exclusión de tablas.
+  Route: inline. Spec: S20, S26. Status: hecho; prueba de base con
+  `REPORTS_DB_TEST=1`.
+- **T37** — Cierre: suite completa, `tsc`, `eslint`, limpieza de los datos de
+  prueba y reimportación con el modelo corregido. Route: inline. Spec: S27.
+  Status: hecho (ver L40); la red social queda declarada como aproximación.
 
 Route declaration: todas las tareas de esta sesión son `inline` — no hay unidades
 independientes en paralelo ni presión de contexto que justifiquen un writer.
@@ -1523,6 +1565,175 @@ regenerar y revisar redirigen/revalidan la nueva ruta. El active state usa el
 prefijo más largo para que `/new` no active "Informes". El sidebar de
 escritorio aparece en `md` con etiquetas y el móvil se oculta en `md`.
 
+### L39 — Importación truncada por el proxy de Next.js (verbatim)
+
+> he importado la misma carpeta 3 veces y en todas las veces se han importado los archivos sin error de duplicado, solo en algunos archivos detecta como que ya estaban, entonces que esta sucediendo
+
+Causa: `proxy.ts` incluía `/api/reports/import` en el matcher. Next.js 16
+clona el cuerpo para el proxy y lo corta en 10 MB por defecto
+(`experimental.proxyClientMaxBodySize`). Los archivos de menos de 10 MB
+llegaban completos y se detectaban como duplicados; los de más llegaban
+cortados en un chunk distinto en cada subida, el SHA-256 cambiaba y el sistema
+los importaba como nuevos. La base tenía 60 filas de `imported_log_file` para
+18 archivos, con 2–3 filas de ~10,45 MB por archivo grande; `10-18` y `10-25`
+(menos de 10 MB) tenían una sola fila completa. El log del servidor tenía 65
+avisos `Request body exceeded 10MB for /api/reports/import`.
+
+Fix: `/api/reports/import` quedó fuera del matcher de `proxy.ts`; la ruta ya
+valida sesión y rol ADMIN. El cuerpo se streamea sin el clon de 10 MB.
+Verificado con `pnpm test` (247 passed, 7 skipped), `tsc --noEmit` limpio,
+`eslint` solo con el warning previo de `signout-action.ts`, y un POST de 20 MB
+que ya no dispara el aviso. El cambio de `proxy.ts` quedó sin commitear.
+
+Datos: el usuario autorizó limpiar y reimportar. Se borraron 60 filas de
+`imported_log_file`, 18 de `daily_skipped`, 8.396 de `daily_site_user_stat`,
+458 de `daily_user_stat` y 5.387 de `daily_site_stat`; se reimportaron los 18
+archivos completos. Quedaron 18 filas de `imported_log_file`, 18 de
+`daily_skipped`, 30.189 de `daily_site_user_stat`, 806 de `daily_user_stat` y
+16.946 de `daily_site_stat`. El informe de octubre se regeneró: 18/31 días,
+705.771 hits, 0 hits sin identificar, red social Facebook (top `yosmel` 36,8%
+y `marketing` 31,3%), 3 hallazgos PENDING de las reglas de prueba (T30:
+`bongacams.com` ADULT, `conduit.psiphon.ca` ANON_PROXY). El `.docx` quedó en
+`storage/reports/2026-10.docx` (203.742 bytes, ZIP válido); el informe parcial
+anterior se guardó en `storage/reports/2026-10.partial.docx`. Reimportar el
+archivo completo `squid-2026-10-12.log` devuelve `already-imported` con el
+hash `0f7eb840e11b`, que coincide con el archivo real.
+
+Pendiente: revisar los 3 hallazgos contra la lista real del especialista;
+calibrar `Browsing Time` cuando aparezca el export de WebSpy; commitear
+`proxy.ts`.
 
 
 
+
+
+### L40 — Reloj del usuario, umbral único y telemetría en los totales (verbatim)
+
+> adelante, los datos importados actualmente no tienen importancia, fueron pruebas que realice, por lo tanto pueden eliminarse para ahorrarnos tiempo, empezamos entonces
+
+Origen: la documentación de WebSpy Vantage 3.0 (recuperada por Wayback) corrige
+tres conclusiones de L11/L32.
+
+1. El umbral de sesión es **uno solo y global** (`Tools | Options | General`,
+   default 5 min). No hay umbral por nivel: la diferencia entre el tiempo del
+   sitio y el de sus usuarios viene de sobre qué entidad se calculan las
+   sesiones, no del corte. Se elimina `siteBrowsingGapMs`.
+2. Faltaba el **tercer reloj**: el del usuario sobre todos sus hits. El código
+   sumaba los pares (sitio, usuario), que se solapan en el tiempo: el total de un
+   usuario salía inflado. Ahora `users[].browsingMs` es su propio reloj y no la
+   suma de sus sitios; el `totalBrowsingMs` del mes y el `% of Browsing Time` de
+   la tabla de usuarios usan ese valor. Los drills-down siguen usando el reloj
+   del par y la tabla de sitios el del sitio (S18).
+3. La telemetría **no se descarta**: es tráfico servido y es parte del
+   denominador de `% of Hits`. Se excluye solo de las tablas de sitios y de sus
+   drill-downs. El veredicto se persiste (`DailySiteStat.isTelemetry`) para que
+   el total del mes se reconstruya desde la base.
+
+Cambios: `metrics/aggregate.ts` (tercer acumulador, umbral único de 5 min,
+telemetría marcada), `persistence/{rows,load,import}.ts` + migración
+`20261027120000_add_site_telemetry_flag` (aplicada), `model/monthly.ts` (merge de
+la marca), `assembly/section-traces.ts` (`selectTopSites` filtra telemetría),
+`document/declarations.ts` (la nota ya no la declara descartada), `parity/calibrate.ts`
+(5 min como hipótesis de partida). Tests: 252 passed, 7 skipped; `tsc` limpio;
+`eslint` solo el warning previo de `signout-action.ts`; prueba de base
+`REPORTS_DB_TEST=1` 10/10.
+
+Límite declarado (S27): el `Browsing Time` de la red social se sigue calculando
+sumando relojes de pares (dominio, usuario) de la red, que se solapan entre
+dominios. Reproducirlo exacto exigiría persistir los hits con marca de tiempo por
+red; no se hace.
+
+Datos: se borraron 1 informe, 3 hallazgos, 18 archivos importados, 16.946 filas
+de sitio, 806 de usuario, 30.189 de par y 18 de descartes. La base queda vacía de
+datos de informe; falta reimportar los 18 archivos y regenerar octubre con el
+modelo corregido.
+
+Límite heredado del almacenamiento: los tres relojes se acumulan **por día** y
+se suman en el mes, así que una sesión que cruza la medianoche se corta ahí. Con
+un umbral de 5 minutos el error solo aparece si hay hits a menos de 5 minutos del
+cambio de día; antes, con 30 minutos, el corte pesaba más.
+
+Verificación con datos reales (octubre 2026, 18 de 31 días, 18 archivos y
+15.187.698 líneas): total de hits 793.358 = 705.771 de la corrida anterior +
+87.587 de telemetría, que antes se perdían. 5.598 sitios, 429 marcados como
+telemetría y ninguno en el top 10. El reloj de los usuarios suma 1.584 h 27 min
+contra 3.516 h 08 min de la suma de sus pares: el 55% del tiempo anterior era
+solapamiento. El caso testigo es `brian`: 831 h 49 min por pares en un período
+de 432 h (imposible) contra 75 h 47 min de reloj propio. Informe regenerado
+(`cmvq6ycji000ip1br7fo3nvzl`, 3 hallazgos).
+
+### L41 — R5 cerrada con datos: WebSpy cuenta toda línea; se mantiene la regla del especialista (verbatim)
+
+> no, dejemolos como esta, pues no quiero tener en el informe generado final
+> sitios de telemetrias, etc
+
+Origen: los tres exports de WebSpy del 10/10/2026 (`Sites Export`, `Users
+Export`, `Users (Usernames) Export`) son el artefacto que R5 pedía: un día
+completo de log (`squid-2026-10-10.log`, 327.950 líneas) y su export del mismo
+día. Resultado de la comparación: **WebSpy cuenta como hit toda línea del log**,
+incluidos los retos 407, las denegaciones 403, los destinos internos y la
+telemetría.
+
+| Métrica (10-10) | Export | Motor actual | Toda línea |
+| --- | --- | --- | --- |
+| Hits | 331.675 | 76.868 | 327.950 |
+| Incoming | 40.428,09 MB | 38.186,92 MB | 38.957,30 MB |
+| Outgoing | 4,94 MB | 0,00 MB | 4,83 MB |
+| Download Time | 430:41:24 | 396:48:52 | 405:49:48 |
+| Browsing Time (usuarios) | 367:54:32 | 95:03:12 | 348:56:24 |
+
+Pruebas que no admiten otra lectura: `10.1.1.4` = 272 líneas todas 403 → export
+272 hits; `lolaup.com` = 9.410 líneas con 0 servidas → 9.410; `solred.app` =
+1.882 con 0 servidas → 1.882; `natio.picta.cu` = 143.568 retos + 71.460
+servidas = 215.028 → export 215.130. Fila por fila son exactas `operador.cat4`
+(14.052 / 2.635,14 MB / 22:27:42), `operador.cat26` (7.849 / 1.474,59 /
+21:14:41), `j.cat1` (4.825 / 2.180,75 / 15:14:58), `dtor.comercial`, `cat40`,
+`yolanda`, `edely`, `dtor.fre`, `inf.jag`, `manoli`; 28/85 usuarios y 297/396
+sitios con hits idénticos. La identidad es usuario o, sin cuenta, la IP del
+cliente (`172.19.152.162`: 35.896 vs 35.958; algunos PTR se muestran con nombre).
+
+Decisión: **se mantiene S2 tal como está** (hit = respuesta servida 2xx/3xx a un
+destino no interno), aunque no reproduzca el export de WebSpy. Motivo del
+especialista: el informe final no debe llevar sitios de telemetría ni ruido de
+proxy. S2, S7, S20 y S26 no cambian; no hubo cambios de código.
+
+Confirmado por esta comparación (no requiere cambios):
+
+- `Browsing Time` = reloj del usuario con umbral único de 300 s. En las cuentas
+  con todas sus líneas reproduce el export dentro de 0,5–3% (`cat26` 8,87 vs
+  9,10 h; `j.cat1` 10,00 vs 10,23; `cat36` 12,26 vs 12,54; `yolanda` 4,94 vs
+  4,99; `cat40` 8,38 vs 8,44). La suma de pares da ~2× el reloj del usuario:
+  S18 queda validada con datos.
+- `Incoming` = suma de bytes, `Download Time` = suma de `elapsed`, `Outgoing` =
+  bytes de POST/PUT; orden de las dos tablas por hits; `% of Hits` sobre el total.
+
+Límites aceptados y declarados:
+
+- Los hits y el `Browsing Time` del informe quedan ~4× por debajo de los que
+  emitía WebSpy. La serie mensual no es comparable con los meses anteriores
+  generados por la herramienta. Si el informe se presenta junto a esos meses,
+  la nota de cobertura (S7) debería declararlo.
+- S21 necesita matiz: el drilldown `Users Export` del 10/10 viene ordenado por
+  hits y con columna `% of Hits`. WebSpy sí exporta la variante por hits; la
+  regla de mayo (drill-down por `Browsing Time`) es una elección de columnas, no
+  una limitación de la herramienta.
+- El archivo del 10/10 está incompleto (~3.725 líneas, 1,1%): faltan hosts
+  enteros (`www.facebook.com` 43, `fbcdn` ~570, `cache.lolaup.com` 160,
+  `telemetry.graylog.cloud` 270, `unagi.amazon.com` 15). Por eso el drilldown de
+  Facebook del export no se puede reproducir y los totales no cierran al peso.
+  No afecta a la decisión: las pruebas por fila son exactas con las líneas que sí
+  están.
+
+### L42 — El informe no lleva nota de base de cálculo (verbatim)
+
+> nos quedamos donde mismo, no incorpores nada, pues el informe debe ser
+> inmutable en ese sentido, yo como especialista en seguridad informatica doy las
+> explicaciones verbalmente en caso de ser necesario
+
+Decisión del especialista: el informe generado no lleva nota de base de cálculo ni
+referencia a WebSpy. El documento es inmutable en ese aspecto; las explicaciones
+sobre el cambio de metodología las da verbalmente el especialista cuando haga
+falta. S7 queda como está (solo cobertura y descartes) y no se modifica ninguna
+sección del informe. Consecuencia aceptada: la caída de ~4× en hits y `Browsing
+Time` frente a los meses generados con WebSpy no se justifica dentro del
+documento. No hubo cambios de código.
