@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { MONTHS } from "@/lib/reports/document/period";
 import {
   filterLogFiles,
   relativeName,
@@ -46,8 +45,8 @@ function formatBytes(bytes: number): string {
  * Sube un archivo con el cuerpo crudo, igual que la importación individual.
  *
  * No se usa `FormData`: el route handler lee `request.body` como stream para no
- * cargar 90 MB en memoria ni chocar con el límite de 1 MB de las server actions.
- * El nombre y el período viajan en cabeceras.
+ * cargar el archivo completo en memoria. El nombre y el período viajan en
+ * cabeceras.
  */
 function uploadFile(
   file: File,
@@ -120,7 +119,7 @@ function Results({ results }: { results: FileResult[] }) {
                 <p className="text-destructive">{result.error}</p>
               ) : response?.status === "already-imported" ? (
                 <p className="text-muted-foreground">
-                  Ya estaba importado (mismo SHA-256). No se duplicó nada.
+                  Ya estaba importado. No se duplicó nada.
                 </p>
               ) : (
                 <div className="text-muted-foreground space-y-1">
@@ -132,10 +131,10 @@ function Results({ results }: { results: FileResult[] }) {
                   {response !== undefined &&
                     response.skipped !== undefined && (
                       <p>
-                        Descartadas: {format(response.skipped.unserved)} no
-                        servidas e {format(response.skipped.internal)} internas.
-                        Telemetría fuera de las tablas:{" "}
-                        {format(response.skipped.telemetry)}.
+                        Excluidas: {format(response.skipped.unserved)} sin
+                        respuesta e {format(response.skipped.internal)} internas.
+                        Fuera de las tablas:{" "}
+                        {format(response.skipped.telemetry)} de telemetría.
                       </p>
                     )}
                   {response !== undefined &&
@@ -159,14 +158,16 @@ function Results({ results }: { results: FileResult[] }) {
 }
 
 export default function ImportForm({
-  defaultYear,
-  defaultMonth,
+  year,
+  month,
+  onBusyChange,
+  onFinished,
 }: {
-  defaultYear: number;
-  defaultMonth: number;
+  year: number;
+  month: number;
+  onBusyChange?: (busy: boolean) => void;
+  onFinished?: () => void;
 }) {
-  const [year, setYear] = useState(defaultYear);
-  const [month, setMonth] = useState(defaultMonth);
   const [mode, setMode] = useState<Mode>("files");
   const [files, setFiles] = useState<File[]>([]);
   const [ignored, setIgnored] = useState(0);
@@ -192,6 +193,10 @@ export default function ImportForm({
     input.setAttribute("webkitdirectory", "");
     input.setAttribute("directory", "");
   }, [mode]);
+
+  useEffect(() => {
+    onBusyChange?.(uploading);
+  }, [uploading, onBusyChange]);
 
   const totalBytes = files.reduce((sum, file) => sum + file.size, 0);
 
@@ -269,74 +274,51 @@ export default function ImportForm({
 
     setUploading(false);
     setCurrent(null);
+    onFinished?.();
   }
 
   return (
     <section className="rounded-xl border p-5">
       <h2 className="text-lg font-semibold">Importar logs diarios</h2>
       <p className="text-muted-foreground mt-1 text-sm">
-        Elegí uno o varios archivos, o una carpeta completa. Se envían por
-        stream, sin límite de 1 MB. El período define a qué mes pertenecen los
-        días; un día ajeno se declara y no se suma.
+        Elegí uno o varios archivos, o una carpeta completa. El período define a
+        qué mes pertenecen los días; un día de otro mes se declara y no se suma.
       </p>
 
       <form onSubmit={submit} className="mt-4 space-y-4">
-        <div className="flex flex-wrap items-end gap-3">
-          <label className="flex flex-col gap-1 text-sm">
-            Año
-            <input
-              type="number"
-              min={2000}
-              max={2100}
-              value={year}
-              onChange={(event) => setYear(Number(event.target.value))}
+        <div
+          role="group"
+          aria-label="Origen de los archivos"
+          className="flex flex-col gap-1 text-sm"
+        >
+          <span aria-hidden="true">Origen</span>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => switchMode("files")}
               disabled={uploading}
-              className="bg-background w-28 rounded-md border px-3 py-2"
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            Mes
-            <select
-              value={month}
-              onChange={(event) => setMonth(Number(event.target.value))}
-              disabled={uploading}
-              className="bg-background rounded-md border px-3 py-2 capitalize"
+              aria-pressed={mode === "files"}
+              className={`rounded-md border px-3 py-2 text-sm disabled:opacity-50 ${
+                mode === "files"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-background"
+              }`}
             >
-              {MONTHS.map((name, index) => (
-                <option key={name} value={index + 1} className="capitalize">
-                  {name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <div className="flex flex-col gap-1 text-sm">
-            <span>Origen</span>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => switchMode("files")}
-                disabled={uploading}
-                className={`rounded-md border px-3 py-2 text-sm ${
-                  mode === "files"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-background"
-                }`}
-              >
-                Archivo(s)
-              </button>
-              <button
-                type="button"
-                onClick={() => switchMode("folder")}
-                disabled={uploading}
-                className={`rounded-md border px-3 py-2 text-sm ${
-                  mode === "folder"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-background"
-                }`}
-              >
-                Carpeta
-              </button>
-            </div>
+              Archivo(s)
+            </button>
+            <button
+              type="button"
+              onClick={() => switchMode("folder")}
+              disabled={uploading}
+              aria-pressed={mode === "folder"}
+              className={`rounded-md border px-3 py-2 text-sm disabled:opacity-50 ${
+                mode === "folder"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-background"
+              }`}
+            >
+              Carpeta
+            </button>
           </div>
         </div>
 
@@ -393,8 +375,8 @@ export default function ImportForm({
 
         {ignored > 0 && (
           <p className="text-muted-foreground text-sm">
-            {ignored} archivo(s) ignorado(s): solo se importan <code>.log</code>{" "}
-            y <code>.txt</code>.
+            {ignored} archivo(s) ignorado(s): solo se importan{" "}
+            <code>.log</code> y <code>.txt</code>.
           </p>
         )}
 
@@ -409,7 +391,14 @@ export default function ImportForm({
                     (current.loaded / Math.max(current.total, 1)) * 100,
                   )}%`}
             </p>
-            <div className="bg-muted h-2 w-full overflow-hidden rounded">
+            <div
+              role="progressbar"
+              aria-label="Progreso de la importación"
+              aria-valuenow={progress}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              className="bg-muted h-2 w-full overflow-hidden rounded"
+            >
               <div
                 className="bg-primary h-full transition-all"
                 style={{ width: `${progress}%` }}

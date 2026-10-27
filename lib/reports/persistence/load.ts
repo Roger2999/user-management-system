@@ -157,3 +157,26 @@ export async function loadDailyMetrics(
       };
     });
 }
+
+/**
+ * Días del período que ya tienen datos cargados.
+ *
+ * `DailySkipped` deja una fila por día importado aunque todos sus contadores
+ * estén en cero, así que es la marca de "día cargado": es la misma fuente que
+ * usa `loadDailyMetrics` para crear sus cubos. Sirve para mostrar la cobertura
+ * antes de generar, cuando todavía no hay informe.
+ */
+export async function listImportedDays(
+  prisma: PrismaClient,
+  period: Pick<MonthlyPeriod, "days">,
+): Promise<string[]> {
+  const dates = period.days.map((day) => new Date(`${day}T00:00:00.000Z`));
+
+  const rows = await prisma.dailySkipped.findMany({
+    where: { date: { in: dates } },
+    select: { date: true },
+    orderBy: { date: "asc" },
+  });
+
+  return rows.map((row) => dayOf(row.date));
+}

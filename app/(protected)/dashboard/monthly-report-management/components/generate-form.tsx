@@ -1,65 +1,63 @@
 "use client";
 
 import { useActionState } from "react";
-import { MONTHS } from "@/lib/reports/document/period";
+import type { PeriodCoverage } from "@/lib/reports/time";
 import { generateReportAction, type GenerateReportState } from "../actions";
 
 const INITIAL: GenerateReportState = {};
 
 export default function GenerateForm({
-  defaultYear,
-  defaultMonth,
+  year,
+  month,
+  coverage,
 }: {
-  defaultYear: number;
-  defaultMonth: number;
+  year: number;
+  month: number;
+  coverage: PeriodCoverage | null;
 }) {
   const [state, action, pending] = useActionState(
     generateReportAction,
     INITIAL,
   );
 
+  const missing = coverage?.missingDays.length ?? 0;
+  const empty = coverage !== null && coverage.presentDays === 0;
+
   return (
     <section className="rounded-xl border p-5">
       <h2 className="text-lg font-semibold">Generar el informe</h2>
       <p className="text-muted-foreground mt-1 text-sm">
-        Reconstruye el mes desde la base, emite el <code>.docx</code> oficial y
-        detecta los hallazgos de las reglas activas. No vuelve a leer los logs.
+        Arma el documento del período con los registros ya cargados y señala las
+        coincidencias con las categorías prohibidas.
       </p>
 
       <form action={action} className="mt-4 flex flex-wrap items-end gap-3">
-        <label className="flex flex-col gap-1 text-sm">
-          Año
-          <input
-            type="number"
-            name="year"
-            min={2000}
-            max={2100}
-            defaultValue={defaultYear}
-            className="bg-background w-28 rounded-md border px-3 py-2"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          Mes
-          <select
-            name="month"
-            defaultValue={defaultMonth}
-            className="bg-background rounded-md border px-3 py-2 capitalize"
-          >
-            {MONTHS.map((name, index) => (
-              <option key={name} value={index + 1} className="capitalize">
-                {name}
-              </option>
-            ))}
-          </select>
-        </label>
+        <input type="hidden" name="year" value={year} />
+        <input type="hidden" name="month" value={month} />
         <button
           type="submit"
-          disabled={pending}
+          disabled={pending || empty}
           className="bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm disabled:opacity-50"
         >
           {pending ? "Generando…" : "Generar informe"}
         </button>
       </form>
+
+      {empty && (
+        <p className="text-muted-foreground mt-4 text-sm">
+          Todavía no hay días cargados en este período. Importá los registros
+          antes de generar.
+        </p>
+      )}
+
+      {!empty && missing > 0 && (
+        <p className="text-muted-foreground mt-4 text-sm">
+          {missing === 1
+            ? "Falta 1 día del período."
+            : `Faltan ${missing} días del período.`}{" "}
+          El documento va a declarar la cobertura incompleta.
+        </p>
+      )}
 
       {state.error !== undefined && (
         <p className="text-destructive mt-4 text-sm">{state.error}</p>

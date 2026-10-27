@@ -1,14 +1,6 @@
-import { ReportStatus } from "@/generated/prisma/enums";
 import { MONTHS } from "@/lib/reports/document/period";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
-
-const STATUS_LABEL: Record<ReportStatus, string> = {
-  DRAFT: "Borrador",
-  REVIEW: "En revisión",
-  APPROVED: "Aprobado",
-  EXPORTED: "Exportado",
-};
 
 function format(value: bigint | number): string {
   return value.toLocaleString("es-CU");
@@ -48,7 +40,6 @@ export default async function MonthlyReportManagementPage() {
             <thead className="bg-muted/50 text-muted-foreground text-xs uppercase">
               <tr>
                 <th className="px-4 py-3 font-medium">Período</th>
-                <th className="px-4 py-3 font-medium">Estado</th>
                 <th className="px-4 py-3 font-medium">Cobertura</th>
                 <th className="px-4 py-3 text-right font-medium">Hits</th>
                 <th className="px-4 py-3 text-right font-medium">Hallazgos</th>
@@ -62,7 +53,6 @@ export default async function MonthlyReportManagementPage() {
                   <td className="px-4 py-3 font-medium capitalize">
                     {MONTHS[report.month - 1]} {report.year}
                   </td>
-                  <td className="px-4 py-3">{STATUS_LABEL[report.status]}</td>
                   <td className="px-4 py-3">
                     {report.coverageDaysImported} de{" "}
                     {report.coverageDaysExpected} días

@@ -32,9 +32,8 @@ export default async function Dashboard() {
           isAdmin={isAdmin}
           icon={<UsersIcon className="text-brand mx-auto my-1 size-6" />}
           card={{
-            title: "Gestionar informes mensuales",
-            description:
-              "Gestión integral de informes mensuales de seguridad informática",
+            title: "Informes mensuales",
+            description: "Preparar y revisar el informe del mes",
             href: "/dashboard/monthly-report-management/",
           }}
         />

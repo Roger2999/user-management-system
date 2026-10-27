@@ -5,7 +5,7 @@ import { ingestSquidLog } from "../ingest";
 import type { DailyMetrics } from "../metrics/aggregate";
 import { monthlyPeriod } from "../time";
 import { importSquidLogFile } from "./import";
-import { loadDailyMetrics } from "./load";
+import { listImportedDays, loadDailyMetrics } from "./load";
 
 /**
  * Prueba de la persistencia contra la base real.
@@ -208,5 +208,15 @@ describe.skipIf(!enabled)("persistencia del log diario", () => {
         }),
       ]),
     );
+  });
+
+  it("enumera los días cargados sin cargar el resto del período", async () => {
+    // Es la consulta que alimenta la cobertura antes de generar: un día con
+    // todos sus descartes en cero igual cuenta como cargado.
+    expect(await listImportedDays(db(), PERIOD)).toEqual([
+      "2099-01-01",
+      "2099-01-02",
+      "2099-01-03",
+    ]);
   });
 });

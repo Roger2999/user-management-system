@@ -11,7 +11,7 @@ const ROUTES: SidebarRoute[] = [
     href: "/dashboard/monthly-report-management",
   },
   {
-    label: "Nuevo informe",
+    label: "Preparar mes",
     icon: FilePlus2,
     href: "/dashboard/monthly-report-management/new",
   },

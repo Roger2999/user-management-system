@@ -6,6 +6,8 @@ import { requireAdmin } from "@/helpers/requireAdmin";
 import { optionalTextField, textField } from "@/lib/form-data";
 import prisma from "@/lib/prisma";
 import { generateMonthlyReport, ReportGenerationError } from "@/lib/reports/generate";
+import { listImportedDays } from "@/lib/reports/persistence/load";
+import { checkCoverage, monthlyPeriod, type PeriodCoverage } from "@/lib/reports/time";
 import { FindingDisposition } from "@/generated/prisma/enums";
 
 export type GenerateReportState = { error?: string };
@@ -108,4 +110,57 @@ export async function updateFindingAction(formData: FormData): Promise<void> {
   });
 
   revalidatePath("/dashboard/monthly-report-management", "layout");
+}
+
+/**
+ * Cobertura del período para la pantalla de preparación.
+ *
+ * Es de lectura y no crea nada: se pide antes de generar para saber qué días
+ * faltan, cuando todavía no existe un informe que consultar.
+ */
+export async function reportCoverageAction(
+  year: number,
+  month: number,
+): Promise<PeriodCoverage | null> {
+  await requireAdmin();
+
+  if (!Number.isInteger(year) || year < 2000 || year > 2100) return null;
+  if (!Number.isInteger(month) || month < 1 || month > 12) return null;
+
+  const period = monthlyPeriod(year, month);
+  const presentDays = await listImportedDays(prisma, period);
+
+  return checkCoverage(period, presentDays);
+}
+
+/** Revisión en bloque: aplica la misma revisión a los hallazgos elegidos. */
+export async function updateFindingsAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+
+  const reportId = textField(formData, "reportId");
+  const query = textField(formData, "query");
+  const back = `/dashboard/monthly-report-management/${reportId}`;
+  const error = (message: string): string =>
+    `${back}?${query.length > 0 ? `${query}&` : ""}error=${encodeURIComponent(message)}`;
+
+  const disposition = textField(formData, "disposition");
+  if (!(disposition in FindingDisposition)) {
+    redirect(error("Revisión inválida."));
+  }
+
+  const ids = formData
+    .getAll("findingId")
+    .filter((value): value is string => typeof value === "string" && value.length > 0);
+
+  if (ids.length === 0) {
+    redirect(error("Elegí al menos un hallazgo."));
+  }
+
+  await prisma.reportFinding.updateMany({
+    where: { id: { in: ids } },
+    data: { disposition: disposition as FindingDisposition },
+  });
+
+  revalidatePath("/dashboard/monthly-report-management", "layout");
+  redirect(query.length > 0 ? `${back}?${query}` : back);
 }
