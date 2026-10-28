@@ -3,8 +3,8 @@
  *
  * Un ítem está activo si la ruta actual es igual a su href o cuelga de él. Si
  * más de uno coincide, gana el href más largo: en `/new`, "Nuevo informe" gana
- * sobre "Informes" (href raíz); en `/[id]`, solo el href raíz coincide, así que
- * "Informes" queda activo.
+ * sobre "Historial de informes" (href raíz); en `/[id]`, solo el href raíz
+ * coincide, así que "Historial de informes" queda activo.
  *
  * La comparación por prefijo incluye la barra final para no activar una ruta
  * hermana por accidente (`/new` no debe activar `/news`).

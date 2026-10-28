@@ -6,14 +6,14 @@ import type { SidebarRoute } from "./types";
 
 const ROUTES: SidebarRoute[] = [
   {
-    label: "Informes",
+    label: "Historial de informes",
     icon: FileText,
-    href: "/dashboard/monthly-report-management",
+    href: "/dashboard/monthly-reports",
   },
   {
-    label: "Preparar mes",
+    label: "Nuevo informe",
     icon: FilePlus2,
-    href: "/dashboard/monthly-report-management/new",
+    href: "/dashboard/monthly-reports/new",
   },
 ];
 

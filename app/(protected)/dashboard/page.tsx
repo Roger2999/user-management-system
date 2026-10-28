@@ -34,7 +34,7 @@ export default async function Dashboard() {
           card={{
             title: "Informes mensuales",
             description: "Preparar y revisar el informe del mes",
-            href: "/dashboard/monthly-report-management/",
+            href: "/dashboard/monthly-reports",
           }}
         />
       </section>

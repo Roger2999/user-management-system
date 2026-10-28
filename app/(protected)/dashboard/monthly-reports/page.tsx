@@ -19,7 +19,7 @@ export default async function MonthlyReportManagementPage() {
           <h1 className="text-2xl font-semibold">Informes mensuales</h1>
         </div>
         <Link
-          href="/dashboard/monthly-report-management/new"
+          href="/dashboard/monthly-reports/new"
           className="bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm"
         >
           Nuevo informe
@@ -64,7 +64,7 @@ export default async function MonthlyReportManagementPage() {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Link
-                      href={`/dashboard/monthly-report-management/${report.id}`}
+                      href={`/dashboard/monthly-reports/${report.id}`}
                       className="text-primary underline-offset-4 hover:underline"
                     >
                       Ver

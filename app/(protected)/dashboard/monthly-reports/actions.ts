@@ -72,8 +72,8 @@ export async function generateReportAction(
     return { error: messageOf(error) };
   }
 
-  revalidatePath("/dashboard/monthly-report-management", "layout");
-  redirect(`/dashboard/monthly-report-management/${id}`);
+  revalidatePath("/dashboard/monthly-reports", "layout");
+  redirect(`/dashboard/monthly-reports/${id}`);
 }
 
 export async function regenerateReportAction(
@@ -86,7 +86,7 @@ export async function regenerateReportAction(
 
   if (period === null) {
     redirect(
-      `/dashboard/monthly-report-management/${reportId}?error=${encodeURIComponent("Período inválido.")}`,
+      `/dashboard/monthly-reports/${reportId}?error=${encodeURIComponent("Período inválido.")}`,
     );
   }
 
@@ -94,12 +94,12 @@ export async function regenerateReportAction(
     await generateMonthlyReport(period.year, period.month);
   } catch (error) {
     redirect(
-      `/dashboard/monthly-report-management/${reportId}?error=${encodeURIComponent(messageOf(error))}`,
+      `/dashboard/monthly-reports/${reportId}?error=${encodeURIComponent(messageOf(error))}`,
     );
   }
 
-  revalidatePath("/dashboard/monthly-report-management", "layout");
-  redirect(`/dashboard/monthly-report-management/${reportId}`);
+  revalidatePath("/dashboard/monthly-reports", "layout");
+  redirect(`/dashboard/monthly-reports/${reportId}`);
 }
 
 /** Revisión de un hallazgo: disposición y medida adoptada (S5). */
@@ -121,7 +121,7 @@ export async function updateFindingAction(formData: FormData): Promise<void> {
     },
   });
 
-  revalidatePath("/dashboard/monthly-report-management", "layout");
+  revalidatePath("/dashboard/monthly-reports", "layout");
 }
 
 export type PeriodState = {
@@ -160,7 +160,7 @@ export async function updateFindingsAction(formData: FormData): Promise<void> {
 
   const reportId = textField(formData, "reportId");
   const query = textField(formData, "query");
-  const back = `/dashboard/monthly-report-management/${reportId}`;
+  const back = `/dashboard/monthly-reports/${reportId}`;
   const error = (message: string): string =>
     `${back}?${query.length > 0 ? `${query}&` : ""}error=${encodeURIComponent(message)}`;
 
@@ -184,6 +184,6 @@ export async function updateFindingsAction(formData: FormData): Promise<void> {
     data: { disposition: disposition as FindingDisposition },
   });
 
-  revalidatePath("/dashboard/monthly-report-management", "layout");
+  revalidatePath("/dashboard/monthly-reports", "layout");
   redirect(query.length > 0 ? `${back}?${query}` : back);
 }

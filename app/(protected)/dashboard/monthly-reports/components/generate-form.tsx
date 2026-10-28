@@ -55,7 +55,7 @@ export default function GenerateForm({
           {missing === 1
             ? "Falta 1 día del período."
             : `Faltan ${missing} días del período.`}{" "}
-          El informe va a generarse incompleto.
+          El informe va a generase incompleto.
         </p>
       )}
 

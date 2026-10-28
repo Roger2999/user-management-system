@@ -96,7 +96,7 @@ export default async function ReportDetailPage({
           No existe un informe con el identificador{" "}
           <code className="break-all">{id}</code>.{" "}
           <Link
-            href="/dashboard/monthly-report-management"
+            href="/dashboard/monthly-reports"
             className="text-primary underline-offset-4 hover:underline"
           >
             Volver a la lista
@@ -129,7 +129,7 @@ export default async function ReportDetailPage({
   if (category !== "") filters.set("categoria", category);
   if (disposition !== "") filters.set("revision", disposition);
   const query = filters.toString();
-  const base = `/dashboard/monthly-report-management/${report.id}`;
+  const base = `/dashboard/monthly-reports/${report.id}`;
 
   return (
     <div className="w-full max-w-6xl space-y-6 p-2">
