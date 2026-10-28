@@ -1,10 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import {
-  filterLogFiles,
-  relativeName,
-} from "@/lib/reports/import-selection";
+import { filterLogFiles, relativeName } from "@/lib/reports/import-selection";
 
 type Skipped = { unserved: number; internal: number; telemetry: number };
 
@@ -135,7 +132,7 @@ function Results({ results }: { results: FileResult[] }) {
                 <p className="text-destructive">{result.error}</p>
               ) : response?.status === "already-imported" ? (
                 <p className="text-muted-foreground">
-                  Ya estaba importado. No se duplicó nada.
+                  Este archivo ya estaba importado. No se duplicó nada.
                 </p>
               ) : (
                 <div className="text-muted-foreground space-y-1">
@@ -144,15 +141,14 @@ function Results({ results }: { results: FileResult[] }) {
                     {format(response?.stats?.linesInvalid ?? 0)} inválidas.
                     Días: {response?.days?.join(", ") ?? "—"}.
                   </p>
-                  {response !== undefined &&
-                    response.skipped !== undefined && (
-                      <p>
-                        Excluidas: {format(response.skipped.unserved)} sin
-                        respuesta e {format(response.skipped.internal)} internas.
-                        Fuera de las tablas:{" "}
-                        {format(response.skipped.telemetry)} de telemetría.
-                      </p>
-                    )}
+                  {response !== undefined && response.skipped !== undefined && (
+                    <p>
+                      Excluidas: {format(response.skipped.unserved)} sin
+                      respuesta e {format(response.skipped.internal)} internas.
+                      Fuera de las tablas: {format(response.skipped.telemetry)}{" "}
+                      de telemetría.
+                    </p>
+                  )}
                   {response !== undefined &&
                     (response.outsidePeriod?.length ?? 0) > 0 && (
                       <p>
@@ -254,7 +250,6 @@ export default function ImportForm({
 
   function switchMode(next: Mode): void {
     if (next === mode) return;
-
     setMode(next);
     setFiles([]);
     setIgnored(0);
@@ -349,11 +344,6 @@ export default function ImportForm({
   return (
     <section className="rounded-xl border p-5">
       <h2 className="text-lg font-semibold">Importar logs diarios</h2>
-      <p className="text-muted-foreground mt-1 text-sm">
-        Elegí uno o varios archivos, o una carpeta completa. El período define a
-        qué mes pertenecen los días; un día de otro mes se declara y no se suma.
-      </p>
-
       <form onSubmit={submit} className="mt-4 space-y-4">
         <div
           role="group"
@@ -404,7 +394,7 @@ export default function ImportForm({
                   event.target.value = "";
                 }}
                 disabled={uploading}
-                className="bg-background rounded-md border px-3 py-1.5 file:mr-3 file:rounded file:border-0 file:bg-muted file:px-2 file:py-1 file:text-sm"
+                className="bg-background file:bg-muted rounded-md border px-3 py-1.5 file:mr-3 file:rounded file:border-0 file:px-2 file:py-1 file:text-sm"
               />
             ) : (
               <input
@@ -416,7 +406,7 @@ export default function ImportForm({
                   event.target.value = "";
                 }}
                 disabled={uploading}
-                className="bg-background rounded-md border px-3 py-1.5 file:mr-3 file:rounded file:border-0 file:bg-muted file:px-2 file:py-1 file:text-sm"
+                className="bg-background file:bg-muted rounded-md border px-3 py-1.5 file:mr-3 file:rounded file:border-0 file:px-2 file:py-1 file:text-sm"
               />
             )}
           </label>
@@ -453,8 +443,8 @@ export default function ImportForm({
 
         {ignored > 0 && (
           <p className="text-muted-foreground text-sm">
-            {ignored} archivo(s) ignorado(s): solo se importan{" "}
-            <code>.log</code> y <code>.txt</code>.
+            {ignored} archivo(s) ignorado(s): solo se importan <code>.log</code>{" "}
+            y <code>.txt</code>.
           </p>
         )}
 
@@ -492,8 +482,7 @@ export default function ImportForm({
 
       {cancelled && !uploading && (
         <p role="status" className="text-muted-foreground mt-4 text-sm">
-          Importación cancelada. Los archivos ya procesados quedaron guardados y
-          la cobertura de arriba ya está actualizada.
+          Importación cancelada. Los archivos ya procesados quedaron guardados.
         </p>
       )}
 

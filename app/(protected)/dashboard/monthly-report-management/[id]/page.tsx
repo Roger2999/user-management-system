@@ -1,7 +1,4 @@
-import {
-  FindingDisposition,
-  RuleCategory,
-} from "@/generated/prisma/enums";
+import { FindingDisposition, RuleCategory } from "@/generated/prisma/enums";
 import { MONTHS } from "@/lib/reports/document/period";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
@@ -47,9 +44,7 @@ function isCategory(value: string | undefined): value is RuleCategory {
   return value !== undefined && value in RuleCategory;
 }
 
-function isDisposition(
-  value: string | undefined,
-): value is FindingDisposition {
+function isDisposition(value: string | undefined): value is FindingDisposition {
   return value !== undefined && value in FindingDisposition;
 }
 
@@ -96,12 +91,6 @@ export default async function ReportDetailPage({
   if (report === null) {
     return (
       <div className="w-full max-w-3xl space-y-4 p-2">
-        <Link
-          href="/dashboard/monthly-report-management"
-          className="text-muted-foreground text-sm hover:underline"
-        >
-          ← Informes
-        </Link>
         <h1 className="text-2xl font-semibold">Informe no encontrado</h1>
         <p className="text-muted-foreground text-sm">
           No existe un informe con el identificador{" "}
@@ -128,7 +117,8 @@ export default async function ReportDetailPage({
   ]);
 
   const pendingFindings =
-    byDisposition.find((row) => row.disposition === "PENDING")?._count._all ?? 0;
+    byDisposition.find((row) => row.disposition === "PENDING")?._count._all ??
+    0;
 
   const snapshot = (report.snapshot ?? {}) as Snapshot;
   const skipped = snapshot.declarations?.skipped;
@@ -143,13 +133,6 @@ export default async function ReportDetailPage({
 
   return (
     <div className="w-full max-w-6xl space-y-6 p-2">
-      <Link
-        href="/dashboard/monthly-report-management"
-        className="text-muted-foreground text-sm hover:underline"
-      >
-        ← Informes
-      </Link>
-
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold">
@@ -182,8 +165,8 @@ export default async function ReportDetailPage({
             </summary>
             <div className="bg-background absolute right-0 z-10 mt-2 w-72 rounded-lg border p-3 shadow-lg">
               <p className="text-sm">
-                Regenerar vuelve a calcular el período y sobrescribe el documento
-                emitido. La revisión de los hallazgos se conserva.
+                Regenerar vuelve a calcular el período y sobrescribe el
+                documento emitido. La revisión de los hallazgos se conserva.
               </p>
               <form action={regenerateReportAction} className="mt-3">
                 <input type="hidden" name="reportId" value={report.id} />
@@ -231,7 +214,7 @@ export default async function ReportDetailPage({
             {format(Number(report.totalHits))}
           </p>
           <p className="text-muted-foreground mt-1 text-xs">
-            Sin cuenta: {format(Number(report.unidentifiedHits))}
+            Sin nombre de usuario: {format(Number(report.unidentifiedHits))}
           </p>
         </div>
 
@@ -247,13 +230,17 @@ export default async function ReportDetailPage({
             <ul className="mt-1 space-y-0.5 text-sm tabular-nums">
               <li>Sin respuesta: {format(skipped.unserved)}</li>
               <li>Internos: {format(skipped.internal)}</li>
-              <li>Telemetría (fuera de las tablas): {format(skipped.telemetry)}</li>
+              <li>
+                Telemetría (fuera de las tablas): {format(skipped.telemetry)}
+              </li>
             </ul>
           )}
         </div>
 
         <div className="rounded-xl border p-4">
-          <p className="text-muted-foreground text-xs uppercase">Browsing Time</p>
+          <p className="text-muted-foreground text-xs uppercase">
+            Browsing Time
+          </p>
           <p className="mt-1 text-sm font-semibold">
             {snapshot.declarations?.browsingTimeApproximate === true
               ? "Aproximado (sin calibrar)"
@@ -353,14 +340,13 @@ export default async function ReportDetailPage({
                   ))}
                 </select>
               </label>
-              <button type="submit" className="rounded-md border px-4 py-2 text-sm">
+              <button
+                type="submit"
+                className="rounded-md border px-4 py-2 text-sm"
+              >
                 Aplicar a los seleccionados
               </button>
-              <p className="text-muted-foreground text-xs">
-                Elegí los hallazgos con la casilla de la izquierda.
-              </p>
             </form>
-
             <div className="overflow-x-auto rounded-xl border">
               <table className="w-full text-left text-sm">
                 <caption className="sr-only">

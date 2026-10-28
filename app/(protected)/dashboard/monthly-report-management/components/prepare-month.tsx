@@ -77,8 +77,8 @@ export default function PrepareMonth({
           Preparar el informe de {monthTitle}
         </h1>
         <p className="text-muted-foreground mt-1 text-sm">
-          Elegí el período, cargá los registros de cada día y generá el
-          documento cuando el mes esté completo.
+          Elige el período, importa los logs de cada día y genera el documento
+          cuando el mes esté completo.
         </p>
       </header>
 
@@ -124,7 +124,9 @@ export default function PrepareMonth({
             {loading ? "Actualizando…" : summary.detail}
           </p>
           {summary.extra !== null && (
-            <p className="text-muted-foreground mt-1 text-xs">{summary.extra}</p>
+            <p className="text-muted-foreground mt-1 text-xs">
+              {summary.extra}
+            </p>
           )}
         </div>
 

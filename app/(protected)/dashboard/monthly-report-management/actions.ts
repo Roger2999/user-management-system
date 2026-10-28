@@ -5,9 +5,19 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/helpers/requireAdmin";
 import { optionalTextField, textField } from "@/lib/form-data";
 import prisma from "@/lib/prisma";
-import { generateMonthlyReport, ReportGenerationError } from "@/lib/reports/generate";
-import { listImportedDays, listPeriodFiles } from "@/lib/reports/persistence/load";
-import { checkCoverage, monthlyPeriod, type PeriodCoverage } from "@/lib/reports/time";
+import {
+  generateMonthlyReport,
+  ReportGenerationError,
+} from "@/lib/reports/generate";
+import {
+  listImportedDays,
+  listPeriodFiles,
+} from "@/lib/reports/persistence/load";
+import {
+  checkCoverage,
+  monthlyPeriod,
+  type PeriodCoverage,
+} from "@/lib/reports/time";
 import { FindingDisposition } from "@/generated/prisma/enums";
 
 export type GenerateReportState = { error?: string };
@@ -18,14 +28,16 @@ function messageOf(error: unknown): string {
     error instanceof Error &&
     (error as NodeJS.ErrnoException).code === "ENOENT"
   ) {
-    return "No se encontró la plantilla oficial. Configurá REPORTS_TEMPLATE_PATH.";
+    return "No se encontró la plantilla oficial. Configura REPORTS_TEMPLATE_PATH.";
   }
   return error instanceof Error
     ? error.message
     : "No se pudo generar el informe.";
 }
 
-function periodFrom(formData: FormData): { year: number; month: number } | null {
+function periodFrom(
+  formData: FormData,
+): { year: number; month: number } | null {
   const year = Number(textField(formData, "year"));
   const month = Number(textField(formData, "month"));
 
@@ -43,7 +55,6 @@ function periodFrom(formData: FormData): { year: number; month: number } | null 
   return { year, month };
 }
 
-/** Genera el informe y redirige al detalle. Se usa con `useActionState`. */
 export async function generateReportAction(
   _previous: GenerateReportState,
   formData: FormData,
@@ -65,8 +76,9 @@ export async function generateReportAction(
   redirect(`/dashboard/monthly-report-management/${id}`);
 }
 
-/** Regenera el informe desde el detalle. Se usa como `action` de un formulario. */
-export async function regenerateReportAction(formData: FormData): Promise<void> {
+export async function regenerateReportAction(
+  formData: FormData,
+): Promise<void> {
   await requireAdmin();
 
   const reportId = textField(formData, "reportId");
@@ -159,7 +171,9 @@ export async function updateFindingsAction(formData: FormData): Promise<void> {
 
   const ids = formData
     .getAll("findingId")
-    .filter((value): value is string => typeof value === "string" && value.length > 0);
+    .filter(
+      (value): value is string => typeof value === "string" && value.length > 0,
+    );
 
   if (ids.length === 0) {
     redirect(error("Elegí al menos un hallazgo."));

@@ -17,10 +17,6 @@ export default async function MonthlyReportManagementPage() {
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">Informes mensuales</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Un informe por mes calendario local. Regenerarlo actualiza el mismo
-            registro y conserva la revisión de los hallazgos.
-          </p>
         </div>
         <Link
           href="/dashboard/monthly-report-management/new"
@@ -32,7 +28,7 @@ export default async function MonthlyReportManagementPage() {
 
       {reports.length === 0 ? (
         <p className="text-muted-foreground rounded-xl border border-dashed p-10 text-center text-sm">
-          Todavía no hay informes. Importá los logs del mes y generá el primero.
+          Todavía no hay informes. Importa los logs del mes y genera el primero.
         </p>
       ) : (
         <div className="overflow-x-auto rounded-xl border">

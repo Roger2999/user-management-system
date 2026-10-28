@@ -27,8 +27,8 @@ export default function GenerateForm({
     <section className="rounded-xl border p-5">
       <h2 className="text-lg font-semibold">Generar el informe</h2>
       <p className="text-muted-foreground mt-1 text-sm">
-        Arma el documento del período con los registros ya cargados y señala las
-        coincidencias con las categorías prohibidas.
+        Genera el informe del período con los logs cargados actualmente y señala
+        las coincidencias con las categorías prohibidas.
       </p>
 
       <form action={action} className="mt-4 flex flex-wrap items-end gap-3">
@@ -45,8 +45,8 @@ export default function GenerateForm({
 
       {empty && (
         <p className="text-muted-foreground mt-4 text-sm">
-          Todavía no hay días cargados en este período. Importá los registros
-          antes de generar.
+          Todavía no hay días cargados en este período. Importa los logs antes
+          de generar.
         </p>
       )}
 
@@ -55,7 +55,7 @@ export default function GenerateForm({
           {missing === 1
             ? "Falta 1 día del período."
             : `Faltan ${missing} días del período.`}{" "}
-          El documento va a declarar la cobertura incompleta.
+          El informe va a generarse incompleto.
         </p>
       )}
 
