@@ -1,0 +1,1739 @@
+# Informe mensual de trazas — motor de métricas
+
+Objetivo: automatizar la sección 1 (análisis de trazas de navegación) del informe
+mensual de la empresa a partir de los logs diarios de Squid, reproduciendo las
+métricas que hoy exporta WebSpy Giga Analyzer.
+Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `pnpm test` (Vitest).
+
+## Specs
+
+- **S1** — El sistema ingiere los archivos diarios de logs de Squid que el
+  especialista importa. El transporte soporta archivos que exceden el límite de
+  body de una server action (1 MB), por lo que la ingesta será por stream
+  (route handler) o por CLI. Cada archivo se identifica por su hash SHA-256 y
+  reimportarlo no duplica datos.
+- **S2** — El sistema reproduce las métricas de las tablas que hoy se exportan
+  de WebSpy Giga Analyzer: `Hits`, `Incoming (MB)`, `Outgoing (MB)`,
+  `Download Time (h:m:s)`, `Browsing Time (h:m:s)`, `% of Hits`. Un **hit** es
+  una respuesta servida por el sitio (2xx/3xx) a un destino que no es interno.
+  No cuentan el reto 407, la denegación 403, el error 5xx ni el tráfico a
+  servidores internos (RFC 1918, loopback, link-local, `.local`, nombres de una
+  etiqueta). Confirmado por el especialista (L29) tras medir un día real.
+  **Tampoco cuenta la telemetría, la publicidad, las actualizaciones ni la
+  revocación de certificados** (decisión del especialista, L31): son respuestas
+  servidas a destinos externos que nadie eligió como navegación. La lista es
+  configurable (`DEFAULT_TELEMETRY_PATTERNS`), se aplica al importar junto con
+  la definición de hit y se declara como motivo de descarte en S7.
+- **S3** — El formato de salida es exacto: enteros con separador de miles
+  (`129,351`), megabytes con 2 decimales (`3,676.86`), tiempos `h:m:s` sin tope
+  de 24 horas (`699:52:18`), porcentajes a 1 decimal (`0.1%`, `0.0%`).
+- **S4** — Clasificación de sitios: nacional = TLD `.cu` menos una lista
+  configurable de dominios institucionales excluidos (UNE, MINEM, DNC);
+  internacional = el resto.
+- **S5** — Detección de las categorías prohibidas del informe: pornográfico o
+  adultos, C/R o subversivos, proxys anónimos, minería de criptomonedas. Cada
+  coincidencia produce evidencia (URL, usuario, primera y última vez) y una
+  disposición: `PENDING | CONFIRMED | FALSE_POSITIVE | ACTION_TAKEN`.
+- **S6** — El sistema emite el documento completo de 7 secciones. Las secciones
+  2-7 se emiten presentes y vacías: encabezado, numeración y tablas con sus
+  cabeceras, celdas sin contenido.
+- **S7** — El informe declara cobertura: días esperados vs días importados y las
+  líneas descartadas por no ser hit, separadas por motivo (respuestas no servidas,
+  destinos internos y telemetría). Un mes con días faltantes no puede aprobarse
+  sin declararlo. El conteo se obtiene al importar (`IngestSquidLogResult.skipped`)
+  y **se persiste por día en `DailySkipped`** (T27), así la nota se regenera
+  desde la base sin volver a leer los logs. La nota va en un párrafo al cierre
+  de la sección 1, antes del encabezado que abre las secciones 2-7 (decisión del
+  especialista, L30).
+- **S8** — No existe tabla IP→usuario. Los usuarios se autentican en el proxy
+  contra el AD (Windows Server 2022) y el username viaja en el log (`%[un`).
+- **S9** — Las cuentas del proxy son personales (política de la empresa): una
+  cuenta = una persona. Una cuenta sin registro no se descarta: se conserva el
+  username crudo y se cuenta en la cobertura.
+- **S10** — Día y mes se calculan en la zona horaria local (`America/Havana`);
+  Squid emite epoch UTC. El corte de mes y el día local no pueden depender de
+  la zona del servidor.
+- **S11** — Gate de paridad: el motor regenera las métricas de mayo 2026 y debe
+  coincidir con `IM EE Matanzas mayo 2026.docx`. Sin este gate no se emite un
+  informe oficial. **Excepción (S20):** la selección de sitios no se compara
+  contra mayo, porque ese documento no sigue la regla del top 10 por hits ni en
+  la tabla internacional ni en la nacional. Se usa como referencia de formato.
+- **S12** — `Browsing Time` es una métrica derivada, no un campo del log. Se
+  calculan **tres relojes independientes** sobre los mismos hits, cada uno sobre
+  la entidad que WebSpy agrega: el del sitio, el del par (sitio, usuario) y el del
+  usuario. Los tres usan el **mismo umbral de sesión, único y global** (5 minutos,
+  el default documentado de WebSpy, `Tools | Options | General`); no hay umbrales
+  distintos por nivel. Si el umbral no reproduce la salida real, el informe declara
+  la aproximación en la misma nota de cierre de la sección 1 (S7, L30).
+- **S13** — Todo importar, generar, aprobar y exportar queda auditado con los
+  hashes de los artefactos.
+- **S14** — El parser acepta las dos formas de registro que conviven en el
+  archivo real: la primaria del logformat declarado y la variante CONNECT sin
+  estado ni tamaño. La variante se cuenta aparte porque esos túneles no aportan
+  bytes, y esa falta debe ser visible en la calidad del dato.
+- **S15** — El drill-down por sitio ordena por `Browsing Time` descendente (no
+  por hits) y su `% of Browsing Time` se calcula sobre la **suma del `Browsing
+  Time` de todos los usuarios del sitio** —la fila `Total` del export de usuarios
+  de WebSpy—, que **no** es el `Browsing Time` que la tabla de sitios muestra para
+  ese sitio. Confirmado con los exports de mayo 2026: bing `37:25:15` (134,715 s),
+  instagram `40:58:59` (147,539 s), facebook `146:33:51` (527,631 s), frente a
+  `53:56:25`, `157:52:37` y `146:16:38` en la tabla de sitios.
+- **S16** — La tabla "Los 10 usuarios que más descargaron" se ordena por
+  `Browsing Time` descendente, aunque el título diga otra cosa, y su porcentaje
+  se calcula sobre el tiempo de navegación total del mes.
+- **S17** — Para cada sitio seleccionado se persisten **todos** sus pares
+  (sitio, usuario), no solo el top 10. El recorte a 10 filas ocurre al renderizar:
+  truncar al persistir rompería el denominador de S15 y los porcentajes dejarían
+  de coincidir con el documento.
+- **S18** — Ninguno de los tres relojes de `Browsing Time` se obtiene de otro. El
+  del sitio no es la suma de sus pares y el del usuario tampoco: las sesiones de
+  sitios distintos se solapan en el tiempo y sumarlas cuenta de más. La KB de
+  WebSpy lo documenta con un ejemplo (un usuario con 6 h puede mostrar 4 h en un
+  sitio, 5 h en otro y 6 h en otro). Consecuencias que el informe respeta:
+  la tabla de sitios usa el reloj del sitio; cada drill-down usa el reloj del par
+  y su `% of Browsing Time` se calcula sobre la suma de los pares de ese sitio;
+  la tabla de "Los 10 usuarios que más descargaron" y el `% of Browsing Time` de
+  esa tabla usan el reloj del usuario, que es el total real de navegación de la
+  persona en el mes, no la suma de sus sitios.
+- **S19** — El período es el **mes calendario local** del mes que se importa
+  (`01` al último día, en `America/Havana`); no se deduce de los archivos
+  presentes ni se extiende a 32 días. Un día faltante se reporta como faltante,
+  y un día fuera del período —como el 30/04 en un informe de mayo— se reporta
+  como ajeno al período en lugar de sumarse.
+- **S20** — Las dos tablas de sitios de la sección 1 las calcula el sistema: no
+  se declaran. Internacional = top 10 por hits (S2) descendente; nacional = top
+  10 por hits (S2) descendente, aplicando las exclusiones institucionales de
+  `S4`. El
+  `Browsing Time` **no** selecciona sitios: es la métrica del drill-down, donde
+  ordena a los 10 usuarios de cada sitio (S15). Los drill-downs son los sitios
+  de la tabla internacional, en ese mismo orden. La telemetría, la publicidad y
+  las actualizaciones (S2, L31) **no compiten por un puesto**: se excluyen de las
+  dos tablas de sitios y de sus drill-downs. **Sí cuentan en los totales** (`Hits`,
+  `Incoming`, `Outgoing`, `Download Time` y el reloj del usuario): son respuestas
+  servidas y son parte del denominador real de `% of Hits` (S26). El informe de
+  mayo 2026 no es
+  oráculo de la selección: su tabla internacional no es el top 10 por hits
+  (omite `google.com` e incluye sitios muy por debajo del corte) y la nacional
+  también está intervenida a mano.
+- **S21** — Los diez drill-downs usan la misma cabecera y la misma métrica:
+  `Users | Hits | Incoming (MB) | Download Time (h:m:s) | Browsing Time (h:m:s) |
+  % of Browsing Time (h:m:s)`. Es una elección de columnas, no una limitación de
+  WebSpy: el `Users Export` del 10/10/2026 demuestra que la herramienta sí
+  exporta la variante por hits (`% of Hits`, ordenada por hits). El informe no
+  la usa; por eso `clarity.ms` y `windy.com` del documento de mayo se unifican
+  con el resto de los drill-downs (L41).
+- **S22** — El documento se emite fechado y con el mes del período: la fecha es la
+  de generación en `America/Havana`, la línea "Informe mensual correspondiente al
+  mes" lleva el mes y el año informados, y la prosa de la sección 1 menciona ese
+  mismo mes. No puede quedar el mes de la plantilla.
+- **S23** — La sección "Redes Sociales más utilizadas en la entidad" se llena
+  automáticamente. La red se elige por el `Browsing Time` de sus usuarios (no por
+  hits ni por el `Browsing Time` del sitio, S12/S18); el catálogo agrupa los
+  dominios de cada red y YouTube queda fuera porque el informe de mayo titula
+  "Facebook" aunque YouTube tiene más tiempo por usuario. La tabla es el top 10
+  de usuarios de esa red, ordenado por `Browsing Time`, con el formato del
+  drill-down (S21) y el `% of Browsing Time` sobre la suma de todos los usuarios
+  identificados de la red. Sin datos sociales, el título conserva la etiqueta y
+  no hereda el "Facebook" de la plantilla. Las conexiones directas por IP no se
+  clasifican.
+- **S24** — La importación acepta uno o varios archivos sueltos o una carpeta
+  completa. La carpeta se recorre en el navegador (`webkitdirectory`), se
+  filtran `.log`, `.log.N` y `.txt` (se descartan `.gz`, imágenes y otros), se
+  ordenan por ruta/nombre con comparación numérica y se suben de a uno por el
+  mismo route handler de stream (sin multipart ni límite de 1 MB). Un archivo
+  que falla no detiene a los demás; la idempotencia por SHA-256 sigue vigente y
+  el resultado se muestra por archivo.
+- **S25** — El detalle de un informe es una ruta real `/[id]`. La lista enlaza
+  a `/[id]`; la URL vieja `/summary?id=...` redirige a `/[id]` (y sin `id` al
+  último informe, o a la lista si no hay ninguno). El sidebar tiene dos
+  secciones: **Informes** (`/`) y **Nuevo informe** (`/new`); no hay "Resumen".
+  La ruta activa se calcula por el prefijo más largo: en `/new` gana "Nuevo
+  informe"; en `/[id]` gana "Informes". El sidebar de escritorio aparece en
+  `md` con etiquetas; el móvil se oculta en `md`.
+- **S26** — La telemetría se persiste marcada, no se borra: cada fila de sitio
+  guarda si es telemetría, de modo que el total del mes y la exclusión de las
+  tablas se puedan reconstruir desde la base sin reimportar. La nota de cobertura
+  la declara como exclusión de las tablas **y** aclara que suma en los totales; no
+  se declara como línea descartada.
+- **S27** — El `Browsing Time` de la red social (S23) es la única métrica que
+  **no** puede reproducirse exacta: se calcula sumando los relojes de los pares
+  (dominio, usuario) de la red, que se solapan entre dominios. Reproducirlo
+  exigiría guardar los hits con su marca de tiempo por red, y eso no se persiste.
+  Se mantiene la aproximación y se documenta; no se presenta como un valor exacto.
+
+## Tasks
+
+- **T1** — Documento de seguimiento. Route: inline. Status: hecho (`a85a8b5`).
+- **T2** — Contrato de formato (`lib/reports/format.ts`) + tests. Route: inline. Spec: S3. Status: hecho (`670c02a`).
+- **T3** — Día local con zona explícita (`lib/reports/time.ts`) + tests. Route: inline. Spec: S10. Status: hecho (`670c02a`).
+- **T15** — Período mensual y cobertura de días (`monthlyPeriod`, `checkCoverage`) + tests. Route: inline. Spec: S19. Status: hecho (`74a62a6`).
+- **T4** — Parser de `access.log` con columnas configurables (`lib/reports/parser/`) + tests + fragmento real como fixture. Route: inline. Spec: S2, S8, S14. Status: hecho (`20bb01e`, variante CONNECT en `8de35b6`).
+- **T5** — Clasificación de sitios nacional/internacional/webmail (`lib/reports/classify/`) + tests. Route: inline. Spec: S4. Status: hecho (`2efa0a2`).
+- **T6** — Motor de reglas por categoría (`lib/reports/rules/`) + tests. Route: inline. Spec: S5. Status: hecho (`2efa0a2`).
+- **T7** — Agregación diaria con la semántica de las tablas del informe (`lib/reports/metrics/`) + tests. Route: inline. Spec: S2, S7, S12, S18. Status: hecho (`58ac620`, reloj del sitio separado después).
+- **T8** — Esquema Prisma de informes + migración. Route: inline. Spec: S1, S5, S7, S13. Status: hecho (`b00c317`). Migración `20261024120000_add_monthly_reports` **aplicada** contra `db.prisma.io` (ver L26).
+- **T13** — Armado de las tablas de la sección 1 (`lib/reports/assembly/`) + test dorado contra el documento. Route: inline. Spec: S15, S16, S17. Status: hecho (`29516e1`, cabeceras normalizadas en `3c3b3bc`).
+- **T16** — Regla de "sitios más visitados" (S20): las dos tablas se calculan
+  como top 10 por hits (`selectTopSites`) y los drill-downs se atan a la tabla
+  internacional. Route: inline. Spec: S20, S21. Status: hecho, sin verificación
+  ejecutada fuera del shim (ver L18, L19).
+- **T18** — Contenedor `.docx` sin dependencias (`lib/reports/document/zip.ts`,
+  `docx.ts`): lectura y escritura del ZIP sobre `node:zlib` con CRC-32 propio, y
+  reemplazo de una sola parte dejando las demás intactas. Route: inline. Spec:
+  S6. Status: hecho (ver L20), verificado contra el documento de mayo.
+- **T19** — Emisión de la sección 1 sobre el documento real
+  (`lib/reports/document/emit.ts`): reemplaza las tablas 4, 5–14, 15 y 16,
+  normaliza cabecera y ancho de los dos drill-downs exportados por hits, y
+  elimina los sobrantes con su título. Route: inline. Spec: S2, S6, S21.
+  Status: hecho (ver L20), verificado por píxeles contra el documento de mayo.
+- **T20** — Vaciado de las secciones 2-7 (`lib/reports/document/blank-sections.ts`):
+  conserva encabezados, numeración, etiquetas y cabeceras de tabla, y borra los
+  valores del mes anterior. Route: inline. Spec: S6. Status: hecho (ver L21),
+  verificado contra el documento de mayo.
+- **T21** — Campos del período (`lib/reports/document/period.ts`): fecha de emisión
+  en `America/Havana`, mes y año del período y mención del mes en la prosa de la
+  sección 1. Route: inline. Spec: S10, S22. Status: hecho (ver L22), verificado
+  contra el documento de mayo.
+- **T22** — Composición del documento (`lib/reports/report.ts`): plantilla + trazas
+  + período → `.docx`. Route: inline. Spec: S6, S22. Status: hecho (ver L23),
+  verificado contra el documento de mayo.
+- **T23** — Orquestador del log al documento (`buildMonthlyDocument`): días
+  acumulados → modelo mensual + `.docx`. Route: inline. Spec: S6, S7, S12.
+  Status: hecho (ver L25).
+- **T17** — Modelo mensual: merge de días, cobertura y declaraciones (`lib/reports/model/monthly.ts`). Route: inline. Spec: S7, S12, S19. Status: hecho.
+- **T14** — Arnés de paridad: fixture numérico con los totales de los exports de WebSpy (sitios + usuarios por sitio) y comparación por sitio contra el motor. Route: inline. Spec: S11, S15. Status: nivel 1 hecho (`1307188`); nivel 2 bloqueado por el `access.log` de mayo.
+- **T10** — Paridad mayo 2026. Status: desbloqueado en parte — los exports de WebSpy ya están y confirman el denominador de S15; falta el `access.log` completo de mayo (incluido el 30/04) para comparar hits, bytes y tiempos.
+- **T9** — Servicio de ingesta (stream, hash, idempotencia). Route: inline. Spec: S1, S10, S19. Status: hecho (ver L24 y L26). `lib/reports/ingest.ts` hace stream → métricas por día local; `lib/reports/persistence/import.ts` agrega SHA-256, idempotencia y escritura aditiva; `lib/reports/persistence/load.ts` reconstruye los días desde la base.
+- **T11** — Emisión del documento oficial: contenedor (T18), tablas de la sección
+  1 (T19) y secciones 2-7 vacías (T20). Route: inline. Spec: S2, S6, S21.
+  Status: hecho el `.docx`. La conversión a PDF queda fuera del sistema: se hace
+  con LibreOffice o Word, y no se automatiza en esta unidad.
+- **T12** — UI de importación, revisión de hallazgos y documento. Status: pendiente.
+- **T24** — Hit = respuesta servida sin destinos internos: `isServedResponse`
+  (2xx/3xx) e `isInternalSite` (RFC 1918, loopback, link-local, `.local`,
+  nombres de una etiqueta) aplicados en `DailyMetricsAccumulator`, y
+  `IngestSquidLogResult.skipped` con el desglose. Route: inline. Spec: S2, S7.
+  Status: hecho; 196 tests, `tsc` y `eslint` limpios; un día real da 42.470 hits
+  de 757.358 líneas (ver L29).
+- **T25** — Nota de cobertura y `Browsing Time` aproximado en el `.docx`:
+  `buildDeclarationText` + `emitDeclaration` insertan un párrafo al cierre de la
+  sección 1, antes del encabezado que abre las secciones 2-7. Route: inline.
+  Spec: S7, S12. Status: hecho; 205 tests, `tsc` y `eslint` limpios; verificado
+  en el documento real (ver L30).
+- **T26** — Telemetría fuera de las tablas de sitios, dentro de los totales:
+  `DEFAULT_TELEMETRY_PATTERNS` + `isTelemetrySite` en `classify/site.ts`;
+  `DailyMetricsAccumulator` ya **no** descarta: marca el sitio y cuenta el hit en
+  `Hits`, `Incoming` y el reloj del usuario. Route: inline. Spec: S2, S7, S20, S26.
+  Status: rehecho (ver L40); la versión anterior descartaba esos hits de los
+  totales e inflaba `% of Hits`.
+- **T27** — Persistir los descartes por día: `DailySkipped` (date, unserved,
+  internal, telemetry), `DailyMetrics.skipped`, escritura aditiva en
+  `importSquidLogFile` y lectura en `loadDailyMetrics`. La nota de S7 ya no
+  depende de un parámetro opcional. Route: inline. Spec: S7. Status: hecho;
+  migración `20261026130000_add_daily_skipped` **aplicada** contra
+  `db.prisma.io`; prueba de base con `REPORTS_DB_TEST=1` (ver L32).
+- **T28** — Persistencia del informe y hallazgos: `detectFindings`
+  (`lib/reports/findings/detect.ts`), `saveMonthlyReport`
+  (`lib/reports/persistence/report.ts`), `generateMonthlyReport`
+  (`lib/reports/generate.ts`) y almacenamiento del `.docx`
+  (`lib/reports/storage.ts`). Regenerar conserva la revisión de los hallazgos.
+  Route: inline. Spec: S5, S13. Status: hecho; prueba de base 4/4, incluido el
+  `.docx` emitido desde la base (ver L33).
+- **T29** — UI de importación, generación, revisión y descarga:
+  `POST /api/reports/import` (stream, sin límite de 1 MB),
+  `GET /api/reports/[id]/document`, lista de informes, formulario de
+  importación, generación y detalle con disposición por hallazgo. Route:
+  inline. Spec: S1, S5, S6. Status: hecho; `tsc` y `eslint` limpios; `next
+  build` no se pudo completar sin red (Google Fonts), no por el código (ver
+  L33).
+
+- **T30** — Patrones de prueba de las categorías prohibidas:
+  `DEFAULT_CATEGORY_RULES` (`lib/reports/rules/defaults.ts`) y seed aditivo
+  (`prisma/seed-rules.ts`, `pnpm run db:seed:rules`). 63 reglas cargadas
+  (24 ADULT, 15 ANON_PROXY, 24 MINING); `SUBVERSIVE` queda vacía a propósito
+  hasta que el especialista defina la lista. Route: inline. Spec: S5.
+  Status: hecho; seed idempotente (segunda corrida: 0 nuevas, 63 sin cambios).
+- **T31** — Sección de redes sociales: catálogo
+  (`lib/reports/classify/social.ts`), `buildSocialSection`
+  (`lib/reports/assembly/section-traces.ts`), inserción de la tabla
+  (`lib/reports/document/table-xml.ts`, `emit.ts`) y corrimiento del vaciado
+  (`lib/reports/report.ts`). Route: inline. Spec: S23. Status: hecho; 235
+  tests, `tsc` y `eslint` limpios; informe de octubre regenerado con WhatsApp
+  (2 usuarios).
+- **T32** — Importación por archivo(s) o carpeta: helpers de selección
+  (`lib/reports/import-selection.ts`) + test, formulario con dos modos y subida
+  secuencial (`components/import-form.tsx`). Route: inline. Spec: S24. Status:
+  hecho; 7 tests nuevos, `tsc` y `eslint` limpios.
+- **T33** — Refactor de navegación: detalle en `[id]/page.tsx`, redirect de
+  compatibilidad en `summary/page.tsx`, sidebar "Informes"/"Nuevo informe",
+  `activeRouteHref` + test, redirects de las actions y revalidación por layout.
+  Route: inline. Spec: S25. Status: hecho; tests/tsc/eslint limpios.
+- **T34** — Tercer reloj: `Browsing Time` del usuario sobre todos sus hits,
+  independiente de sus pares. `DailyMetricsAccumulator` acumula un reloj por
+  cuenta, `toMetrics()` deja de sumar pares y `mergeDailyMetrics` lo conserva.
+  Route: inline. Spec: S12, S18. Status: hecho; tests de acumulador y de merge.
+- **T35** — Umbral único y global de 5 minutos: se elimina
+  `siteBrowsingGapMs`; sitio, par y usuario usan `browsingGapMs`, con
+  `DEFAULT_BROWSING_GAP_MS = 5 min`. Route: inline. Spec: S12. Status: hecho;
+  test del default y test de umbral compartido.
+- **T36** — Marca de telemetría persistida: `DailySiteStat.isTelemetry`,
+  migración `20261027120000_add_site_telemetry_flag` **aplicada** contra
+  `db.prisma.io`, `rows.ts`/`load.ts`/`import.ts` y `selectTopSites` filtrando
+  por la marca; la nota de cobertura la declara como exclusión de tablas.
+  Route: inline. Spec: S20, S26. Status: hecho; prueba de base con
+  `REPORTS_DB_TEST=1`.
+- **T37** — Cierre: suite completa, `tsc`, `eslint`, limpieza de los datos de
+  prueba y reimportación con el modelo corregido. Route: inline. Spec: S27.
+  Status: hecho (ver L40); la red social queda declarada como aproximación.
+
+Route declaration: todas las tareas de esta sesión son `inline` — no hay unidades
+independientes en paralelo ni presión de contexto que justifiquen un writer.
+
+## Log
+
+### L1 — Pedido original (verbatim)
+
+> el proposito de la creacion de la nueva page @app/(protected)/dashboard/monthly-report-management/ es automatizar el proceso creacion de informes mensuales en mi empresa, te doy mas detalles, soy epspecialist en seguridad informatica en mi empresa, y todos los meses tengo que enviar un informe (docuemnto pdf), que muestra datos de las trazas de navegacion de los usuarios a traves de squid proxy que esta implementado en un server de la empresa, entonces, quiero automatizarlo para no tener que hacerlo manual, el informe debe llenarse con los datos que el usuario (yo-especialista en seguridad informatica) importa en el sistema, entonces por otro lado tengo emplementado en un server de la empresa , graylog, el cual recibe los logs de squid, y tengo configurado en el servidor un srcip y un cron para que guarde en un directorio, los logs nativos que graylog recibe y procesa, se crea un arvhivo por dia en ese directorio, entonces necesito que me ayudes a crear un plan para implementar esot, que opinas, no modifiques nada, solo estamos en una etapa de planificacion
+
+### L2 — Corrección de identidad (verbatim)
+
+> los usuarios se autentican en el proxy a traves de los usuarios de addc en windows server 2022 de mi empresa, por lo tanto en los logs si estan los nombres de usuario
+
+Efecto: elimina la tabla IP→usuario del diseño (S8).
+
+### L3 — Evidencia del informe vigente
+
+Se analizó `IM EE Matanzas mayo 2026.docx`. Hallazgo: la sección 1 son tablas
+con columnas `Hits`, `Incoming (MB)`, `Outgoing (MB)`, `Download Time (h:m:s)`,
+`Browsing Time (h:m:s)`, `% of Hits`, más drill-down por sitio. Consecuencia: el
+objetivo no es inventar un formato sino reproducir métricas (S2) y validar
+paridad (S11).
+
+_La atribución de esas tablas a SARG que figuraba en esta entrada era
+incorrecta; la herramienta real es WebSpy Giga Analyzer (ver L9)._
+
+Evidencia de que `Browsing Time` no es tiempo de reloj: la cuenta `red.social2`
+acumula `726:14:18` en un mes de 720 horas; los tiempos por sitio de un usuario
+no suman su total. Por eso S12.
+
+### L4 — Corrección de cuentas (verbatim)
+
+> una politica de la empresa es que las cuents son personales, es decir no existe en teoria cuentas comaprtidas porque cada usuario tiene una
+
+Efecto: sin `kind` compartido/servicio en el registro de cuentas (S9).
+
+### L5 — Alcance del documento (verbatim)
+
+> apunta desde el principio al documento completo para evitar pegado manual aunque las secciones fuera del alcance se deben mantener vacias
+
+Efecto: S6.
+
+### L6 — Autorización de implementación
+
+> adelante con la implementacion entonces
+
+### L7 — Decisiones técnicas tomadas
+
+- El parser interpreta columnas por posición declarada, con el logformat
+  estándar de Squid (`squid`) como default. Cambiar el orden es configuración,
+  no reescritura: no se codifica contra un formato adivinado.
+- Se descarta regex en las reglas de categoría (riesgo de ReDoS); se usan
+  `DOMAIN`, `SUFFIX` y `CONTAINS`.
+- La agregación es por día local y luego rollup; nunca se persisten líneas
+  crudas (130 M/mes estimados a partir de `% of Hits` del informe).
+- `Browsing Time` se acumula por par (sitio, usuario) en orden cronológico con
+  umbral de corte configurable; el total por usuario es la suma de sus pares,
+  que es lo que explica los valores mayores a 720 h.
+
+### L8 — Evidencia de esta sesión
+
+Implementado y verificado:
+
+- `lib/reports/format.ts` + test: reproduce los valores del documento
+  (`129,351`, `3,676.86`, `699:52:18`, `0.1%`, `0.0%`).
+- `lib/reports/time.ts` + test: el corte de día se hace en `America/Havana`;
+  el 2026-05-01T03:00Z cae en `2026-04-30`.
+- `lib/reports/parser/squid-log.ts` + test: logformat declarado por columnas;
+  un orden distinto al archivo rechaza las líneas en vez de interpretarlas mal;
+  las líneas en blanco no cuentan y las inválidas se contabilizan.
+- `lib/reports/classify/site.ts` + test: `CONNECT host:port`, IPv6, `.cu` con
+  exclusiones por etiqueta completa (`notune.cu` no coincide con `une.cu`).
+- `lib/reports/rules/matcher.ts` + test: `DOMAIN`/`SUFFIX`/`CONTAINS`, sin regex.
+- `lib/reports/metrics/aggregate.ts` + test: hits, bytes, elapsed, browsing por
+  par (sitio, usuario) con umbral de corte, y subidas por método.
+- `prisma/schema.prisma` + migración `20261024120000_add_monthly_reports`:
+  8 tablas nuevas, sin `ALTER` ni `DROP` sobre tablas existentes.
+
+Verificación: `pnpm test` 86/86 en 10 archivos; `tsc --noEmit` sin errores.
+
+Pendiente y bloqueado:
+
+- `Browsing Time` sigue sin calibrar contra WebSpy (S12). El default de 30 minutos
+  es una hipótesis, no una verdad medida.
+- El logformat es el estándar de Squid por default; confirmar contra el archivo
+  real antes de la T9.
+- La migración no se aplicó (mutación de base de datos, decisión del usuario):
+  `pnpm exec prisma migrate deploy`.
+- El cambio sin commitear en `layout.tsx` es del usuario y no se tocó.
+
+### L9 — Corrección: la herramienta es WebSpy Giga Analyzer (verbatim)
+
+> aclaracion importante, las columnas no provienen de SARG, sino de WebSpay Giga Analizer, detallo el flujo actual que tengo, importo los logs en la herramienta webspy, de ahi genero los informes para cada tabla que el informe oficial que te proporcione requiere, entonces de los informes generados por webspy copio y pego en ese informe oficial, dime si entendiste
+
+Flujo real: logs de Squid → importación en WebSpy → un informe por tabla →
+copiar y pegar en el documento oficial.
+
+Efecto sobre el plan:
+
+- **S2 y S12 se reescriben**: la referencia de paridad es WebSpy, no SARG.
+- **Gate 0 cambia dos artefactos**: el perfil de importación de WebSpy (orden de
+  campos con que interpreta el log) en lugar de `sarg.conf`, y los informes de
+  mayo exportados de WebSpy en lugar de su salida HTML.
+- **El motor no cambia de estructura**: parser configurable, contrato de formato
+  y agregación siguen siendo válidos. Cambia contra qué se calibra, no el diseño.
+- **Queda registrado** que el mensaje del commit `58ac620` dice "semantica de
+  SARG"; la atribución correcta es WebSpy. El historial no se reescribe.
+
+### L10 — Fragmento real de log y verificación aritmética del documento
+
+Fragmento aportado: 12 líneas, y **dos formas de registro**:
+
+- 11 líneas con el logformat de 10 campos.
+- 1 CONNECT de 8 campos (`... CONNECT github.com:443 - HIER_DIRECT/140.82.114.4 -`),
+  que el parser rechazaba a propósito.
+
+La decisión fue declarar la variante en lugar de aflojar la validación: se acepta
+solo cuando la cantidad de campos no coincide, se cuenta aparte y entra con
+`bytes: 0`, porque el archivo no trae tamaño para esos túneles. Implementado en
+`8de35b6`. El fragmento quedó como fixture
+(`lib/reports/parser/fixtures/squid-access-sample.log`) y el pipeline completo se
+prueba sobre él: 12/12 válidas, 0 inválidas, 1 variante CONNECT, 52,780 bytes,
+11,247 ms de `elapsed`, 10 hits sin cuenta.
+
+El campo de jerarquía llega como `HIER_DIRECT` / `HIER_NONE`, no `DIRECT` /
+`NONE`. Se conserva tal cual: no se interpreta.
+
+#### Verificación aritmética del documento vigente
+
+1. **El drill-down ordena por Browsing Time, no por hits.** En `www.youtube.com`,
+   `infojovellanos` (6,522 hits) va antes que `brian` (7,002 hits) porque navegó
+   más tiempo (33:25:00 contra 30:43:34).
+
+2. **"Los 10 usuarios que más descargaron" tampoco ordena por descarga.**
+   `red.social2` (47,321.10 MB) aparece antes que `amaury` (604,006.72 MB). El
+   orden real es Browsing Time descendente.
+
+3. **`% of Browsing Time` usa dos denominadores distintos.** En el drill-down es
+   el tiempo del sitio; en la tabla de top usuarios es el tiempo total del mes.
+   En `www.facebook.com` el drill-down cierra **al segundo**: el total de la tabla
+   de sitios `146:16:38` = 526,598 s, y `marketing` 110,074 / 526,598 = 20.9%. Las
+   diez filas se reproducen exactas en el test dorado de
+   `lib/reports/assembly/section-traces.test.ts`.
+
+4. **Inconsistencia real en el documento vigente.** En youtube, bing e instagram
+   los porcentajes del drill-down no cierran contra el Browsing Time impreso en
+   la tabla de sitios:
+
+   | Sitio | Browsing del sitio | Cálculo directo | Impreso | Denominador implicado |
+   |---|---|---|---|---|
+   | www.facebook.com | 146:16:38 | 20.9% | 20.9% ✓ | 146:16:38 |
+   | www.youtube.com | 266:34:32 | 12.5% | 15.4% | 216:59:29 |
+   | www.bing.com | 53:56:25 | 14.7% | 21.1% | 37:29:13 |
+   | www.instagram.com | 157:52:37 | 12.1% | 46.5% | 40:56:27 |
+
+   Hipótesis que explica los cuatro casos: el denominador del drill-down es el
+   tiempo del sitio **atribuido a cuentas identificadas**, mientras que el valor
+   de la tabla de sitios incluye tráfico sin autenticar (los túneles CONNECT
+   anónimos, como la línea 5 del fragmento). Facebook es un sitio con login, no
+   tiene anónimo, y por eso coincide exacto.
+
+   **No confirmado.** Sin la exportación de WebSpy no se puede verificar. Queda
+   como pregunta abierta **R2** y la resuelve el gate de paridad. De ahí S15 y
+   S17: el recorte a 10 filas va al renderizar, nunca al persistir, porque
+   truncar al persistir rompe el denominador.
+
+5. **`% of Hits` es consistente con un total mensual de ~91.3M hits.** Con ese
+   total, youtube 129,351 da 0.1% y picta.cu 639,073 da 0.7%, ambos impresos.
+
+6. El documento trae una anotación manual antes de la tabla nacional
+   (`{excluir páginas web alojadas en servidores del Organismo. (UNE, MINEM, DNC)`).
+   No es contenido generado: no se emite, pero la regla queda registrada como
+   exclusión configurable (S4).
+
+#### Pendiente
+
+- R2 resuelta en L11.
+- Calibrar los dos relojes de `Browsing Time` (S12) contra los exports: los
+  valores objetivo ya existen, falta el `access.log` completo.
+- Decidir el rango del período (R3, S19).
+- La ingesta (T9) sigue bloqueada: `db.prisma.io` no es alcanzable desde este
+  equipo, así que no hay forma de verificar escrituras contra una base real.
+
+### L11 — Exportaciones de WebSpy: R2 resuelta y dos hallazgos nuevos
+
+El usuario aportó las exportaciones del informe de mayo (WordML con extensión
+`.doc`): `2026-06-04 Sites Export.doc` y siete `Users Export(...)` (bing, cd4o,
+facebook, fbsbx, instagram, kimi, mediafire).
+
+#### 1. R2 confirmada: el denominador del drill-down es la suma de los usuarios
+
+Cada export de usuarios trae una fila `Total` con el `Browsing Time` completo del
+sitio, y los porcentajes de las filas cierran contra **ese** total, no contra el
+`Browsing Time` de la tabla de sitios:
+
+| Sitio | `%` del primer usuario | Denominador implicado | `Total` del export de usuarios | Tabla de sitios |
+|---|---|---|---|---|
+| www.bing.com | 21.1% (`dtor.fre`) | 134,953 s | **134,715 s** ✓ | 194,185 s |
+| www.instagram.com | 46.5% | 147,387 s | **147,539 s** ✓ | 568,357 s |
+| www.facebook.com | 20.9% (`marketing`) | 526,670 s | **527,631 s** ✓ | 526,598 s |
+
+Los tres coinciden dentro del redondeo a un decimal. La hipótesis de L10 era
+correcta en el denominador, pero su explicación no: no se trata de tráfico
+anónimo. En bing los hits del export de usuarios (`12,574`) son **exactamente**
+los de la tabla de sitios, o sea que todo el tráfico está atribuido a las 45
+cuentas, y aun así el `Browsing Time` difiere: `37:25:15` contra `53:56:25`.
+
+#### 2. Hallazgo nuevo: el `Browsing Time` del sitio no es la suma de sus usuarios
+
+Es una **segunda métrica distinta**, no la misma agregada de otra forma:
+
+| Sitio | Browsing del sitio | Suma de sus usuarios | Cociente |
+|---|---|---|---|
+| www.facebook.com | 526,598 s | 527,631 s | 0.998 |
+| www.youtube.com | 959,672 s | 781,169 s | 1.23 |
+| www.bing.com | 194,185 s | 134,715 s | 1.44 |
+| www.instagram.com | 568,357 s | 147,539 s | 3.85 |
+
+Y la relación no puede ser "el sitio incluye anónimos": la suma por usuario es
+**mayor** que el sitio en facebook. Eso es consistente con relojes paralelos
+—cada usuario acumula su propio hueco, y los huecos de usuarios simultáneos se
+solapan—, mientras que el reloj del sitio ve un solo flujo de marcas de tiempo.
+El cociente desigual en bing e instagram indica además que WebSpy no usa el mismo
+umbral en los dos niveles.
+
+Consecuencia: el código calculaba el `Browsing Time` del sitio sumando los pares.
+Era incorrecto. Ahora hay dos acumuladores independientes
+(`siteBrowsingGapMs` y `browsingGapMs`), con tests que prueban que divergen
+(`aggregate.test.ts`: 20 min del sitio contra 30 min de los pares para el mismo
+tráfico). El algoritmo exacto de WebSpy sigue sin reproducirse: queda como R1.
+
+#### 3. Hallazgo nuevo: el "mes de mayo" cubre 32 días
+
+```
+Export of a drilldown by Organization
+Date range: 30/04/2026 - 31/05/2026 (32 days)
+WebSpy Analyzer Giga 2.3
+```
+
+El informe vigente incluye el **30 de abril**. Consecuencias:
+
+- Para reproducir sus números hay que importar también el log del 30/04.
+- Mi cobertura por `daysInMonth` (31 días) marcaría ese día como faltante.
+- Puede ser deliberado (capturar el tráfico de la noche del 30) o un error de
+  configuración del rango en WebSpy. No lo decido yo: queda como R3 y el rango
+  pasa a ser un parámetro explícito (S19).
+
+#### 4. Los exports están truncados y el `% of Hits` no es sobre la suma de sitios
+
+- `1. 723 of 12,119 Sites`: el export de sitios muestra 723 de 12,119 sitios.
+- Los exports de usuarios también truncan: bing muestra 36 de 45 usuarios,
+  instagram 46 de 59, facebook 94 de 103. La fila `Total` sí es completa.
+- La fila `Total` del export de sitios suma `1,097,316` hits y marca `1.2%`. Si
+  el `%` fuera sobre la suma de los sitios listados, esa fila diría 100%.
+  El denominador del `% of Hits` es entonces **todo el tráfico del período**
+  (~88–95M hits según el redondeo), no la suma de los sitios: los 723 sitios
+  listados apenas cubren el 1.2%.
+
+  Esto confirma que el denominador correcto de `% of Hits` es el total de líneas
+  procesadas —incluidas las que no se resuelven a ningún sitio—, que es lo que el
+  acumulador ya usa (`totalHits`).
+
+- Los dos exports (sitios a las 10:24, usuarios a las 17:31–18:00) coinciden
+  exactamente en hits, MB y `Download Time` de cada sitio, así que la diferencia
+  de `Browsing Time` no es una diferencia de datos ni de momento de exportación.
+
+#### Verificación de esta entrada
+
+`pnpm exec vitest run lib/reports`: 74 tests, 9 archivos, en verde.
+`pnpm exec tsc --noEmit`: sin errores.
+
+### L12 — Decisión del período: mes calendario (verbatim)
+
+> claro, los logs que se van a importar seran los del correspondiente mes que se
+> importe en el sistema, dime si esto responde a tu pregunta anterior
+
+Respuesta: sí, cierra R3. El período es el mes calendario del mes que se importa,
+de `01` al último día, en `America/Havana`. No se reproduce el rango histórico de
+32 días.
+
+#### Consecuencia que hay que tener presente
+
+El informe de mayo que sirve de oráculo cubre `30/04 - 31/05`. Con un período de
+31 días, **la paridad exacta contra ese documento no es alcanzable**: todo sitio
+con tráfico el 30/04 va a quedar por debajo, y no se puede saber cuánto sin el
+log de ese día.
+
+El gate de paridad (S11) no se debilita: se reemplaza el oráculo. Para comparar
+hay que volver a exportar mayo desde WebSpy con rango `01/05/2026 - 31/05/2026`;
+ese export sí tiene la misma ventana que el motor. Mientras no exista, la
+comparación es contra un documento que mide otra cosa.
+
+Corolario operativo: si el import mensual incluye el archivo del 30/04 —el cron
+crea un archivo por día y puede quedar el del día anterior en el directorio— el
+sistema lo declara como día ajeno al período (`extraDays`) en vez de sumarlo.
+
+#### Implementado
+
+`monthlyPeriod(year, month)` declara inicio, fin y días esperados;
+`checkCoverage(period, presentDays)` devuelve días faltantes y días ajenos al
+período. Tests: 5 nuevos, incluido el caso del 30/04 clasificado como ajeno.
+`pnpm exec vitest run lib/reports`: 79 tests, 9 archivos, en verde.
+`pnpm exec tsc --noEmit`: sin errores.
+
+### L13 — Estructura real del `.docx` y selección de sitios
+
+Se inspeccionó el documento vigente (`IM EE Matanzas mayo 2026.docx`): 22 tablas
+en total, con 13 en la sección de trazas.
+
+| Tabla | Contenido |
+|---|---|
+| T04 | sitios internacionales, 7 columnas, 10 filas |
+| T05–T14 | 10 drill-downs de usuario, 6 columnas |
+| T15 | "Los 10 usuarios que más descargaron", 7 columnas |
+| T16 | sitios nacionales, 7 columnas, 10 filas |
+
+#### 1. Dos drill-downs miden otra cosa
+
+`www.clarity.ms` (T13) y `www.windy.com` (T14) traen la cabecera `% of Hits` y sus
+porcentajes son de hits, no de tiempo:
+
+| Sitio | Usuario | Hits | `%` impreso | Cálculo | `%` por browsing |
+|---|---|---|---|---|---|
+| clarity.ms | amaury | 68 | 11.0% | 68/618 = 11.0% ✓ | 00:28:07 de 01:36:18 = 29.2% |
+| windy.com | liudmila | 113 | 23.3% | 113/486 = 23.3% ✓ | 00:01:26 de 00:33:23 = 4.3% |
+
+También cambia el orden: esas dos tablas van por hits descendente, no por
+`Browsing Time`. Los otros ocho drill-downs van por tiempo y con `% of Browsing
+Time`. Es una inconsistencia de origen —parecen exportes de otro tipo de reporte
+de WebSpy—, no una decisión de diseño.
+
+**R4 (abierta):** ¿se reproduce tal cual, como pide "indistinguible del original",
+o se normaliza a `Browsing Time` como las otras ocho? Recomendación: normalizar,
+porque dos tablas del mismo tipo no pueden medir cosas distintas en un informe
+oficial. No se decide sin el usuario.
+
+#### 2. La selección de los 10 sitios no se puede deducir
+
+La tabla internacional (T04) **no** es el top 10 por hits ni por browsing:
+
+- Por hits, 14 sitios internacionales superan al último del informe (`windy.com`,
+  486 hits) y ninguno aparece: `google.com` (90,921), `msftconnecttest.com`
+  (34,124), `google-analytics.com` (28,440), `googletagmanager.com` (20,519),
+  `gstatic.com` (10,749), `msftncsi.com` (7,673), `googleadservices.com` (3,477),
+  `googleapis.com` (2,758), `internetdownloadmanager.com` (1,903), `amazon.com`
+  (1,340), `temu.com` (1,315), `microsoft.com` (1,193),
+  `download.windowsupdate.com` (1,060), `usgs.gov` (773).
+- Por `Browsing Time` el orden sería youtube, google, instagram, facebook,
+  msftconnecttest, googletagmanager, gstatic, google-analytics, bing,
+  googleadservices — tampoco coincide.
+- La tabla nacional omite `google.com.cu` (13,323 hits), que supera a todos
+  menos a `picta.cu`.
+
+No hay regla de categoría que explique la lista: `clarity.ms` es analítica y
+`google-analytics.com` no; `kimi.com` y `mediafire.com` entran y `amazon.com` no.
+Es **una elección manual del especialista**.
+
+Consecuencia de diseño (S20): la selección de sitios de las dos tablas es un
+dato explícito del informe, no un cálculo. El sistema puede proponer un top por
+hits, pero la lista final la confirma el especialista. Sin esto, el informe
+automatizado mostraría `msftconnecttest` en lugar de `kimi`.
+
+#### 3. Los exports aportados cubren 7 de los 10 drill-downs
+
+Faltan `www.clarity.ms` y `www.windy.com`... y sobra uno: los aportados son bing,
+cd4o, facebook, fbsbx, instagram, kimi y mediafire (7). Para recalibrar hay que
+pedir los 10 con el rango `01/05 - 31/05`, incluidos clarity.ms y windy.
+
+#### Pendiente del período
+
+Nada de esto depende del export: la plantilla, el render y la ingesta no lo
+necesitan. Solo la paridad numérica lo necesita.
+
+### L14 — Paridad y calibración ajustadas sin el export corregido
+
+Decisión del usuario: ajustar ambas con lo disponible y corregir después si hace
+falta, para no frenar el resto.
+
+#### Paridad: se separa en dos niveles
+
+- **Nivel 1, verificado hoy**: formato, orden y denominador contra los siete
+  exports de usuarios disponibles. El fixture `lib/reports/parity/exports.fixture.ts`
+  guarda hits, bytes, tiempos y porcentajes tal como los publicó WebSpy, sin los
+  nombres de usuario; se contrastó fila por fila contra el documento oficial y dio
+  **cero diferencias**. Los siete sitios se reproducen exactos, incluidos los
+  órdenes con empate en cero (`kimi`, `fbsbx`).
+- **Nivel 2, pendiente**: que el motor calcule esas filas desde el `access.log`.
+  Es lo que necesita el log del mismo período y lo que queda para el lunes.
+
+Esto es más estricto que el test dorado anterior, que solo cubría facebook: ahora
+hay siete sitios y el denominador está probado contra la fila `Total` real.
+
+#### Calibración: se construyó el instrumento, no se adivinó el número
+
+`lib/reports/parity/calibrate.ts` recibe registros y tiempos publicados, y barre
+umbrales de 5 a 120 minutos devolviendo el error de cada uno. Reusa
+`DailyMetricsAccumulator`, así que calibra exactamente el código de producción.
+
+Propiedad que documenta el test: el umbral **no siempre es identificable**. Con
+huecos de 20, 30 y 45 minutos, cualquier umbral entre 30 y 40 reproduce el mismo
+total; la calibración devuelve el rango, no un valor único. Inventar un número
+exacto sería mentir.
+
+El valor por defecto sigue en 30 minutos y sigue declarado como hipótesis hasta
+que la calibración corra contra el log real.
+
+#### Lo que no se tocó
+
+El umbral del sitio (`siteBrowsingGapMs`) no tiene objetivos publicados por
+usuario del sitio, solo el total; se calibrará después del primero.
+
+`pnpm exec vitest run lib/reports`: 90 tests, 11 archivos, en verde.
+`pnpm exec tsc --noEmit`: sin errores.
+
+### L15 — Reemplazo de tablas sobre el documento real
+
+Se implementó `lib/reports/document/table-xml.ts`: reemplaza las filas de datos de
+una tabla de `document.xml` **clonando la fila molde del propio documento**. No se
+reconstruye el formato y no se agrega un parser XML ni una dependencia: se heredan
+bordes, anchos, fuentes y alineación del original.
+
+#### Verificación de identidad sobre el documento oficial
+
+Se tomó el `.docx` vigente, se reemplazó la tabla 4 (sitios internacionales) con
+**los mismos diez valores** que ya tenía, se volvió a comprimir y se convirtió a
+PDF con LibreOffice:
+
+| Comprobación | Resultado |
+|---|---|
+| `soffice` abre y convierte el `.docx` modificado | sí, 11 páginas |
+| Tamaño del PDF | 554,474 bytes, idéntico al original convertido |
+| Texto extraído (`pdftotext -layout`) | `diff` sin diferencias, 495 líneas |
+| Cabecera de la tabla | intacta |
+| Ancho de columna | igual: `www.instagram.com` se parte igual que en el original |
+
+Que el texto sea idéntico byte a byte prueba que el clonado no altera el
+contenido ni el orden de las celdas. Que el ancho y los saltos coincidan prueba
+que tampoco altera el formato.
+
+`pnpm exec vitest run lib/reports`: 98 tests, 12 archivos, en verde.
+`pnpm exec tsc --noEmit`: sin errores.
+
+### L16 — R4 resuelta: los diez drill-downs se normalizan (verbatim)
+
+> normalizalos todos a Users
+> Hits
+> Incoming (MB)
+> Download Time (h:m:s)
+> Browsing Time (h:m:s)
+> % of Browsing Time (h:m:s)
+
+Los diez drill-downs quedan con esa cabecera y con `% of Browsing Time` calculado
+sobre el total de usuarios del sitio. Se descarta reproducir la variante por hits
+de `clarity.ms` y `windy.com`. Queda registrado como S21.
+
+Consecuencia: en el informe de junio esas dos tablas van a diferir del informe de
+mayo en el orden y en el porcentaje. Es una corrección deliberada, no una
+regresión.
+
+Consecuencia operativa para el lunes: los exports de `clarity.ms` y `windy.com`
+tienen que ser de tipo *Users by Browsing Time*, no *by hits*; si vienen del
+segundo tipo no sirven para la paridad.
+
+Guardas agregadas: la cabecera está congelada por test y cada fila emite
+exactamente seis columnas en ese orden.
+
+### L17 — Selección explícita de sitios y modelo mensual
+
+#### La selección dejó de calcularse
+
+`buildTracesSection` filtraba por clasificación y cortaba en un top 10 por hits:
+eso es exactamente lo que S20 prohíbe, porque el documento vigente no es el top
+por hits (`google.com` tiene 90,921 hits y no aparece; `kimi.com` entra con
+2,731). Ahora la selección es un parámetro obligatorio:
+
+```ts
+selection: { international: string[]; national: string[]; drilldowns: string[] }
+```
+
+`proposeSiteSelection` sigue existiendo como punto de partida —el top por hits de
+cada clasificación—, pero no es un default: un default silencioso volvería a
+calcular la selección. La tabla se ordena por hits descendente, que es el orden
+verificado del documento; la selección decide **qué** entra, no en qué orden se
+imprime. El drill-down sí respeta el orden declarado porque es una lista aparte.
+
+Guardas: un sitio seleccionado sin tráfico falla con el nombre en el mensaje en
+vez de emitir una tabla incompleta; un sitio nacional declarado en la tabla
+internacional falla en vez de imprimirse en la tabla equivocada.
+
+#### Modelo mensual
+
+`lib/reports/model/monthly.ts` une los días ya agregados y arma el informe:
+
+- `mergeDailyMetrics` suma usuarios, sitios y pares, y **rechaza un día repetido**
+  en vez de duplicar métricas: reimportar un archivo es idempotente o es un error,
+  nunca el doble de hits.
+- `buildMonthlyReport` filtra al período, declara días faltantes, días ajenos y
+  hits sin cuenta, y arma la sección 1 con la selección recibida.
+- El denominador del top de usuarios excluye la cuenta sin identificar: la tabla
+  ya la excluye y el porcentaje tiene que medir sobre el mismo conjunto.
+
+Declaraciones del informe: `browsingTimeApproximate` (verdadero hasta que los dos
+relojes se calibren contra WebSpy) e `incompleteCoverage` (hay días faltantes y el
+informe no puede aprobarse sin declararlo, S7).
+
+Límite conocido: el `Browsing Time` se acumula por día, así que una sesión que
+cruza la medianoche local se corta en el cambio de día. Es parte de la
+aproximación que el informe declara.
+
+#### Verificación
+
+`pnpm exec vitest run lib/reports`: 113 tests, 13 archivos, en verde.
+`pnpm exec tsc --noEmit`: sin errores.
+
+Disciplina de test: el test del modelo se escribió después de la implementación.
+Al correrlo falló por una expectativa mía sobre el formato de horas
+(`1:00:00` contra `01:00:00`), que es el comportamiento correcto de
+`formatDuration`; el test se corrigió, no el código.
+
+### L18 — S20 cambia: "sitios más visitados" se define por Browsing Time
+
+> la regla del browsing time, deja de tener como oraculo, pues al parece tiene
+> inonsistencias
+>
+> la regla del browsing time para de los De los sitios más visitados, los 10
+> usuarios que más accedieron a cada uno de estos sitios., deja de tener como
+> oraculo, pues al parece tiene inonsistencias
+
+#### Qué se verificó antes de cambiar la regla
+
+Se abrieron los archivos reales (`~/Documentos/Informes mensuales/Mayo/`) y se
+comparó el `Sites Export` (30/04–31/05/2026, 724 filas) contra el `.docx` de 22
+tablas.
+
+- El título de T05 dice literal "De los sitios más visitados, los 10 usuarios
+  que más accedieron a cada uno de estos sitios", y T05–T14 corresponden a los
+  10 sitios de T04, en el mismo orden. Esa relación queda confirmada.
+- El top 10 internacional por `Browsing Time` del export es: youtube
+  (266:34:32), google (231:39:24), instagram (157:52:37), facebook (146:16:38),
+  msftconnecttest (117:07:47), googletagmanager (95:05:11), gstatic (91:46:48),
+  google-analytics (80:37:21), bing (53:56:25), googleadservices (49:02:17).
+- Los 10 sitios del documento están en la posición #1, #4, #9, #3, #12, #14,
+  #15, #38, #35 y #54 de 651 internacionales. Solo 4 coinciden con el top por
+  tiempo; 6 están fuera.
+- El orden de T04 es hits descendente, no `Browsing Time`: instagram
+  (157:52:37) aparece después de bing (53:56:25).
+- El propio documento trae anotaciones manuales "**Filtrar por 'Hits'" antes de
+  T04 y antes de T16, que contradicen la regla del `Browsing Time`.
+
+Conclusión: el documento de mayo mezcla criterios. Se deja de usar como oráculo
+de esa tabla y manda la regla.
+
+#### Qué cambió
+
+- `selectMostVisitedSites` reemplaza a `proposeSiteSelection`: top `limit` por
+  `Browsing Time` descendente (empates por hits y después por nombre). Ya no es
+  una propuesta.
+- `buildSiteTableRows` recibe `order: "browsing" | "hits"`. La tabla
+  internacional usa `browsing`; la nacional conserva `hits`, que es como está
+  impresa y no fue parte de la decisión.
+- `buildTracesSection` deriva la tabla internacional del top 10 por tiempo y
+  arma los drill-downs con **esos mismos sitios, en ese orden**. Acepta
+  `internationalSites` como override explícito; la lista nacional sigue siendo
+  obligatoria (`nationalSites`).
+- `buildMonthlyReport` recibe `nationalSites` (y `internationalSites` opcional)
+  en lugar de `SiteSelection`.
+
+Lo que **no** cambia: el `% of Browsing Time` del drill-down sigue dividiendo
+sobre el total de usuarios del sitio (S15) y el top de usuarios sigue por tiempo
+(S16). La tabla nacional no se toca.
+
+#### Verificación
+
+**No ejecutada.** `node_modules` existe pero está vacío (0 paquetes), así que
+`pnpm exec vitest` falla con "vitest not found" y `tsc` tampoco está disponible.
+Los tests se actualizaron y se escribieron antes del cambio, pero no se observó
+RED ni GREEN en esta sesión. No se declara el cambio verificado.
+
+### L19 — Corrección: las tablas de sitios se calculan por hits (verbatim)
+
+> nono, no puede ser declarada, la tiene que calcular el sistema y si es por
+> hits, al igual que las internacionales mas visitadas es por hits y no es
+> declarada, ademas de esto hay algo mas declarado?
+
+#### Qué se corrige
+
+L18 leyó mal el alcance del `Browsing Time`. La regla de tiempo aplica a la
+sección "De los sitios más visitados, los 10 usuarios que más accedieron a cada
+uno de estos sitios" — es decir, a **los usuarios dentro de cada drill-down**,
+que es donde el documento divide por `% of Browsing Time` (S15/S16/S21). No
+aplica a la selección de sitios.
+
+Las dos tablas de sitios son top 10 **por hits**, calculadas por el sistema:
+
+- internacional: top 10 por hits, sin lista declarada;
+- nacional: top 10 por hits, sin lista declarada, aplicando las exclusiones
+  institucionales (S4);
+- los drill-downs siguen siendo los sitios de la tabla internacional, en ese
+  orden.
+
+Esto además es coherente con el documento vigente: T04 y T16 están ordenadas por
+hits y llevan la anotación manual "**Filtrar por 'Hits'**". Lo que el documento
+de mayo no respeta es la *regla de selección* (su top internacional no coincide
+con el top 10 por hits), y por eso se deja de usar como oráculo de la lista.
+
+#### Qué cambió en el código
+
+- `selectMostVisitedSites` (S20 de L18) se reemplaza por `selectTopSites`, que
+  devuelve el top `limit` por hits descendente, con empate por nombre.
+- `buildSiteTableRows` vuelve a `(sites, totalHits, limit)` y ordena siempre por
+  hits; desaparece la opción `order`.
+- `buildTracesSection` calcula **las dos** tablas con `selectTopSites` y sigue
+  atando los drill-downs a la tabla internacional. Se elimina `selectSites` y
+  sus dos errores ("sin tráfico", "clasificación"): con listas derivadas no hay
+  nada que validar contra una entrada externa.
+- `buildMonthlyReport` pierde `nationalSites` e `internationalSites`; ya no hay
+  selección declarada en la entrada del modelo.
+
+#### Consecuencia esperada para junio 2026
+
+Con la regla, la tabla internacional de junio será: youtube (129,351), google
+(90,921), msftconnecttest (34,124), google-analytics (28,440), facebook
+(27,248), googletagmanager (20,519), bing (12,574), gstatic (10,749),
+msftncsi (7,673), instagram (7,341). La nacional: picta.cu (639,073),
+cubadebate.cu (16,727), google.com.cu (13,323), bandec.cu (7,741),
+segurmatica.cu (4,470), tvcubana.icrt.cu (1,398), trabajadores.cu (1,339),
+granma.cu (473), insmet.cu (461), bc.gob.cu (399). Difieren del documento de
+mayo; es el resultado de aplicar la regla, no un defecto.
+
+#### Verificación
+
+Igual que L18: **no ejecutada** fuera del shim. `node_modules` está vacío, así
+que no corren `vitest` ni `tsc`. Los tres archivos de test actualizados
+(`section-traces.test.ts`, `monthly.test.ts`, `parity/exports.test.ts`) pasan
+bajo el shim temporal en `/tmp/opencode/reports-check`, y un smoke end-to-end
+verificó: top por hits, corte en 10, dos tablas calculadas, drill-downs atados a
+la internacional y exclusiones institucionales. Eso **no** es la suite oficial y
+no se declara verificado.
+
+### L20 — Contenedor `.docx` y emisión de la sección 1
+
+#### Qué se hizo
+
+- `zip.ts`: lector y escritor ZIP sobre `node:zlib` (`inflateRawSync` /
+  `deflateRawSync`) con CRC-32 propio. Sin dependencias nuevas: el mismo criterio
+  que `table-xml.ts` con el parser XML.
+- `docx.ts`: `readDocumentXml` y `replaceDocumentXml`; reescriben una sola parte y
+  dejan las otras 26 intactas.
+- `table-xml.ts` gana las operaciones que faltaban: `replaceTableHeaderRow`,
+  `setTableHeading`, `removeTableWithHeading`, `copyTableGrid` y
+  `readTableHeader`.
+- `emit.ts`: `emitTracesSection(documentXml, traces)` con el mapa de tablas
+  explícito — 4 internacional, 5–14 drill-downs, 15 usuarios, 16 nacional. Si la
+  selección trae más de diez drill-downs falla: la plantilla tiene diez ranuras y
+  clonar tablas enteras no está implementado.
+
+#### Dos defectos de formato encontrados y corregidos
+
+1. **Anchos de columna.** `clarity.ms` y `windy.com` vienen exportados por hits:
+   su última columna mide 875 twips contra 2255 en las otras ocho. Cambiar solo el
+   texto parte la cabecera en cuatro líneas, la tabla crece y corre la paginación
+   de todo lo que sigue. Solo esas dos tablas adoptan el `tblGrid` de la primera;
+   las otras ocho conservan el suyo, porque copiarlo a todas angostaba la columna
+   `Hits` de bing y partía `912` en dos líneas.
+2. **Zebra y borde inferior.** Las filas alternan `cnfStyle` (banda impar / banda
+   par) y la última lleva `lastRow`, que es lo que dibuja el borde inferior.
+   Clonar siempre la primera fila pintaba todas iguales y perdía el borde. Ahora
+   se alternan dos moldes y el último renglón se clona de la última fila original.
+
+#### Verificación
+
+- Ida y vuelta del contenedor: 27 partes, 0 faltantes, 0 sobrantes, 0 con bytes
+  distintos; PDF de 554,474 bytes y 495 líneas de texto idénticas al original.
+- Emisión con los valores de mayo sobre el documento de mayo: 11 páginas en ambos.
+  Comparación por píxeles a 100 dpi: páginas 1-3 y 7-11 idénticas; 4-6 difieren
+  solo en las dos cabeceras normalizadas y en el ancho que eso impone a la columna
+  de usuarios (`infojovellano` se parte igual que en las otras ocho tablas).
+- Suite: 126 tests en 15 archivos; `tsc --noEmit` limpio.
+
+#### De paso
+
+S20 citaba `S22`, que entonces no existía: las exclusiones institucionales están
+en S4. Corregido en las dos referencias. (`S22` se usa hoy para los campos del
+período, ver L22.)
+
+#### Lo que no se tocó
+
+`.npmrc` y `pnpm-workspace.yaml` traen cambios del entorno de instalación y no se
+commitean acá. `layout.tsx` sigue con el cambio pendiente del usuario.
+
+### L21 — Secciones 2-7: se conservan las etiquetas (verbatim)
+
+#### La decisión
+
+S6 dice "presentes y vacías: encabezado, numeración, tablas con sus cabeceras,
+celdas sin contenido". La lectura literal vacía también las etiquetas de plantilla
+("Cantidad de Usuarios Autorizados:", "Medidas tomadas:"), y el especialista
+tendría que reescribirlas cada mes. Se preguntó y la respuesta fue:
+
+> Conservar etiquetas, vaciar valores
+
+#### La regla
+
+Sobre la prosa de las secciones 2-7, en este orden:
+
+1. párrafo con `@` (correos) → se vacía;
+2. párrafo que es solo un identificador en mayúsculas (nombres de PC) → se vacía;
+3. se borra lo escrito dentro de los huecos de guiones bajos
+   (`detectados__10___` → `detectados_______`, `_X__SI` → `____SI`);
+4. se corta en el último `:` y se conserva la etiqueta;
+5. un guion suelto al final se descarta (relleno de "sin dato").
+
+Un párrafo sin separador se conserva: es prosa de plantilla.
+
+Sobre las tablas se declara, por tabla, cuántas filas de arriba son cabecera:
+
+| Tabla | Contenido | Cabeceras | Filas de datos |
+|---|---|---|---|
+| 18 | anclaje USB | 2 | 1 |
+| 19 | nombres de virus (lista) | 0 | 10 |
+| 20 | vulnerabilidades | 1 | 9 |
+| 21 | alertas del IDS | 1 | 1 |
+| 22 | resumen de la entidad | 3 | 1 |
+
+Las filas de datos se conservan y sus celdas quedan vacías: la tabla mantiene la
+geometría y el especialista tiene las ranuras para llenar. Una tabla no declarada
+después del encabezado hace fallar la emisión; dejarla intacta sería publicar los
+datos del mes anterior.
+
+#### Verificación
+
+- 137 tests en 16 archivos; `tsc --noEmit` limpio.
+- Documento de mayo: la sección 1 queda byte a byte idéntica a la emisión anterior
+  (prefijo de 283,485 caracteres comparado); el PDF sigue en 11 páginas.
+- En las secciones 2-7 no queda ningún número de mayo: los dos únicos `10` que
+  aparecen son parte de las etiquetas ("10 usuarios que más uso hacen...",
+  "Las 10 vulnerabilidades...").
+
+#### Lo que queda a revisión del especialista
+
+- La frase de cierre del IDS ("Hasta la fecha no se detectan alertas...") no tiene
+  separador, así que se conserva. Afirma un resultado, no una regla: hay que
+  revisarla cada mes.
+- La firma conserva nombres y cargos. Son estables, pero es una decisión, no una
+  consecuencia de la regla.
+- La tabla de virus queda con diez renglones vacíos (sus viñetas se ven) y "Nota:"
+  queda solo, sin el texto de las fotocopiadoras.
+
+### L22 — El documento se fecha y declara el mes (verbatim)
+
+#### La decisión
+
+La plantilla trae el mes en tres lugares: la fecha ("Matanzas, 9 de Mayo de 2026"),
+la línea "Informe mensual correspondiente al mes mayo de 2026" y la prosa de la
+sección 1 ("En la evaluación de las trazas del mes de Mayo..."). Se preguntó y la
+respuesta fue:
+
+> Fecha y mes automáticos
+
+#### La regla
+
+- Fecha: día de generación en `America/Havana`. Un `new Date()` en UTC a las 22:00
+  de La Habana ya es el día siguiente, y el documento saldría fechado un día
+  después.
+- La fecha usa el mes de emisión, no el del período: un informe de mayo puede
+  firmarse en junio.
+- Línea del informe: mes y año del período, en minúscula como el original.
+- Prosa de la sección 1: se reemplaza "mes de <Mes>" por el mes informado.
+- Falla si no encuentra la fecha o la línea del informe: emitir el documento con
+  el mes de la plantilla es un error que nadie nota hasta que está firmado.
+
+#### Verificación
+
+- 144 tests en 17 archivos; `tsc --noEmit` limpio.
+- Documento de mayo con período junio 2026 y emisión 3 de julio 02:00 UTC:
+  "Matanzas, 2 de Julio de 2026" (día local), "Informe mensual correspondiente al
+  mes junio de 2026" y "En la evaluación de las trazas del mes de Junio...".
+  Ninguna mención de mayo en todo el texto; 11 páginas.
+
+#### Dos errores que los tests destaparon
+
+- La fecha usaba el mes del período. Con período junio y emisión en julio salía
+  "2 de Junio"; ahora toma el mes de la fecha local.
+- El reemplazo en la prosa perdía el prefijo: "del mes de Mayo" quedaba
+  "del MayoJunio". El grupo de captura era el nombre del mes, no el prefijo.
+
+#### Extracción
+
+`blocks.ts`: el escaneo de bloques y el reemplazo de texto estaban duplicados
+entre el vaciado de las secciones 2-7 y los campos del período; quedaron en un
+módulo compartido.
+
+### L23 — Composición del documento
+
+#### Qué se hizo
+
+`buildReportDocument({ template, traces, period, generatedAt })` junta las tres
+operaciones en el único orden que importa: emite la sección 1 (puede quitar
+drill-downs y correr los índices de las tablas posteriores), vacía las secciones
+2-7 y fecha los campos del período. Toma la plantilla y devuelve el `.docx`; las
+otras 26 partes quedan intactas.
+
+#### Verificación
+
+- 147 tests en 18 archivos; `tsc --noEmit` limpio.
+- Documento de mayo compuesto con las trazas de mayo y período junio 2026: XML
+  byte a byte igual al armado paso a paso, 11 páginas, los tres campos correctos y
+  ninguna mención de mayo.
+- Test de extremo a extremo con un documento sintético de 22 tablas: la sección 1
+  recibe los valores, la tabla 18 conserva dos cabeceras y pierde el dato, la 19
+  queda vacía y la 22 conserva tres cabeceras.
+
+#### Lo que sigue faltando
+
+- Ingesta (T9): unir `parseSquidLogStream` con `DailyMetricsAccumulator` por día
+  para producir los `DailyMetrics` que consume `buildMonthlyReport`. Falta el
+  logformat real y la verificación contra la base de datos.
+- Dónde se declaran la cobertura y el `Browsing Time` aproximado (S7/S12): el
+  modelo los calcula, pero el `.docx` no tiene un lugar definido para ellos.
+
+### L24 — Ingesta por día local y corrección del mapa al quitar ranuras
+
+#### Ingesta
+
+`ingestSquidLog(stream, { period })` recorre el `access.log` sin materializarlo,
+enruta cada registro a su acumulador por día local (`America/Havana`) y devuelve
+las métricas de los días del período, los días ajenos contados y los contadores
+del parser.
+
+No se asume que el archivo sea del día que dice el nombre: el export de mayo trae
+el 30/04, y un registro de las 23:30 locales ya es el día siguiente en UTC. Un día
+fuera del período se declara, no se suma (S19).
+
+#### Un defecto de composición
+
+Si el mes trae menos de diez sitios internacionales, `emitTracesSection` elimina
+las ranuras sobrantes y las tablas posteriores se corren. El mapa del vaciado de
+las secciones 2-7 seguía apuntando a 18-22 y fallaba con "tabla no declarada".
+Ahora `buildReportDocument` corre el mapa por la misma cantidad de ranuras.
+
+#### Verificación
+
+- 151 tests en 19 archivos; `tsc --noEmit` limpio.
+- Fragmento real de 12 líneas: un día local (2024-05-30), 12 hits, 3 usuarios,
+  12 sitios, 0 líneas inválidas, 1 `legacy_connect`, ningún día fuera del período.
+- Test de composición con nueve drill-downs: la tabla de anclaje USB queda en la
+  posición 17 y se vacía igual, y la fecha sigue correcta.
+
+#### Lo que falta
+
+- Hash SHA-256 del archivo e idempotencia al reimportar (S1): necesitan la capa de
+  persistencia.
+- El orquestador que une varios días con `buildMonthlyReport` y emite el documento:
+  las dos puntas ya están (`ingestSquidLog` → `DailyMetrics[]` y
+  `buildReportDocument`).
+
+### L25 — Orquestador: del log al `.docx`
+
+#### Qué se hizo
+
+`buildMonthlyDocument({ template, days, period, generatedAt })` une las dos
+puntas: `buildMonthlyReport` (modelo mensual, cobertura, declaraciones) y
+`buildReportDocument` (sección 1, secciones 2-7 vacías, fecha y mes). Devuelve el
+modelo y los bytes del `.docx`.
+
+Con `ingestSquidLog` queda la cadena completa sin persistencia: stream →
+`DailyMetrics[]` → modelo → documento.
+
+#### Verificación
+
+- 152 tests en 19 archivos; `tsc --noEmit` limpio.
+- Prueba de punta a punta: un stream de dos líneas (un sitio internacional y uno
+  nacional) produce el modelo con `www.internacional.com` en la tabla 4 y un
+  `.docx` fechado "Matanzas, 2 de Julio de 2026".
+
+#### Lo que falta
+
+- Persistencia: hash SHA-256, idempotencia y guardado de días y hallazgos (S1).
+- Dónde se declaran la cobertura y el `Browsing Time` aproximado (S7/S12): el
+  modelo los calcula y el `.docx` no tiene un lugar definido.
+- UI de importación, revisión de hallazgos y descarga (T12).
+
+### L26 — Persistencia: se guardan todos los pares
+
+#### La contradicción y su resolución
+
+S17 dice "para cada sitio seleccionado se persisten **todos** sus pares"; el
+comentario de `DailySiteUserStat` decía "solo los sitios más visitados del día".
+No son el mismo eje: S17 prohíbe truncar los **usuarios** de un sitio, porque eso
+rompe el denominador de S15; el comentario hablaba de no guardar los pares de los
+12,119 sitios del mes.
+
+El conflicto real que ninguno de los dos nombraba: la selección de los diez sitios
+solo se conoce al cierre del mes, pero los pares se persisten día a día.
+
+Decisión del usuario (verbatim):
+
+> si dale, aplica la migracion
+
+Se guardan todos los pares de todos los sitios:
+
+- es exacto por construcción: no depende de que el top diario contenga al top
+  mensual ni de que el archivo siga existiendo al cierre;
+- la cifra de "decenas de millones" era una estimación mía, sin medir; el techo
+  duro son los hits por día (~3M);
+- es reversible con una medición: si la primera importación real muestra que la
+  tabla es inmanejable, se pasa al top diario + verificación al cierre, que exige
+  conservar los archivos.
+
+El comentario del schema se reescribió con la regla real. **S17 no cambió.**
+
+#### Migración aplicada
+
+`pnpm exec prisma migrate deploy` aplicó `20261024120000_add_monthly_reports`
+contra `db.prisma.io:5432` (en L10 no era alcanzable). 19 migraciones al día.
+
+#### Qué se implementó
+
+- `lib/reports/ingest.ts`: agrega `firstEventAt`/`lastEventAt` de los registros
+  válidos. Un archivo puede traer días ajenos al período que igual son contenido.
+- `lib/reports/persistence/rows.ts`: métricas → filas. Los pares sin cuenta no se
+  escriben: `proxyAccountId` es clave foránea y S9 prohíbe inventar una cuenta. El
+  tráfico anónimo sigue en `DailySiteStat`.
+- `lib/reports/persistence/import.ts`: `importSquidLogFile(prisma, input)`.
+  - El SHA-256 se calcula sobre los bytes crudos con un `Transform` entre el
+    archivo y el parser: un solo recorrido alimenta el hash y la agregación.
+  - `ImportedLogFile.sha256` es único y se consulta antes de parsear; reimportar
+    devuelve `already-imported`. Dos importaciones simultáneas chocan contra el
+    unique, la transacción se revierte entera y se responde con el archivo que ganó.
+  - La escritura es **aditiva** (`ON CONFLICT ... DO UPDATE SET x = x + EXCLUDED.x`):
+    un día local puede estar repartido entre dos archivos, porque el archivo de un
+    día UTC contiene registros de dos días locales en `America/Havana`. Reemplazar
+    el día perdería la contribución del otro archivo.
+  - Las cuentas se crean con `skipDuplicates` antes de las estadísticas (FK).
+- `lib/reports/persistence/load.ts`: `loadDailyMetrics(prisma, period)` reconstruye
+  los `DailyMetrics` desde las tres tablas. `unidentifiedHits` se deriva como hits
+  de sitios − hits de cuentas; una diferencia negativa falla como corrupción.
+
+#### Verificación
+
+- 157 tests en 20 archivos; 1 archivo (2 tests) saltado por requerir base de datos.
+  `tsc --noEmit` limpio.
+- Suite completa: 189 tests en 24 archivos, 2 saltados.
+- Contra la base real (`REPORTS_DB_TEST=1`), dos pruebas con el año 2099 y limpieza
+  verificada (`leftovers = 0`):
+  1. importar → `imported`, días `2099-01-01`/`2099-01-02`, 6 líneas; reimportar →
+     `already-imported` con el mismo hash; releer → idéntico a la ingesta directa
+     salvo los pares sin cuenta, con `unidentifiedHits = 1` derivado;
+  2. un segundo archivo sobre el mismo día **suma** (6 hits, 5 del usuario) en vez
+     de reemplazar.
+
+#### Lo que queda
+
+- El reloj de `Browsing Time` se corta en el borde entre archivos, igual que en la
+  medianoche local. Es la aproximación que el informe ya declara (S12); se mide
+  cuando haya logs reales.
+- Reimportar un archivo *corregido* (mismo día, otros bytes) suma, no reemplaza.
+  S1 solo promete idempotencia por bytes idénticos. Si hace falta, la salida es un
+  `resetMonth` que borre el mes y reimporte.
+- UI de importación (T12), lugar de las declaraciones S7/S12 y calibración de los
+  dos relojes.
+
+### L27 — Fragmento real de octubre 2026: el proxy duplica cada petición
+
+Fragmento aportado por el especialista: 34 segundos del 12/10/2026 12:33 local
+(`America/Havana`), 10 campos, con todas las formas de línea que aparecen en el
+archivo.
+
+Verificación con 16 líneas que cubren todas esas formas
+(`/tmp/opencode/real-fragment-sample.log`): **16 válidas, 0 inválidas, 0
+`legacy_connect`**. El `CONNECT` real trae 10 campos; el de 8 campos del fragmento
+de mayo no aparece acá, y el parser acepta las dos formas.
+
+#### El patrón
+
+El proxy autentica en dos tiempos: primero responde el reto (407, sin cuenta, con
+la página de error como bytes) y después registra la petición autenticada (503,
+con cuenta, 0 bytes). Para el mismo sitio y el mismo instante:
+
+```
+1791822836.448   1 ... TCP_DENIED/407 3190 CONNECT www.opensubtitles.com:443 -        ...
+1791822836.485  11 ... TAG_NONE/503      0 CONNECT www.opensubtitles.com:443 liudmila ...
+```
+
+En la muestra: **16 hits, 8 sin cuenta (50%)**.
+
+#### Consecuencia sobre las métricas
+
+- `Hits` cuenta el reto y la petición: una misma navegación suma 2-4 líneas.
+- `Incoming` suma páginas de error del proxy (3.190 bytes por reto), no tráfico del
+  sitio.
+- El reloj del par (sitio, usuario) no se contamina: solo la línea autenticada
+  tiene cuenta. El reloj del sitio sí incluye los retos.
+- En el fragmento muchos `CONNECT` autenticados terminan en `TAG_NONE/503` con 0
+  bytes: el tráfico que llega al sitio es mínimo y lo que se contabiliza son las
+  respuestas del proxy.
+- `TAG_NONE_ABORTED/000` y `TCP_MISS_ABORTED/000` llegan con 0 bytes y tiempos de
+  hasta 31 s: entran al `Download Time` sin aportar volumen.
+
+#### R5 (abierta)
+
+¿WebSpy cuenta las líneas de reto? Si las cuenta, el motor ya reproduce su
+criterio; si las filtra, los hits y los MB están inflados 2-4×. No se puede
+decidir desde el fragmento. Para cerrarlo hace falta un día completo de log y un
+export de WebSpy del mismo día (o el `access.log` de mayo).
+
+### L28 — Un día real completo: 757.358 líneas, 83.094 respuestas servidas
+
+Archivo: `~/Escritorio/squid-2026-10-12.log`, 93 MB, **757.358 líneas**, día local
+12/10/2026 completo (04:00:01Z → 13/10 03:59:57Z).
+
+Ingesta: **9 s**, 0 inválidas, 0 `legacy_connect`, 1 día, 2.183 destinos, 142
+cuentas (+ el cubo sin cuenta), 6.198 pares (sitio, usuario).
+
+#### Composición del archivo
+
+| Líneas | Qué son |
+| --- | --- |
+| 578.888 (76,4%) | `TCP_DENIED/407` — reto de autenticación del proxy |
+| 77.121 (10,2%) | `TCP_DENIED/403` — denegación |
+| 83.094 (11,0%) | respuestas servidas por el sitio (2xx/3xx) |
+| 628.120 (82,9%) | líneas sin cuenta |
+
+**Hallazgo:** toda línea con respuesta servida tiene cuenta. Las 628.120 sin
+cuenta son exactamente retos y denegaciones. En este log **no hay usuarios sin
+identificar**: hay peticiones que el proxy no sirvió.
+
+#### Conteo actual (toda línea = hit)
+
+| Destino | Hits | Nota |
+| --- | --- | --- |
+| incoming.telemetry.mozilla.org | 133.942 | 121.815 son 407 |
+| detectportal.firefox.com | 96.075 | 92.442 son 407 |
+| mozilla-ohttp.fastly-edge.com | 85.199 | 84.823 son 407 |
+| push.services.mozilla.com | 66.646 | 65.359 son 407 |
+| 172.19.152.80 | 46.538 | WSUS interno |
+
+Ningún sitio humano hasta el puesto 5. `172.19.152.80:8530` es el WSUS
+(`SimpleAuthWebService`, `/Content/*.wim`, `.msu`): actualizaciones internas de
+Windows, no navegación.
+
+#### Conteo con respuestas servidas
+
+`videos.picta.cu` (2.118), Telegram `149.154.175.50` (1.856),
+`gateway.facebook.com` (1.572), `cache.lolaup.com` (1.331), `cdn.solred.app`
+(1.296), `www.google.com` (1.099), `www.youtube.com` (798). Los 40.906 del WSUS
+salen por ser destino privado, no por el filtro de estado.
+
+Mayo no arbitra: su tabla está intervenida a mano (S20) y sus hits son compatibles
+con "toda línea" en youtube pero no en picta.cu; el tráfico de mayo y octubre no
+es comparable.
+
+#### R6 — resuelta en L29
+
+¿Un hit es toda línea o solo la respuesta servida? El especialista confirmó la
+respuesta servida sin destinos internos (L29). S7 deja de contar retos como
+"hits sin cuenta" y pasa a declarar las líneas descartadas por motivo.
+
+### L29 — Hit = respuesta servida sin destinos internos
+
+El especialista confirmó: **"confirmo que hit es respuesta servida sin destinos
+internos"**.
+
+Implementado en T24:
+
+- `isServedResponse`: solo 2xx/3xx.
+- `isInternalSite`: IPv4 privadas (RFC 1918), loopback, link-local, `0.0.0.0/8`,
+  CGNAT; IPv6 loopback/ULA/link-local; dominios `.local`/`.lan`/`.internal`/
+  `.home.arpa`; nombres de una etiqueta.
+- El acumulador descarta antes de sumar y expone `toSkipped()`; la ingesta
+  devuelve `skipped` con `unserved` e `internal`.
+
+Medición del día real (`squid-2026-10-12.log`) con la regla nueva:
+
+| | Antes (toda línea) | Ahora |
+| --- | --- | --- |
+| Hits | 757.358 | 42.470 |
+| Sin cuenta | 628.120 | 0 |
+| Descartadas | — | 673.982 no servidas + 40.906 internas |
+| Sitios | 2.183 | 1.606 |
+| Pares | 6.198 | 3.233 |
+
+Top internacional: Telegram `149.154.175.50` (1.856), `gateway.facebook.com`
+(1.572), `cache.lolaup.com` (1.331), `cdn.solred.app` (1.296),
+`www.google.com` (1.099), `www.youtube.com` (798). Top nacional:
+`videos.picta.cu` (2.118), `www.picta.cu` (779), `api.picta.cu` (461). Top
+usuarios: `brian` (11.558), `infojovellanos` (5.208), `yosmel` (3.181).
+`aperez` baja de 36.105 a 2.007 hits: sus 34.000 servidos eran el WSUS.
+
+Documento de octubre emitido desde el día real: 201.598 bytes, ZIP válido,
+tablas y drill-downs completos.
+
+Pendiente: persistir `skipped` (T12) para que la cobertura S7 se regenere sin
+volver a importar.
+
+### L30 — Nota de cobertura y Browsing Time en el documento
+
+El especialista aprobó la ubicación propuesta: un párrafo corto al cierre de la
+sección 1, antes de "Uso de correo por webmail en servidores nacionales:".
+
+Implementado en T25:
+
+- `buildDeclarationText` arma la nota con lo que el modelo sabe: cobertura
+  (esperados, importados, faltantes, días ajenos), descartes por motivo si el
+  llamador los conoce (`skipped`) y la aproximación de `Browsing Time`.
+- `emitDeclaration` inserta un párrafo propio antes del encabezado que abre las
+  secciones 2-7, con el formato del cuerpo (Arial 10 pt, 1.5, justificado).
+- La nota se inserta después de fechar el documento: no pasa por el reemplazo de
+  meses de la prosa.
+- `buildMonthlyDocument` acepta `skipped`; sin él la nota omite el desglose.
+
+Verificación:
+
+- 205 tests en 26 archivos, `tsc` y `eslint` limpios.
+- Documento de octubre desde el día real: 201.796 bytes, ZIP válido, PDF de
+  449 KB. La nota sale después de la tabla de webmail internacional y antes de
+  "2. Uso de correo por webmail en servidores nacionales:", en tres líneas
+  justificadas: "Cobertura incompleta: 1 de 31 días importados; faltan 30. Se
+  descartaron 673.982 respuestas no servidas y 40.906 accesos a destinos
+  internos. El Browsing Time es aproximado...".
+
+Pendiente: el camino que reconstruye el mes desde la base no tiene `skipped`, así
+que la nota omite el desglose de descartes. Persistirlo es T12.
+
+### L31 — Cabos sueltos, telemetría y commit de lo pendiente (verbatim)
+
+> vamos entonces, con respecto a los cabos sueltos aplicalos como sugieres y el top 10 no debe incluir esa telemetria/sitios, solo la navegacion que los usuarios a sitios reales, etc, finalmente haz commit de lo pendiente (.npmrc, pnpm-workspace.yaml, layout.tsx, lib/auth.ts)
+
+Decisiones:
+
+- La telemetría, la publicidad, las actualizaciones y la revocación de
+  certificados no son navegación: se descartan antes de sumar, con su propio
+  motivo (`skipped.telemetry`). La lista es configuración
+  (`DEFAULT_TELEMETRY_PATTERNS`) y se aplica al importar.
+- Los descartes se persisten por día en `DailySkipped`; la nota de S7 se
+  regenera desde la base.
+- El commit de los cambios del usuario se hace después de revisar que `.npmrc`
+  no contenga credenciales (solo cambia el registry a npmjs.org).
+
+### L32 — Evidencia de T26/T27
+
+- `isTelemetrySite` reconoce por dominio o subdominio, nunca por sufijo de
+  texto (`notdoubleclick.net` no coincide). Lista por defecto: conectividad
+  (portal cautivo, `msftconnecttest`, `msftncsi`), telemetría de navegador y
+  sistema (Mozilla, `watson`, `events.data.microsoft`, `dsp.mp.microsoft`,
+  `officeapps.live.com`, `bugsnag`, `sentry`, `crashlytics`, `app-measurement`),
+  actualizaciones y certificados (`windowsupdate`, `update.microsoft`,
+  `dl.delivery.mp.microsoft`, OCSP/CRL de Microsoft, DigiCert, Google,
+  Sectigo, GlobalSign, USERTRUST, GoDaddy, Amazon) y publicidad/analítica
+  (Google Analytics, Tag Manager, AdSense, DoubleClick, TikTok, Ahrefs,
+  Yahoo, Wikimedia, `hs-analytics`).
+- Día real 12/10/2026: 9.763 respuestas de telemetría descartadas; los hits
+  bajan de 42.470 a 32.707. Descartes finales:
+  `{ unserved: 673.982, internal: 40.906, telemetry: 9.763 }`. El top
+  internacional queda encabezado por Telegram, `gateway.facebook.com`,
+  `cache.lolaup.com`, `cdn.solred.app`, `www.google.com`, `www.youtube.com`.
+- `gator.volces.com` (429 hits) queda fuera de la lista por defecto: no se pudo
+  verificar qué es y no se excluye por sospecha. Queda como candidato a revisar.
+- `DailySkipped` guarda una fila por día aunque todos los contadores estén en
+  cero: así un día importado sin hits cuenta como presente en la cobertura.
+- Migración `20261026130000_add_daily_skipped` aplicada contra `db.prisma.io`
+  (`prisma migrate deploy`): `CREATE TABLE daily_skipped`, sin pérdida de datos.
+- Prueba de base real (`REPORTS_DB_TEST=1`, año 2099): 3/3, incluido el día con
+  un hit real y un descarte por cada motivo; limpieza con 0 residuos.
+- 212 tests en 26 archivos, `tsc --noEmit` limpio. La nota de la sección 1 ya
+  incluye la telemetría: "Se descartaron 10 respuestas no servidas, 20 accesos a
+  destinos internos y 30 accesos de telemetría."
+
+### L33 — Evidencia de T28/T29
+
+- `detectFindings` arma una evidencia por (regla, sitio, usuario). Los hits se
+  suman entre días; `firstSeen`/`lastSeen` son el primer y el último día, con
+  ancla al mediodía UTC para que la fecha local de La Habana no se corra. El
+  motor de reglas se aplica contra el hostname persistido; el path completo no
+  se guarda (limitación deliberada, no se multiplica la base por URL).
+- `saveMonthlyReport` hace upsert por (año, mes), guarda un `snapshot` reducido
+  (cobertura, declaraciones, totales y tablas) y **conserva la disposición y la
+  medida** de los hallazgos que siguen existiendo; borra los que desaparecieron.
+  Una cuenta que ya no existe se guarda como `proxyAccountId = null`.
+- `generateMonthlyReport` reconstruye desde la base, emite el `.docx`, lo
+  escribe en `storage/reports/<año>-<mes>.docx` y persiste el informe. La
+  plantilla oficial se copió a `storage/templates/monthly-report.docx`
+  (ignorada por git); se puede cambiar con `REPORTS_TEMPLATE_PATH` y la salida
+  con `REPORTS_STORAGE_DIR`.
+- Prueba de base 4/4: guardar, regenerar conservando la revisión, borrar el
+  hallazgo al desactivar la regla y generar el `.docx` desde la base (empieza
+  con `PK`, o sea un ZIP válido). Limpieza con 0 residuos.
+- UI: `POST /api/reports/import` lee el cuerpo como stream (un log real de 90 MB
+  no pasa por el límite de 1 MB de las server actions), `GET
+  /api/reports/[id]/document` sirve el `.docx` solo a ADMIN, la lista muestra
+  cobertura/hits/hallazgos, `/new` importa y genera, y el detalle permite
+  revisar cada hallazgo (disposición + medida) y regenerar.
+- 217 tests en 26 archivos, `tsc --noEmit` y `eslint` limpios. `next build` no
+  se pudo completar en este entorno: Turbopack no puede descargar Geist desde
+  Google Fonts sin red. Es una limitación del entorno, no del código; `tsc` y
+  `eslint` cubren el tipado y las reglas.
+
+Pendiente de T28/T29:
+
+- **No hay reglas cargadas.** `CategoryRule` no tiene seed ni UI de
+  administración: el motor está conectado y la revisión funciona, pero la tabla
+  de hallazgos sale vacía hasta que el especialista defina los patrones. Es una
+  decisión de contenido, no de código.
+- **Auditoría (S13).** Importar, generar y revisar todavía no escriben
+  `AuditLog`; el enum `AuditAction` solo tiene las acciones de cuentas.
+- **PDF.** La conversión queda fuera del sistema (LibreOffice o Word), como
+  estaba previsto.
+
+### L34 — Estado al cierre de la sesión
+
+Hecho y commiteado: telemetría fuera del universo de navegación (T26), descartes
+persistidos por día (T27), informe y hallazgos persistidos (T28), UI completa
+(T29) y los cambios pendientes del usuario. El próximo paso real es importar
+octubre desde la UI, cargar las reglas y generar el primer informe de octubre.
+
+### L35 — Patrones de prueba cargados (verbatim)
+
+> define los patrones ahora, como creas necesario, por ahora como prueba
+
+Decisión: cargué una lista de prueba de 63 patrones `SUFFIX` (24 ADULT, 15
+ANON_PROXY, 24 MINING) en `category_rule` con `pnpm run db:seed:rules`. El seed
+es aditivo: no borra ni desactiva reglas propias; una segunda corrida dejó 0
+nuevas y 63 sin cambios.
+
+`SUBVERSIVE` quedó sin patrones a propósito. Inventar una lista de sitios
+políticos no es una decisión técnica y un falso positivo en un informe oficial
+lleva nombre y apellidos. El motor ya soporta la categoría; la lista real la
+carga el especialista. El seed imprime un aviso mientras siga vacía.
+
+### L36 — Redes sociales y sitios con IP (verbatim)
+
+> bien, otras cosas que note en el informe generado
+> 1: por que hay sitios con ip en vez del nombre, como 149.154.175.50, 194.221.250.50, 149.154.167.50.
+> 2. Por que la seccion de redes sociales mas utilizadas en la entidad , que se debe filtrar por browsing time, esta vacia.Esta es una tabla con el top 10 de usuarios de la red social mas usada
+
+La sección de redes sociales se llena desde los pares (sitio, usuario)
+persistidos. La red se elige por la suma de `Browsing Time` de sus usuarios; el
+catálogo agrupa dominios (`facebook.com`, `fbcdn.net`, etc.) y deja YouTube
+fuera: el informe de mayo titula "Facebook" aunque YouTube tiene más tiempo por
+usuario (781,169 s contra 527,631 s), así que YouTube no forma parte del
+concepto de "red social" de este informe. La tabla se clona de un drill-down
+para heredar el formato y se inserta después de la instrucción "Filtrar por
+Browsing Time"; el vaciado de las secciones 2-7 se corre una tabla.
+
+Resultado en octubre (día 12/10/2026): WhatsApp, 314 min de usuarios; top
+`red.social2` 5:11:31 (99.3%) y `brian` 0:02:14 (0.7%). El informe se regeneró
+en `storage/reports/2026-10.docx` (200.740 bytes).
+
+Sitios con IP: `149.154.175.50` y `149.154.167.50` son Telegram; el log trae
+`CONNECT 149.154.175.50:443` y ningún hostname, porque el cliente se conecta
+por IP. `194.221.250.50` también es una conexión directa y no tiene PTR. El
+sistema muestra el IP porque es el único dato del log; no lo inventa. Para
+mostrar un nombre haría falta un mapa de rangos IP verificados (Telegram) o DNS
+inverso, que no es confiable y haría la importación dependiente de la red.
+
+### L37 — Importación por carpeta y por archivos (verbatim)
+
+> a la hora de importar los logs, quiero tener la opcion de hacerlo por carpeta y por archivo/archivos
+
+Se agregó un selector de origen al formulario de importación: "Archivo(s)"
+(`multiple`) y "Carpeta" (`webkitdirectory`). El navegador entrega los `File`
+con `webkitRelativePath`; el cliente filtra `.log`, `.log.N` y `.txt`, ordena
+por ruta con comparación numérica y sube los archivos de a uno contra el route
+handler existente, que sigue leyendo el cuerpo como stream. No se usa
+`FormData`: un mes de 31 archivos de ~90 MB no se puede bufferizar en memoria.
+El resultado se muestra por archivo y un error no cancela el resto.
+
+### L38 — Refactor de rutas del sidebar (verbatim)
+
+> si dale vamos con todo
+
+Se aceptó la propuesta: "Inicio" pasa a "Informes", "Resumen" sale del
+sidebar y el detalle deja de ser `summary?id=...` para ser `/[id]`. La lista
+enlaza a la ruta real; `/summary` queda como redirect de compatibilidad (con
+`id` va al informe, sin `id` al último o a la lista). Las actions de generar,
+regenerar y revisar redirigen/revalidan la nueva ruta. El active state usa el
+prefijo más largo para que `/new` no active "Informes". El sidebar de
+escritorio aparece en `md` con etiquetas y el móvil se oculta en `md`.
+
+### L39 — Importación truncada por el proxy de Next.js (verbatim)
+
+> he importado la misma carpeta 3 veces y en todas las veces se han importado los archivos sin error de duplicado, solo en algunos archivos detecta como que ya estaban, entonces que esta sucediendo
+
+Causa: `proxy.ts` incluía `/api/reports/import` en el matcher. Next.js 16
+clona el cuerpo para el proxy y lo corta en 10 MB por defecto
+(`experimental.proxyClientMaxBodySize`). Los archivos de menos de 10 MB
+llegaban completos y se detectaban como duplicados; los de más llegaban
+cortados en un chunk distinto en cada subida, el SHA-256 cambiaba y el sistema
+los importaba como nuevos. La base tenía 60 filas de `imported_log_file` para
+18 archivos, con 2–3 filas de ~10,45 MB por archivo grande; `10-18` y `10-25`
+(menos de 10 MB) tenían una sola fila completa. El log del servidor tenía 65
+avisos `Request body exceeded 10MB for /api/reports/import`.
+
+Fix: `/api/reports/import` quedó fuera del matcher de `proxy.ts`; la ruta ya
+valida sesión y rol ADMIN. El cuerpo se streamea sin el clon de 10 MB.
+Verificado con `pnpm test` (247 passed, 7 skipped), `tsc --noEmit` limpio,
+`eslint` solo con el warning previo de `signout-action.ts`, y un POST de 20 MB
+que ya no dispara el aviso. El cambio de `proxy.ts` quedó sin commitear.
+
+Datos: el usuario autorizó limpiar y reimportar. Se borraron 60 filas de
+`imported_log_file`, 18 de `daily_skipped`, 8.396 de `daily_site_user_stat`,
+458 de `daily_user_stat` y 5.387 de `daily_site_stat`; se reimportaron los 18
+archivos completos. Quedaron 18 filas de `imported_log_file`, 18 de
+`daily_skipped`, 30.189 de `daily_site_user_stat`, 806 de `daily_user_stat` y
+16.946 de `daily_site_stat`. El informe de octubre se regeneró: 18/31 días,
+705.771 hits, 0 hits sin identificar, red social Facebook (top `yosmel` 36,8%
+y `marketing` 31,3%), 3 hallazgos PENDING de las reglas de prueba (T30:
+`bongacams.com` ADULT, `conduit.psiphon.ca` ANON_PROXY). El `.docx` quedó en
+`storage/reports/2026-10.docx` (203.742 bytes, ZIP válido); el informe parcial
+anterior se guardó en `storage/reports/2026-10.partial.docx`. Reimportar el
+archivo completo `squid-2026-10-12.log` devuelve `already-imported` con el
+hash `0f7eb840e11b`, que coincide con el archivo real.
+
+Pendiente: revisar los 3 hallazgos contra la lista real del especialista;
+calibrar `Browsing Time` cuando aparezca el export de WebSpy; commitear
+`proxy.ts`.
+
+
+
+
+
+### L40 — Reloj del usuario, umbral único y telemetría en los totales (verbatim)
+
+> adelante, los datos importados actualmente no tienen importancia, fueron pruebas que realice, por lo tanto pueden eliminarse para ahorrarnos tiempo, empezamos entonces
+
+Origen: la documentación de WebSpy Vantage 3.0 (recuperada por Wayback) corrige
+tres conclusiones de L11/L32.
+
+1. El umbral de sesión es **uno solo y global** (`Tools | Options | General`,
+   default 5 min). No hay umbral por nivel: la diferencia entre el tiempo del
+   sitio y el de sus usuarios viene de sobre qué entidad se calculan las
+   sesiones, no del corte. Se elimina `siteBrowsingGapMs`.
+2. Faltaba el **tercer reloj**: el del usuario sobre todos sus hits. El código
+   sumaba los pares (sitio, usuario), que se solapan en el tiempo: el total de un
+   usuario salía inflado. Ahora `users[].browsingMs` es su propio reloj y no la
+   suma de sus sitios; el `totalBrowsingMs` del mes y el `% of Browsing Time` de
+   la tabla de usuarios usan ese valor. Los drills-down siguen usando el reloj
+   del par y la tabla de sitios el del sitio (S18).
+3. La telemetría **no se descarta**: es tráfico servido y es parte del
+   denominador de `% of Hits`. Se excluye solo de las tablas de sitios y de sus
+   drill-downs. El veredicto se persiste (`DailySiteStat.isTelemetry`) para que
+   el total del mes se reconstruya desde la base.
+
+Cambios: `metrics/aggregate.ts` (tercer acumulador, umbral único de 5 min,
+telemetría marcada), `persistence/{rows,load,import}.ts` + migración
+`20261027120000_add_site_telemetry_flag` (aplicada), `model/monthly.ts` (merge de
+la marca), `assembly/section-traces.ts` (`selectTopSites` filtra telemetría),
+`document/declarations.ts` (la nota ya no la declara descartada), `parity/calibrate.ts`
+(5 min como hipótesis de partida). Tests: 252 passed, 7 skipped; `tsc` limpio;
+`eslint` solo el warning previo de `signout-action.ts`; prueba de base
+`REPORTS_DB_TEST=1` 10/10.
+
+Límite declarado (S27): el `Browsing Time` de la red social se sigue calculando
+sumando relojes de pares (dominio, usuario) de la red, que se solapan entre
+dominios. Reproducirlo exacto exigiría persistir los hits con marca de tiempo por
+red; no se hace.
+
+Datos: se borraron 1 informe, 3 hallazgos, 18 archivos importados, 16.946 filas
+de sitio, 806 de usuario, 30.189 de par y 18 de descartes. La base queda vacía de
+datos de informe; falta reimportar los 18 archivos y regenerar octubre con el
+modelo corregido.
+
+Límite heredado del almacenamiento: los tres relojes se acumulan **por día** y
+se suman en el mes, así que una sesión que cruza la medianoche se corta ahí. Con
+un umbral de 5 minutos el error solo aparece si hay hits a menos de 5 minutos del
+cambio de día; antes, con 30 minutos, el corte pesaba más.
+
+Verificación con datos reales (octubre 2026, 18 de 31 días, 18 archivos y
+15.187.698 líneas): total de hits 793.358 = 705.771 de la corrida anterior +
+87.587 de telemetría, que antes se perdían. 5.598 sitios, 429 marcados como
+telemetría y ninguno en el top 10. El reloj de los usuarios suma 1.584 h 27 min
+contra 3.516 h 08 min de la suma de sus pares: el 55% del tiempo anterior era
+solapamiento. El caso testigo es `brian`: 831 h 49 min por pares en un período
+de 432 h (imposible) contra 75 h 47 min de reloj propio. Informe regenerado
+(`cmvq6ycji000ip1br7fo3nvzl`, 3 hallazgos).
+
+### L41 — R5 cerrada con datos: WebSpy cuenta toda línea; se mantiene la regla del especialista (verbatim)
+
+> no, dejemolos como esta, pues no quiero tener en el informe generado final
+> sitios de telemetrias, etc
+
+Origen: los tres exports de WebSpy del 10/10/2026 (`Sites Export`, `Users
+Export`, `Users (Usernames) Export`) son el artefacto que R5 pedía: un día
+completo de log (`squid-2026-10-10.log`, 327.950 líneas) y su export del mismo
+día. Resultado de la comparación: **WebSpy cuenta como hit toda línea del log**,
+incluidos los retos 407, las denegaciones 403, los destinos internos y la
+telemetría.
+
+| Métrica (10-10) | Export | Motor actual | Toda línea |
+| --- | --- | --- | --- |
+| Hits | 331.675 | 76.868 | 327.950 |
+| Incoming | 40.428,09 MB | 38.186,92 MB | 38.957,30 MB |
+| Outgoing | 4,94 MB | 0,00 MB | 4,83 MB |
+| Download Time | 430:41:24 | 396:48:52 | 405:49:48 |
+| Browsing Time (usuarios) | 367:54:32 | 95:03:12 | 348:56:24 |
+
+Pruebas que no admiten otra lectura: `10.1.1.4` = 272 líneas todas 403 → export
+272 hits; `lolaup.com` = 9.410 líneas con 0 servidas → 9.410; `solred.app` =
+1.882 con 0 servidas → 1.882; `natio.picta.cu` = 143.568 retos + 71.460
+servidas = 215.028 → export 215.130. Fila por fila son exactas `operador.cat4`
+(14.052 / 2.635,14 MB / 22:27:42), `operador.cat26` (7.849 / 1.474,59 /
+21:14:41), `j.cat1` (4.825 / 2.180,75 / 15:14:58), `dtor.comercial`, `cat40`,
+`yolanda`, `edely`, `dtor.fre`, `inf.jag`, `manoli`; 28/85 usuarios y 297/396
+sitios con hits idénticos. La identidad es usuario o, sin cuenta, la IP del
+cliente (`172.19.152.162`: 35.896 vs 35.958; algunos PTR se muestran con nombre).
+
+Decisión: **se mantiene S2 tal como está** (hit = respuesta servida 2xx/3xx a un
+destino no interno), aunque no reproduzca el export de WebSpy. Motivo del
+especialista: el informe final no debe llevar sitios de telemetría ni ruido de
+proxy. S2, S7, S20 y S26 no cambian; no hubo cambios de código.
+
+Confirmado por esta comparación (no requiere cambios):
+
+- `Browsing Time` = reloj del usuario con umbral único de 300 s. En las cuentas
+  con todas sus líneas reproduce el export dentro de 0,5–3% (`cat26` 8,87 vs
+  9,10 h; `j.cat1` 10,00 vs 10,23; `cat36` 12,26 vs 12,54; `yolanda` 4,94 vs
+  4,99; `cat40` 8,38 vs 8,44). La suma de pares da ~2× el reloj del usuario:
+  S18 queda validada con datos.
+- `Incoming` = suma de bytes, `Download Time` = suma de `elapsed`, `Outgoing` =
+  bytes de POST/PUT; orden de las dos tablas por hits; `% of Hits` sobre el total.
+
+Límites aceptados y declarados:
+
+- Los hits y el `Browsing Time` del informe quedan ~4× por debajo de los que
+  emitía WebSpy. La serie mensual no es comparable con los meses anteriores
+  generados por la herramienta. Si el informe se presenta junto a esos meses,
+  la nota de cobertura (S7) debería declararlo.
+- S21 necesita matiz: el drilldown `Users Export` del 10/10 viene ordenado por
+  hits y con columna `% of Hits`. WebSpy sí exporta la variante por hits; la
+  regla de mayo (drill-down por `Browsing Time`) es una elección de columnas, no
+  una limitación de la herramienta.
+- El archivo del 10/10 está incompleto (~3.725 líneas, 1,1%): faltan hosts
+  enteros (`www.facebook.com` 43, `fbcdn` ~570, `cache.lolaup.com` 160,
+  `telemetry.graylog.cloud` 270, `unagi.amazon.com` 15). Por eso el drilldown de
+  Facebook del export no se puede reproducir y los totales no cierran al peso.
+  No afecta a la decisión: las pruebas por fila son exactas con las líneas que sí
+  están.
+
+### L42 — El informe no lleva nota de base de cálculo (verbatim)
+
+> nos quedamos donde mismo, no incorpores nada, pues el informe debe ser
+> inmutable en ese sentido, yo como especialista en seguridad informatica doy las
+> explicaciones verbalmente en caso de ser necesario
+
+Decisión del especialista: el informe generado no lleva nota de base de cálculo ni
+referencia a WebSpy. El documento es inmutable en ese aspecto; las explicaciones
+sobre el cambio de metodología las da verbalmente el especialista cuando haga
+falta. S7 queda como está (solo cobertura y descartes) y no se modifica ninguna
+sección del informe. Consecuencia aceptada: la caída de ~4× en hits y `Browsing
+Time` frente a los meses generados con WebSpy no se justifica dentro del
+documento. No hubo cambios de código.

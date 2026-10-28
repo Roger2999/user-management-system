@@ -1,0 +1,12 @@
+1717070400.123    245 10.10.20.45 TCP_MISS/200 5321 GET http://www.example.com/ - HIER_DIRECT/93.184.216.34 text/html
+1717070401.874     12 10.10.20.45 TCP_MEM_HIT/200 1204 GET http://cdn.example.com/assets/style.css - HIER_NONE/- text/css
+1717070402.311   1830 10.10.20.77 TCP_MISS/304 341 GET http://update.services.local/manifest.json juan.perez HIER_DIRECT/10.10.5.20 application/json
+1717070403.905    102 10.10.20.91 TCP_REFRESH_MODIFIED/200 8842 GET http://intranet.empresa.local/logo.png - HIER_DIRECT/10.10.5.20 image/png
+1717070404.556   4210 10.10.20.45 CONNECT github.com:443 - HIER_DIRECT/140.82.114.4 -
+1717070405.120      0 10.10.20.120 TCP_DENIED/403 3991 GET http://malware-test.example/blocked.exe - HIER_NONE/- text/html
+1717070406.788    945 10.10.20.77 TCP_MISS/502 4183 GET http://down.internal.local/api/health - HIER_NONE/- text/html
+1717070407.002     87 10.10.20.33 TCP_TUNNEL/200 6120 CONNECT outlook.office365.com:443 maria.gomez HIER_DIRECT/52.96.0.1 -
+1717070408.441   2310 10.10.20.45 TCP_CLIENT_REFRESH_MISS/200 20458 GET http://files.example.com/report.xlsx - HIER_DIRECT/93.184.216.34 application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+1717070409.667      3 10.10.20.45 TCP_HIT/200 875 GET http://fonts.example.com/roboto.woff2 - HIER_NONE/- font/woff2
+1717070410.219   1502 10.10.20.91 TCP_MISS/204 291 GET http://telemetry.vendor.com/ping - HIER_DIRECT/151.101.1.69 -
+1717070411.930      1 10.10.20.45 TCP_NEGATIVE_HIT/404 1154 GET http://old.example.com/removed.html - HIER_NONE/- text/html

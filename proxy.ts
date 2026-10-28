@@ -28,5 +28,12 @@ export default async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api/auth|_next/static|_next/image|.*\\.png$).*)"],
+  // `/api/reports/import` queda fuera a propósito: el proxy clona el cuerpo
+  // para que el middleware pueda leerlo y lo corta en 10 MB por defecto
+  // (`experimental.proxyClientMaxBodySize`). Un `access.log` real pesa cientos
+  // de MB, y el corte cae en un chunk distinto en cada subida, así que el
+  // SHA-256 cambia y la idempotencia falla. La ruta ya valida sesión y rol.
+  matcher: [
+    "/((?!api/auth|api/reports/import|_next/static|_next/image|.*\\.png$).*)",
+  ],
 };

@@ -14,7 +14,8 @@
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
-    "db:seed": "tsx prisma/seed-admin.ts"
+    "db:seed": "tsx prisma/seed-admin.ts",
+    "db:seed:rules": "tsx prisma/seed-rules.ts"
   },
   "dependencies": {
     "@better-auth/prisma-adapter": "^1.6.14",

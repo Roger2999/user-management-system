@@ -57,3 +57,6 @@ next-env.d.ts
 /.config
 /.local
 /.claude/skills
+
+# Plantilla oficial y .docx emitidos (datos de navegación de personas)
+/storage/
