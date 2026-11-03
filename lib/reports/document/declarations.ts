@@ -12,9 +12,16 @@
 
 import { formatInteger } from "../format";
 import type { MonthlyReport } from "../model/monthly";
-import type { SkippedLines } from "../metrics/aggregate";import { DEFAULT_BLANK_SECTIONS } from "./blank-sections";
+import type { SkippedLines } from "../metrics/aggregate";
 import { escapeXml, paragraphText, topLevelBlocks } from "./blocks";
 import { MONTHS } from "./period";
+
+/**
+ * Párrafo que abre el bloque manual de correo por webmail. La nota de cobertura
+ * se inserta justo antes, al cierre de la sección de trazas.
+ */
+export const DECLARATION_ANCHOR =
+  "Uso de correo por webmail en servidores nacionales:";
 
 /** Lo mínimo que la declaración necesita del modelo mensual. */
 export type DeclarationInput = Pick<
@@ -163,7 +170,7 @@ function buildParagraph(text: string): string {
 export function emitDeclaration(
   documentXml: string,
   text: string,
-  anchor: string = DEFAULT_BLANK_SECTIONS.fromHeading,
+  anchor: string = DECLARATION_ANCHOR,
 ): string {
   if (text.trim() === "") return documentXml;
 

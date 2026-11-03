@@ -1,4 +1,10 @@
-import type { SiteTotals, SiteUserTotals, TracesSection, UserTotals } from "../assembly/section-traces";
+import type {
+  SiteTotals,
+  SiteUserTotals,
+  TracesSection,
+  UserProfiles,
+  UserTotals,
+} from "../assembly/section-traces";
 import { buildTracesSection } from "../assembly/section-traces";
 import type { DailyMetrics, SkippedLines } from "../metrics/aggregate";
 import { checkCoverage, monthlyPeriod } from "../time";
@@ -194,7 +200,8 @@ export type MonthlyReportInput = {
   year: number;
   month: number;
   daily: readonly DailyMetrics[];
-  nationalExclusions?: readonly string[];
+  /** Perfiles por `username` en minúsculas; los resuelve la capa de generación. */
+  profiles?: UserProfiles;
   /** Recorte de filas al renderizar. No afecta el merge ni los denominadores. */
   limit?: number;
   /**
@@ -221,18 +228,10 @@ export function buildMonthlyReport(input: MonthlyReportInput): MonthlyReport {
   const coverage = checkCoverage(period, presentDays);
 
   const traces = buildTracesSection({
-    totalHits: totals.totalHits,
-    // Denominador del top de usuarios: tiempo de navegación identificado del mes.
-    // Se excluye la cuenta sin identificar por la misma razón por la que no
-    // aparece en la tabla: no es una persona (S9).
-    totalBrowsingMs: totals.users.reduce(
-      (sum, user) => sum + (user.username === null ? 0 : user.browsingMs),
-      0,
-    ),
     sites: totals.sites,
     siteUsers: totals.siteUsers,
     users: totals.users,
-    nationalExclusions: input.nationalExclusions,
+    profiles: input.profiles,
     limit: input.limit,
   });
 

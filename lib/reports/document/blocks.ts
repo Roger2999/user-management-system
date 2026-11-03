@@ -59,6 +59,26 @@ export function replaceParagraphText(
   });
 }
 
+/**
+ * Reemplaza `from` por `to` dentro de cada `<w:t>`, conservando los runs y el
+ * formato.
+ *
+ * Se usa para los años de los huecos manuales (`___/____/202_`): reemplazar el
+ * párrafo entero borraría las líneas de puntos y las tabulaciones.
+ */
+export function replaceTextInRuns(
+  fragment: string,
+  from: string,
+  to: string,
+): string {
+  return fragment.replace(TEXT_RUN, (match, attributes: string) => {
+    const content =
+      /^<w:t(?:\s[^>]*)?>([\s\S]*)<\/w:t>$/.exec(match)?.[1] ?? "";
+    if (!content.includes(from)) return match;
+    return `<w:t${attributes ?? ""}>${content.replaceAll(from, to)}</w:t>`;
+  });
+}
+
 /** Vacía el texto de un fragmento conservando sus elementos. */
 export function emptyText(fragment: string): string {
   return fragment.replace(

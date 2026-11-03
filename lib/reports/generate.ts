@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import prisma from "@/lib/prisma";
+import type { UserProfile, UserProfiles } from "./assembly/section-traces";
 import { loadDailyMetrics } from "./persistence/load";
 import { saveMonthlyReport } from "./persistence/report";
 import { buildMonthlyDocument } from "./report";
@@ -17,6 +18,56 @@ import { monthlyPeriod } from "./time";
  */
 
 export class ReportGenerationError extends Error {}
+
+/**
+ * Nombre y cargo de cada cuenta del período.
+ *
+ * `AccountRequest` es la fuente primaria; `ProxyAccount` solo completa lo que la
+ * solicitud no tenga. Las claves van en minúsculas porque el log y la solicitud
+ * pueden diferir en mayúsculas y el `username` de la base es `citext`.
+ */
+async function loadProfiles(
+  usernames: readonly string[],
+): Promise<UserProfiles> {
+  const unique = [...new Set(usernames.map((username) => username.toLowerCase()))];
+  if (unique.length === 0) return {};
+
+  const [accounts, proxies] = await Promise.all([
+    prisma.accountRequest.findMany({
+      where: { username: { in: unique } },
+      select: { username: true, fullName: true, currentPosition: true },
+    }),
+    prisma.proxyAccount.findMany({
+      where: { username: { in: unique } },
+      select: { username: true, displayName: true, position: true },
+    }),
+  ]);
+
+  const profiles: Record<string, UserProfile> = {};
+
+  for (const proxy of proxies) {
+    profiles[proxy.username.toLowerCase()] = {
+      fullName: proxy.displayName ?? "",
+      position: proxy.position ?? "",
+    };
+  }
+
+  for (const account of accounts) {
+    if (account.username === null) continue;
+
+    const key = account.username.toLowerCase();
+    const previous = profiles[key];
+    const fullName = account.fullName.trim();
+    const position = account.currentPosition.trim();
+
+    profiles[key] = {
+      fullName: fullName.length > 0 ? fullName : (previous?.fullName ?? ""),
+      position: position.length > 0 ? position : (previous?.position ?? ""),
+    };
+  }
+
+  return profiles;
+}
 
 export type GeneratedReport = {
   id: string;
@@ -36,7 +87,16 @@ export async function generateMonthlyReport(
     );
   }
 
-  const template = await readTemplate();
+  const usernames = days.flatMap((day) =>
+    day.users
+      .map((user) => user.username)
+      .filter((username): username is string => username !== null),
+  );
+
+  const [template, profiles] = await Promise.all([
+    readTemplate(),
+    loadProfiles(usernames),
+  ]);
   const generatedAt = Date.now();
 
   const { report, document } = buildMonthlyDocument({
@@ -44,6 +104,7 @@ export async function generateMonthlyReport(
     days,
     period: { year, month },
     generatedAt,
+    profiles,
   });
 
   const docxSha256 = createHash("sha256").update(document).digest("hex");

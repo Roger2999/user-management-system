@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   formatDuration,
+  formatHoursMinutes,
   formatInteger,
   formatMegabytes,
   formatPercentage,
+  formatSize,
 } from "./format";
 
 describe("formatInteger", () => {
@@ -36,6 +38,39 @@ describe("formatMegabytes", () => {
 
   it("formatea cero", () => {
     expect(formatMegabytes(0)).toBe("0.00");
+  });
+});
+
+describe("formatHoursMinutes", () => {
+  it("escribe H.MM con minutos de dos dígitos", () => {
+    expect(formatHoursMinutes((266 * 60 + 34) * 60 * 1000)).toBe("266.34");
+    expect(formatHoursMinutes((2 * 60 + 5) * 60 * 1000)).toBe("2.05");
+  });
+
+  it("trunca los segundos", () => {
+    expect(formatHoursMinutes((1 * 60 + 1) * 60 * 1000 + 59_000)).toBe("1.01");
+  });
+
+  it("devuelve 0.00 ante un valor negativo o no finito", () => {
+    expect(formatHoursMinutes(-1000)).toBe("0.00");
+    expect(formatHoursMinutes(Number.NaN)).toBe("0.00");
+  });
+});
+
+describe("formatSize", () => {
+  it("escribe MB por debajo de 1 GiB", () => {
+    expect(formatSize(500 * 1024 * 1024)).toBe("500.00 MB");
+    expect(formatSize(0)).toBe("0.00 MB");
+  });
+
+  it("cambia a GB desde 1 GiB", () => {
+    expect(formatSize(1024 * 1024 * 1024)).toBe("1.00 GB");
+    expect(formatSize(2.5 * 1024 * 1024 * 1024)).toBe("2.50 GB");
+  });
+
+  it("devuelve 0.00 MB ante un valor negativo o no finito", () => {
+    expect(formatSize(-1)).toBe("0.00 MB");
+    expect(formatSize(Number.NaN)).toBe("0.00 MB");
   });
 });
 

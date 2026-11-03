@@ -16,21 +16,20 @@ const TABLE = (text: string) =>
 function sample(): string {
   return [
     "<w:document><w:body>",
-    SPLIT(["Matanzas, ", "9", " de ", "Ma", "y", "o", " de 2026"]),
+    SPLIT(["Informe Mensual de Ciberseguridad", "."]),
     SPLIT([
-      "Informe",
-      " mensual correspondiente al mes",
-      " mayo",
-      " de ",
-      "2026",
+      "Entidad: Empresa Eléctrica de Matanzas",
+      "Período del Informe:",
+      " 2 / 11/ 2026",
     ]),
-    SPLIT([
-      "En la evaluación de las trazas del mes de",
-      " Mayo",
-      " no se detectaron incidencias.",
-    ]),
+    SPLIT(["Fecha de Emisión:", " 9/ 11/ 2026"]),
+    PARAGRAPH("Día del comité: ___ / ___ / 202_"),
     PARAGRAPH("otro texto intacto"),
-    TABLE("Mayo dentro de una tabla"),
+    TABLE("Fecha de respaldo: ___/____/202_"),
+    SPLIT([
+      "Y para que así conste se firma la presente a los ",
+      "_____ días del mes de ___________________ del año 202___",
+    ]),
     "</w:body></w:document>",
   ].join("");
 }
@@ -39,17 +38,7 @@ function sample(): string {
 const EMISSION = Date.UTC(2026, 6, 3, 2, 0, 0);
 
 describe("fillPeriodFields", () => {
-  it("fecha el documento con el día local de La Habana", () => {
-    const result = fillPeriodFields(sample(), {
-      month: 6,
-      year: 2026,
-      generatedAt: EMISSION,
-    });
-
-    expect(result).toContain("Matanzas, 2 de Julio de 2026");
-  });
-
-  it("escribe el mes y el año del período en la línea del informe", () => {
+  it("escribe el título con el mes y el año del período", () => {
     const result = fillPeriodFields(sample(), {
       month: 6,
       year: 2026,
@@ -57,11 +46,35 @@ describe("fillPeriodFields", () => {
     });
 
     expect(result).toContain(
-      "Informe mensual correspondiente al mes junio de 2026",
+      "Informe Mensual de Ciberseguridad. Junio 2026 v. Final.",
     );
+    expect(result).not.toContain("Octubre 2026");
   });
 
-  it("reemplaza el mes en la prosa de la sección 1", () => {
+  it("escribe el rango completo del período", () => {
+    const result = fillPeriodFields(sample(), {
+      month: 6,
+      year: 2026,
+      generatedAt: EMISSION,
+    });
+
+    expect(result).toContain("Período del Informe:");
+    expect(result).toContain("01/06/2026 al 30/06/2026");
+    expect(result).not.toContain("2 / 11/ 2026");
+  });
+
+  it("fecha la emisión con el día local de La Habana", () => {
+    const result = fillPeriodFields(sample(), {
+      month: 6,
+      year: 2026,
+      generatedAt: EMISSION,
+    });
+
+    expect(result).toContain("02/07/2026");
+    expect(result).not.toContain("9/ 11/ 2026");
+  });
+
+  it("cierra la firma con la fecha de emisión", () => {
     const result = fillPeriodFields(sample(), {
       month: 6,
       year: 2026,
@@ -69,12 +82,23 @@ describe("fillPeriodFields", () => {
     });
 
     expect(result).toContain(
-      "En la evaluación de las trazas del mes de Junio no se detectaron incidencias.",
+      "Y para que así conste se firma la presente a los 2 días del mes de julio del año 2026",
     );
-    expect(result).not.toContain("mes de Mayo");
   });
 
-  it("no toca otros párrafos ni el texto dentro de tablas", () => {
+  it("completa el año de los huecos manuales, también dentro de tablas", () => {
+    const result = fillPeriodFields(sample(), {
+      month: 6,
+      year: 2026,
+      generatedAt: EMISSION,
+    });
+
+    expect(result).toContain("Día del comité: ___ / ___ / 2026");
+    expect(result).toContain("Fecha de respaldo: ___/____/2026");
+    expect(result).not.toContain("202_");
+  });
+
+  it("no toca otros párrafos", () => {
     const result = fillPeriodFields(sample(), {
       month: 6,
       year: 2026,
@@ -82,23 +106,38 @@ describe("fillPeriodFields", () => {
     });
 
     expect(result).toContain("otro texto intacto");
-    expect(result).toContain("Mayo dentro de una tabla");
   });
 
-  it("falla si no encuentra la fecha del documento", () => {
-    const xml = sample().replace("Matanzas,", "Ciudad,");
+  it("falla si no encuentra el título", () => {
+    const xml = sample().replace("Informe Mensual de Ciberseguridad", "Resumen");
 
     expect(() =>
       fillPeriodFields(xml, { month: 6, year: 2026, generatedAt: EMISSION }),
-    ).toThrow(/no se encontró la fecha/);
+    ).toThrow(/no se encontró el título/);
   });
 
-  it("falla si no encuentra la línea del mes", () => {
-    const xml = sample().replace("Informe", "Resumen");
+  it("falla si no encuentra el período", () => {
+    const xml = sample().replace("Período del Informe:", "Periodo:");
 
     expect(() =>
       fillPeriodFields(xml, { month: 6, year: 2026, generatedAt: EMISSION }),
-    ).toThrow(/no se encontró la línea del mes/);
+    ).toThrow(/no se encontró el período/);
+  });
+
+  it("falla si no encuentra la fecha de emisión", () => {
+    const xml = sample().replace("Fecha de Emisión:", "Emisión:");
+
+    expect(() =>
+      fillPeriodFields(xml, { month: 6, year: 2026, generatedAt: EMISSION }),
+    ).toThrow(/no se encontró la fecha de emisión/);
+  });
+
+  it("falla si no encuentra el cierre", () => {
+    const xml = sample().replace("Y para que así conste", "Firma");
+
+    expect(() =>
+      fillPeriodFields(xml, { month: 6, year: 2026, generatedAt: EMISSION }),
+    ).toThrow(/no se encontró el cierre/);
   });
 
   it("rechaza un mes fuera de rango", () => {

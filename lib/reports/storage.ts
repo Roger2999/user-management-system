@@ -12,7 +12,7 @@ import path from "node:path";
  */
 
 /** Se sube cuando cambia la plantilla oficial, para poder auditar qué se emitió. */
-export const TEMPLATE_VERSION = 1;
+export const TEMPLATE_VERSION = 2;
 
 export function templatePath(): string {
   const configured = process.env.REPORTS_TEMPLATE_PATH?.trim();

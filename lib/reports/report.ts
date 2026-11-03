@@ -1,27 +1,27 @@
 /**
  * Composición del documento mensual.
  *
- * Junta las tres operaciones sobre la plantilla oficial, en el único orden que
- * importa: primero se emite la sección 1 (reemplaza tablas y puede quitar
- * drill-downs sobrantes, corriendo los índices), después se vacían las secciones
- * 2-7 y al final se fechan los campos del período.
+ * La plantilla v2 es un formulario: el generador solo reemplaza las tablas 6-8
+ * y fecha el documento. No hay vaciado genérico porque las secciones manuales
+ * ya vienen en blanco y una regla automática destruiría los `Si ____ / No ____`.
+ *
+ * Orden: tablas, campos del período y, al final, la nota de cobertura. La nota
+ * se inserta después de fechar para que no pase por el reemplazo de años.
  *
  * El documento no se reconstruye: se parte del `.docx` oficial y se reescribe
  * `word/document.xml`. Es la única forma de que el PDF salga indistinguible.
  */
 
-import type { TracesSection } from "./assembly/section-traces";
+import type {
+  TracesSection,
+  UserProfiles,
+} from "./assembly/section-traces";
 import type { DailyMetrics } from "./metrics/aggregate";
 import { buildDeclarationText, emitDeclaration } from "./document/declarations";
 import { buildMonthlyReport, type MonthlyReport } from "./model/monthly";
 import { DEFAULT_TIME_ZONE } from "./time";
-import {
-  DEFAULT_BLANK_SECTIONS,
-  blankSections,
-  type BlankSectionsSpec,
-} from "./document/blank-sections";
 import { readDocumentXml, replaceDocumentXml } from "./document/docx";
-import { DEFAULT_TRACES_TABLES, emitTracesSection } from "./document/emit";
+import { emitTracesSection } from "./document/emit";
 import { fillPeriodFields } from "./document/period";
 
 export type ReportDocumentInput = {
@@ -46,25 +46,7 @@ export function buildReportDocument(input: ReportDocumentInput): Uint8Array {
 
   const withTraces = emitTracesSection(xml, input.traces);
 
-  // Si la selección trae menos de diez sitios, `emitTracesSection` elimina las
-  // ranuras sobrantes y las tablas posteriores se corren. El mapa del vaciado
-  // tiene que correrse igual, o buscaría las tablas 18-22 en otro lugar.
-  const shift =
-    DEFAULT_TRACES_TABLES.drilldownSlots - input.traces.siteDrilldowns.length;
-  // La tabla de redes sociales se inserta antes de la nacional y corre todas las
-  // tablas posteriores una posición. El mapa del vaciado tiene que verlo.
-  const socialShift = input.traces.social === null ? 0 : 1;
-
-  const blankSpec: BlankSectionsSpec = {
-    ...DEFAULT_BLANK_SECTIONS,
-    tables: DEFAULT_BLANK_SECTIONS.tables.map((table) => ({
-      ...table,
-      tableIndex: table.tableIndex - shift + socialShift,
-    })),
-  };
-
-  const blanked = blankSections(withTraces, blankSpec);
-  const dated = fillPeriodFields(blanked, {
+  const dated = fillPeriodFields(withTraces, {
     month: input.period.month,
     year: input.period.year,
     generatedAt: input.generatedAt,
@@ -89,7 +71,8 @@ export type MonthlyDocumentInput = {
   period: { year: number; month: number };
   generatedAt: number;
   timeZone?: string;
-  nationalExclusions?: readonly string[];
+  /** Perfiles por `username` en minúsculas; los resuelve la capa de generación. */
+  profiles?: UserProfiles;
   limit?: number;
   browsingTimeCalibrated?: boolean;
 };
@@ -108,7 +91,7 @@ export function buildMonthlyDocument(
     year: input.period.year,
     month: input.period.month,
     daily: input.days,
-    nationalExclusions: input.nationalExclusions,
+    profiles: input.profiles,
     limit: input.limit,
     browsingTimeCalibrated: input.browsingTimeCalibrated,
   });

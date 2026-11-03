@@ -1,77 +1,26 @@
-import { classifySite } from "../classify/site";
-import {
-  DEFAULT_SOCIAL_NETWORKS,
-  socialNetworkFor,
-  type SocialNetwork,
-} from "../classify/social";
-import {
-  formatDuration,
-  formatInteger,
-  formatMegabytes,
-  formatPercentage,
-} from "../format";
+import { formatHoursMinutes, formatInteger, formatSize } from "../format";
 
 /**
- * Armado de la sección 1 del informe: las tablas de trazas.
+ * Armado de la sección de trazas de la plantilla oficial v2.
  *
- * Acá no se decide qué medir (eso es `metrics/`) ni cómo se ve un número (eso
- * es `format/`). Acá se arma la estructura exacta que el documento oficial
- * espera, con las cabeceras textuales que trae hoy.
+ * La plantilla nueva ya no separa nacional/internacional ni pide drill-downs:
+ * son tres tablas planas de cinco filas. Acá se arma esa estructura; qué medir
+ * vive en `metrics/` y cómo se ve un número vive en `format/`.
  *
- * Las tres tablas de la sección, en el orden del documento vigente:
+ * Reglas de selección:
  *
- * 1. Sitios internacionales más visitados (7 columnas).
- * 2. Drill-down por sitio: los 10 usuarios que más accedieron a cada uno (6).
- * 3. Los 10 usuarios que más descargaron (7).
+ * - **Sitios (S4):** top 5 por `Browsing Time` del sitio, no por hits. La
+ *   telemetría suma en los totales pero no compite. `Cantidad de usuarios` son
+ *   los usuarios distintos del mes, sin contar el tráfico sin cuenta.
+ * - **Usuarios con más tiempo (S5):** top 5 por el reloj del usuario.
+ * - **Usuarios con más descargas (S6):** top 5 por `bytesIn`. El título dice
+ *   "descargas", así que ordena el volumen descargado, no el tiempo.
  *
- * Regla de "sitios más visitados" (S20): las dos tablas de sitios son el top 10
- * por hits, calculado por el sistema. La selección no se declara.
- *
- * Los drill-downs son esos mismos sitios, en el orden de la tabla internacional,
- * y dentro de cada uno los 10 usuarios se ordenan por `Browsing Time` (S15).
- * Esa es la métrica del drill-down, no la de la tabla de sitios.
+ * Los nombres y cargos salen de `AccountRequest`; el documento no consulta la
+ * base: los recibe ya resueltos en `profiles`.
  */
 
-export const TOP_ROWS = 10;
-
-export const SITE_TABLE_HEADERS = [
-  "Sites",
-  "Hits",
-  "Incoming (MB)",
-  "Outgoing (MB)",
-  "Download Time (h:m:s)",
-  "Browsing Time (h:m:s)",
-  "% of Hits",
-] as const;
-
-/**
- * La cabecera del drill-down dice `(h:m:s)` pero los valores son porcentajes.
- * Es un defecto de la herramienta de origen y se reproduce textualmente: el
- * documento generado tiene que ser indistinguible del vigente.
- *
- * Es la única cabecera de drill-down. El documento de mayo tiene dos tablas
- * (`clarity.ms` y `windy.com`) exportadas con `% of Hits` y ordenadas por hits;
- * se normalizan a esta, por decisión del usuario: dos tablas del mismo tipo no
- * pueden medir cosas distintas en un informe oficial.
- */
-export const SITE_USER_TABLE_HEADERS = [
-  "Users",
-  "Hits",
-  "Incoming (MB)",
-  "Download Time (h:m:s)",
-  "Browsing Time (h:m:s)",
-  "% of Browsing Time (h:m:s)",
-] as const;
-
-export const TOP_USERS_TABLE_HEADERS = [
-  "Users",
-  "Hits",
-  "Incoming (MB)",
-  "Outgoing (MB)",
-  "Download Time (h:m:s)",
-  "Browsing Time (h:m:s)",
-  "% of Browsing Time (h:m:s)",
-] as const;
+export const TOP_ROWS = 5;
 
 export type SiteTotals = {
   site: string;
@@ -82,7 +31,7 @@ export type SiteTotals = {
   browsingMs: number;
   /**
    * Telemetría, publicidad o infraestructura: suma en los totales, pero no
-   * compite en las tablas de sitios (S26).
+   * compite en las tablas de sitios (S26 de la plantilla v1, vigente en v2).
    */
   telemetry?: boolean;
 };
@@ -105,142 +54,118 @@ export type UserTotals = {
   browsingMs: number;
 };
 
-export type SiteTableRow = {
+/** Perfil de la cuenta, ya resuelto desde `AccountRequest`. */
+export type UserProfile = {
+  fullName: string;
+  position: string;
+};
+
+/** Perfiles indexados por `username` en minúsculas. */
+export type UserProfiles = Readonly<Record<string, UserProfile>>;
+
+export type TopSiteRow = {
   site: string;
-  hits: string;
-  incoming: string;
-  outgoing: string;
-  downloadTime: string;
   browsingTime: string;
-  percentOfHits: string;
+  users: string;
 };
 
-export type SiteUserTableRow = {
+export type TopUserRow = {
   username: string;
-  hits: string;
-  incoming: string;
-  downloadTime: string;
+  fullName: string;
   browsingTime: string;
-  percentOfBrowsingTime: string;
 };
 
-export type UserTableRow = {
+export type TopDownloadRow = {
   username: string;
-  hits: string;
-  incoming: string;
-  outgoing: string;
-  downloadTime: string;
-  browsingTime: string;
-  percentOfBrowsingTime: string;
+  fullName: string;
+  downloaded: string;
 };
 
-export type SocialSection = {
-  /** Nombre de la red con más `Browsing Time` de usuarios. */
-  network: string;
-  rows: SiteUserTableRow[];
+export type TracesSection = {
+  topSites: TopSiteRow[];
+  topUsers: TopUserRow[];
+  topDownloads: TopDownloadRow[];
 };
 
-/** Filas de la tabla de sitios, ordenadas por hits descendente. */
-export function buildSiteTableRows(
+export type TracesSectionInput = {
+  sites: readonly SiteTotals[];
+  siteUsers: readonly SiteUserTotals[];
+  users: readonly UserTotals[];
+  /** Perfiles por `username` en minúsculas; sin perfil el nombre queda vacío. */
+  profiles?: UserProfiles;
+  /** Recorte de filas al renderizar. Nunca se aplica al persistir. */
+  limit?: number;
+};
+
+function profileMap(profiles: UserProfiles | undefined): Map<string, UserProfile> {
+  return new Map(
+    Object.entries(profiles ?? {}).map(([username, profile]) => [
+      username.toLowerCase(),
+      profile,
+    ]),
+  );
+}
+
+function fullNameFor(
+  profiles: Map<string, UserProfile>,
+  username: string,
+): string {
+  return profiles.get(username.toLowerCase())?.fullName ?? "";
+}
+
+/** Usuarios distintos por sitio, para la columna `Cantidad de usuarios`. */
+function distinctUsersBySite(
+  siteUsers: readonly SiteUserTotals[],
+): Map<string, number> {
+  const usersBySite = new Map<string, Set<string>>();
+
+  for (const row of siteUsers) {
+    if (row.username === null) continue;
+
+    const users = usersBySite.get(row.site) ?? new Set<string>();
+    users.add(row.username);
+    usersBySite.set(row.site, users);
+  }
+
+  return new Map(
+    [...usersBySite.entries()].map(([site, users]) => [site, users.size]),
+  );
+}
+
+/** Top 5 de sitios por `Browsing Time` (S4). */
+export function buildTopSites(
   sites: readonly SiteTotals[],
-  totalHits: number,
+  siteUsers: readonly SiteUserTotals[],
   limit: number = TOP_ROWS,
-): SiteTableRow[] {
+): TopSiteRow[] {
+  const usersBySite = distinctUsersBySite(siteUsers);
+
   return [...sites]
-    .sort((a, b) => b.hits - a.hits || a.site.localeCompare(b.site))
+    .filter((site) => site.telemetry !== true)
+    .sort(
+      (a, b) => b.browsingMs - a.browsingMs || a.site.localeCompare(b.site),
+    )
     .slice(0, limit)
     .map((site) => ({
       site: site.site,
-      hits: formatInteger(site.hits),
-      incoming: formatMegabytes(site.bytesIn),
-      outgoing: formatMegabytes(site.bytesOut),
-      downloadTime: formatDuration(site.elapsedMs),
-      browsingTime: formatDuration(site.browsingMs),
-      percentOfHits: formatPercentage(site.hits, totalHits),
+      browsingTime: formatHoursMinutes(site.browsingMs),
+      users: formatInteger(usersBySite.get(site.site) ?? 0),
     }));
 }
 
-export type SiteUserTableOptions = {
-  limit?: number;
-  /**
-   * Denominador del `% of Browsing Time`.
-   *
-   * Es la suma del `Browsing Time` de **todos** los usuarios del sitio, o sea la
-   * fila `Total` del export de usuarios de WebSpy. Verificado contra tres sitios
-   * de mayo 2026: bing `37:25:15` (134,715 s), instagram `40:58:59` (147,539 s),
-   * facebook `146:33:51` (527,631 s).
-   *
-   * No es el `Browsing Time` que la tabla de sitios muestra para ese sitio: para
-   * bing ese valor es `53:56:25` (194,185 s) y para instagram `157:52:37`
-   * (568,357 s). Son dos métricas calculadas con relojes distintos; usar la de la
-   * tabla de sitios como denominador produce porcentajes que no coinciden con el
-   * documento.
-   *
-   * Se deja explícito porque no es un detalle cosmético: es la diferencia entre
-   * reproducir el documento y parecer que lo reproduce.
-   *
-   * Detalle abierto: si el sitio tuviera tráfico sin cuenta, no hay evidencia de
-   * si ese tráfico entra en el `Total` del drill-down. Por ahora queda fuera y
-   * cuando exista se declara en la calidad del dato.
-   */
-  basisMs?: number;
-};
-
-/**
- * Filas del drill-down de un sitio.
- *
- * Orden: `Browsing Time` descendente. Está verificado contra dos sitios del
- * documento; en `www.youtube.com` el usuario con más hits no es el primero,
- * justamente porque el orden no es por hits.
- */
-export function buildSiteUserTableRows(
-  rows: readonly SiteUserTotals[],
-  options: SiteUserTableOptions = {},
-): SiteUserTableRow[] {
-  const limit = options.limit ?? TOP_ROWS;
-  const identified = rows.filter(
-    (row): row is SiteUserTotals & { username: string } => row.username !== null,
-  );
-
-  const basisMs =
-    options.basisMs ?? identified.reduce((sum, row) => sum + row.browsingMs, 0);
-
-  return [...identified]
-    .sort(
-      (a, b) =>
-        b.browsingMs - a.browsingMs ||
-        b.hits - a.hits ||
-        a.username.localeCompare(b.username),
-    )
-    .slice(0, limit)
-    .map((row) => ({
-      username: row.username,
-      hits: formatInteger(row.hits),
-      incoming: formatMegabytes(row.bytesIn),
-      downloadTime: formatDuration(row.elapsedMs),
-      browsingTime: formatDuration(row.browsingMs),
-      percentOfBrowsingTime: formatPercentage(row.browsingMs, basisMs),
-    }));
-}
-
-/**
- * Filas de la tabla de los 10 usuarios que más descargaron.
- *
- * El título dice "descargaron" pero el orden NO es por volumen: `red.social2`
- * (47,321.10 MB) aparece antes que `amaury` (604,006.72 MB). El único orden que
- * explica el documento es `Browsing Time` descendente, y el porcentaje
- * descendente lo confirma.
- *
- * El denominador es el tiempo de navegación total del mes, no el del sitio:
- * `red.social2` (5.5%) y `amaury` (3.2%) implican el mismo total.
- */
-export function buildTopUsersTableRows(
+/** Top 5 de usuarios por tiempo de navegación (S5). */
+export function buildTopUsers(
   users: readonly UserTotals[],
-  totalBrowsingMs: number,
+  profiles: UserProfiles = {},
   limit: number = TOP_ROWS,
-): UserTableRow[] {
+): TopUserRow[] {
+  const byUser = profileMap(profiles);
+
   return [...users]
-    .filter((user): user is UserTotals & { username: string } => user.username !== null)
+    .filter(
+      (user): user is UserTotals & { username: string } =>
+        user.username !== null,
+    )
     .sort(
       (a, b) =>
         b.browsingMs - a.browsingMs ||
@@ -250,192 +175,45 @@ export function buildTopUsersTableRows(
     .slice(0, limit)
     .map((user) => ({
       username: user.username,
-      hits: formatInteger(user.hits),
-      incoming: formatMegabytes(user.bytesIn),
-      outgoing: formatMegabytes(user.bytesOut),
-      downloadTime: formatDuration(user.elapsedMs),
-      browsingTime: formatDuration(user.browsingMs),
-      percentOfBrowsingTime: formatPercentage(user.browsingMs, totalBrowsingMs),
+      fullName: fullNameFor(byUser, user.username),
+      browsingTime: formatHoursMinutes(user.browsingMs),
     }));
 }
 
-/**
- * Filas de la sección "Redes Sociales más utilizadas en la entidad".
- *
- * La red se elige por el `Browsing Time` de sus usuarios, no por hits ni por el
- * `Browsing Time` del sitio: el reloj del sitio y el del par (sitio, usuario)
- * son métricas distintas (S12, S18). El denominador del `% of Browsing Time` es
- * la suma de todos los usuarios identificados de la red, igual que en el
- * drill-down de un sitio (S15).
- *
- * Un usuario puede aparecer en varios dominios de la misma red; sus valores se
- * suman antes de ordenar. Las conexiones directas por IP no se clasifican.
- *
- * Única métrica aproximada del informe (S27): el reloj de la red se obtiene
- * sumando relojes de pares (dominio, usuario) que se solapan entre dominios.
- * Reproducirlo exacto exigiría persistir los hits con marca de tiempo por red;
- * por eso el informe declara el `Browsing Time` como aproximado (S12).
- */
-export function buildSocialSection(
-  rows: readonly SiteUserTotals[],
-  networks: readonly SocialNetwork[] = DEFAULT_SOCIAL_NETWORKS,
+/** Top 5 de usuarios por volumen descargado (S6). */
+export function buildTopDownloads(
+  users: readonly UserTotals[],
+  profiles: UserProfiles = {},
   limit: number = TOP_ROWS,
-): SocialSection | null {
-  const byNetwork = new Map<
-    string,
-    { name: string; rows: SiteUserTotals[] }
-  >();
+): TopDownloadRow[] {
+  const byUser = profileMap(profiles);
 
-  for (const row of rows) {
-    if (row.username === null) continue;
-
-    const network = socialNetworkFor(row.site, networks);
-    if (network === null) continue;
-
-    const bucket = byNetwork.get(network.name) ?? {
-      name: network.name,
-      rows: [],
-    };
-    bucket.rows.push(row);
-    byNetwork.set(network.name, bucket);
-  }
-
-  if (byNetwork.size === 0) return null;
-
-  const ranked = [...byNetwork.values()]
-    .map((bucket) => ({
-      ...bucket,
-      totalBrowsingMs: bucket.rows.reduce(
-        (sum, row) => sum + row.browsingMs,
-        0,
-      ),
-    }))
+  return [...users]
+    .filter(
+      (user): user is UserTotals & { username: string } =>
+        user.username !== null,
+    )
     .sort(
       (a, b) =>
-        b.totalBrowsingMs - a.totalBrowsingMs ||
-        a.name.localeCompare(b.name),
-    );
-
-  const top = ranked[0];
-  const users = new Map<string, SiteUserTotals>();
-
-  for (const row of top.rows) {
-    const username = row.username as string;
-    const current = users.get(username);
-    if (current === undefined) {
-      users.set(username, { ...row });
-      continue;
-    }
-
-    current.hits += row.hits;
-    current.bytesIn += row.bytesIn;
-    current.elapsedMs += row.elapsedMs;
-    current.browsingMs += row.browsingMs;
-  }
-
-  return {
-    network: top.name,
-    rows: buildSiteUserTableRows([...users.values()], {
-      limit,
-      basisMs: top.totalBrowsingMs,
-    }),
-  };
-}
-
-/**
- * Sitios más visitados de una clasificación: top `limit` por hits descendente
- * (S20). Es un cálculo, no una lista declarada.
- */
-export type TopSitesOptions = {
-  limit?: number;
-  kind?: "national" | "international";
-  nationalExclusions?: readonly string[];
-};
-
-export function selectTopSites(
-  sites: readonly SiteTotals[],
-  options: TopSitesOptions = {},
-): SiteTotals[] {
-  const limit = options.limit ?? TOP_ROWS;
-  const kind = options.kind ?? "international";
-
-  return [...sites]
-    .filter((site) => site.telemetry !== true)
-    .filter(
-      (site) => classifySite(site.site, options.nationalExclusions) === kind,
+        b.bytesIn - a.bytesIn || a.username.localeCompare(b.username),
     )
-    .sort((a, b) => b.hits - a.hits || a.site.localeCompare(b.site))
-    .slice(0, limit);
+    .slice(0, limit)
+    .map((user) => ({
+      username: user.username,
+      fullName: fullNameFor(byUser, user.username),
+      downloaded: formatSize(user.bytesIn),
+    }));
 }
 
-export type TracesSection = {
-  internationalSites: SiteTableRow[];
-  nationalSites: SiteTableRow[];
-  siteDrilldowns: Array<{ site: string; rows: SiteUserTableRow[] }>;
-  topUsers: UserTableRow[];
-  social: SocialSection | null;
-};
-
-export type TracesSectionInput = {
-  totalHits: number;
-  totalBrowsingMs: number;
-  sites: readonly SiteTotals[];
-  siteUsers: readonly SiteUserTotals[];
-  users: readonly UserTotals[];
-  /**
-   * Exclusiones institucionales para la clasificación nacional. Es la única
-   * lista que se configura; no decide qué sitios entran, solo cómo se clasifican.
-   */
-  nationalExclusions?: readonly string[];
-  /** Catálogo de redes; por defecto el del informe (sin YouTube). */
-  socialNetworks?: readonly SocialNetwork[];
-  /** Recorte de filas al renderizar. Nunca se aplica al persistir (S17). */
-  limit?: number;
-};
-
-export function buildTracesSection(input: TracesSectionInput): TracesSection {
+export function buildTracesSection(
+  input: TracesSectionInput,
+): TracesSection {
   const limit = input.limit ?? TOP_ROWS;
-
-  // Las dos tablas se calculan: top 10 por hits de cada clasificación (S20).
-  const internationalSites = buildSiteTableRows(
-    selectTopSites(input.sites, {
-      nationalExclusions: input.nationalExclusions,
-    }),
-    input.totalHits,
-    limit,
-  );
-  const nationalSites = buildSiteTableRows(
-    selectTopSites(input.sites, {
-      kind: "national",
-      nationalExclusions: input.nationalExclusions,
-    }),
-    input.totalHits,
-    limit,
-  );
-
-  const usersBySite = new Map<string, SiteUserTotals[]>();
-  for (const row of input.siteUsers) {
-    const bucket = usersBySite.get(row.site);
-    if (bucket === undefined) {
-      usersBySite.set(row.site, [row]);
-    } else {
-      bucket.push(row);
-    }
-  }
-
-  // Los drill-downs son los mismos sitios de la tabla internacional y en su
-  // mismo orden: "de los sitios más visitados, los 10 usuarios que más
-  // accedieron a cada uno de estos sitios" (S20).
-  const siteDrilldowns = internationalSites.map((row) => ({
-    site: row.site,
-    rows: buildSiteUserTableRows(usersBySite.get(row.site) ?? [], { limit }),
-  }));
+  const profiles = input.profiles ?? {};
 
   return {
-    internationalSites,
-    nationalSites,
-    siteDrilldowns,
-    topUsers: buildTopUsersTableRows(input.users, input.totalBrowsingMs, limit),
-    social: buildSocialSection(input.siteUsers, input.socialNetworks, limit),
+    topSites: buildTopSites(input.sites, input.siteUsers, limit),
+    topUsers: buildTopUsers(input.users, profiles, limit),
+    topDownloads: buildTopDownloads(input.users, profiles, limit),
   };
 }

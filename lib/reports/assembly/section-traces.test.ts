@@ -1,442 +1,192 @@
 import { describe, expect, it } from "vitest";
 import {
-  buildSiteTableRows,
-  buildSiteUserTableRows,
-  buildSocialSection,
-  buildTopUsersTableRows,
+  buildTopDownloads,
+  buildTopSites,
+  buildTopUsers,
   buildTracesSection,
-  selectTopSites,
-  SITE_TABLE_HEADERS,
-  SITE_USER_TABLE_HEADERS,
+  TOP_ROWS,
   type SiteTotals,
   type SiteUserTotals,
+  type UserTotals,
 } from "./section-traces";
 
-/** Convierte `h:m:s` del documento a milisegundos, sin perder segundos. */
-function hms(value: string): number {
-  const [hours, minutes, seconds] = value.split(":").map(Number);
-  return (hours * 3600 + minutes * 60 + seconds) * 1000;
-}
+const HOUR = 60 * 60 * 1000;
+const MEGABYTE = 1024 * 1024;
+const GIGABYTE = 1024 * MEGABYTE;
 
-/** Convierte los MB impresos en el documento a bytes. */
-function mb(value: number): number {
-  return Math.round(value * 1024 * 1024);
-}
-
-function site(overrides: Partial<SiteTotals> & { site: string }): SiteTotals {
-  return {
-    hits: 0,
-    bytesIn: 0,
-    bytesOut: 0,
-    elapsedMs: 0,
-    browsingMs: 0,
-    ...overrides,
-  };
-}
-
-function siteUser(
-  username: string | null,
-  siteName: string,
-  hits: number,
-  megabytes: number,
-  download: string,
-  browsing: string,
-): SiteUserTotals {
-  return {
-    site: siteName,
-    username,
-    hits,
-    bytesIn: mb(megabytes),
-    elapsedMs: hms(download),
-    browsingMs: hms(browsing),
-  };
-}
-
-describe("cabeceras del documento", () => {
-  it("reproduce la cabecera del drill-down tal como está, con su error de unidad", () => {
-    expect(SITE_USER_TABLE_HEADERS[5]).toBe("% of Browsing Time (h:m:s)");
-  });
-
-  it("usa una sola cabecera para los diez drill-downs", () => {
-    // Decisión del usuario: los diez drill-downs se normalizan a Browsing Time.
-    // No existe variante por hits, aunque el documento vigente la tenga en dos
-    // tablas (clarity.ms y windy.com).
-    expect([...SITE_USER_TABLE_HEADERS]).toEqual([
-      "Users",
-      "Hits",
-      "Incoming (MB)",
-      "Download Time (h:m:s)",
-      "Browsing Time (h:m:s)",
-      "% of Browsing Time (h:m:s)",
-    ]);
-  });
-
-  it("emite exactamente seis columnas, en ese orden", () => {
-    const [row] = buildSiteUserTableRows([
-      {
-        site: "www.youtube.com",
-        username: "u1",
-        hits: 1,
-        bytesIn: 0,
-        elapsedMs: 0,
-        browsingMs: 0,
-      },
-    ]);
-
-    expect(Object.keys(row)).toEqual([
-      "username",
-      "hits",
-      "incoming",
-      "downloadTime",
-      "browsingTime",
-      "percentOfBrowsingTime",
-    ]);
-  });
-
-  it("declara las siete columnas de la tabla de sitios", () => {
-    expect([...SITE_TABLE_HEADERS]).toEqual([
-      "Sites",
-      "Hits",
-      "Incoming (MB)",
-      "Outgoing (MB)",
-      "Download Time (h:m:s)",
-      "Browsing Time (h:m:s)",
-      "% of Hits",
-    ]);
-  });
+const site = (values: Partial<SiteTotals> & Pick<SiteTotals, "site">): SiteTotals => ({
+  hits: 0,
+  bytesIn: 0,
+  bytesOut: 0,
+  elapsedMs: 0,
+  browsingMs: 0,
+  ...values,
 });
 
-describe("buildSiteTableRows", () => {
-  it("reproduce la fila de youtube del informe de mayo", () => {
-    const rows = buildSiteTableRows(
-      [
-        site({
-          site: "www.youtube.com",
-          hits: 129351,
-          bytesIn: mb(3676.86),
-          elapsedMs: hms("699:52:18"),
-          browsingMs: hms("266:34:32"),
-        }),
-      ],
-      91_300_000,
-    );
-
-    expect(rows[0]).toEqual({
-      site: "www.youtube.com",
-      hits: "129,351",
-      incoming: "3,676.86",
-      outgoing: "0.00",
-      downloadTime: "699:52:18",
-      browsingTime: "266:34:32",
-      percentOfHits: "0.1%",
-    });
-  });
-
-  it("ordena por hits descendente y corta en el top", () => {
-    // S20: la tabla de sitios se ordena por hits, aunque el Browsing Time sea
-    // mayor en otro sitio.
-    const rows = buildSiteTableRows(
-      [
-        site({ site: "b.com", hits: 10, browsingMs: hms("09:00:00") }),
-        site({ site: "a.com", hits: 30, browsingMs: hms("01:00:00") }),
-        site({ site: "c.com", hits: 20, browsingMs: hms("05:00:00") }),
-      ],
-      100,
-      2,
-    );
-
-    expect(rows.map((row) => row.site)).toEqual(["a.com", "c.com"]);
-  });
+const pair = (
+  values: Partial<SiteUserTotals> & Pick<SiteUserTotals, "site" | "username">,
+): SiteUserTotals => ({
+  hits: 0,
+  bytesIn: 0,
+  elapsedMs: 0,
+  browsingMs: 0,
+  ...values,
 });
 
-describe("buildSiteUserTableRows con el drill-down real de facebook", () => {
-  const facebook = "www.facebook.com";
-  const rows: SiteUserTotals[] = [
-    siteUser("marketing", facebook, 1556, 295.7, "153:27:44", "30:34:34"),
-    siteUser("yosmel", facebook, 2530, 707.57, "100:59:35", "25:28:05"),
-    siteUser("dtor.var", facebook, 967, 238.84, "105:02:03", "12:54:00"),
-    siteUser("aperez", facebook, 327, 132.38, "34:40:58", "02:16:25"),
-    siteUser("moises", facebook, 152, 2.86, "08:10:25", "02:04:19"),
-    siteUser("inversiones16", facebook, 104, 20.65, "06:42:26", "01:32:09"),
-    siteUser("brian", facebook, 123, 97.77, "12:38:06", "01:17:30"),
-    siteUser("amaury", facebook, 119, 4.67, "03:46:29", "01:06:39"),
-    siteUser("facturacion1", facebook, 31, 0.07, "00:00:00", "00:30:23"),
-    siteUser("supervisor1", facebook, 24, 5.35, "02:59:10", "00:28:59"),
-  ];
+const user = (
+  values: Partial<UserTotals> & Pick<UserTotals, "username">,
+): UserTotals => ({
+  hits: 0,
+  bytesIn: 0,
+  bytesOut: 0,
+  elapsedMs: 0,
+  browsingMs: 0,
+  ...values,
+});
 
+describe("buildTopSites", () => {
   it("ordena por Browsing Time, no por hits", () => {
-    // yosmel tiene más hits que marketing, pero marketing navegó más tiempo.
-    const built = buildSiteUserTableRows(rows, { basisMs: hms("146:16:38") });
-
-    expect(built.map((row) => row.username)).toEqual([
-      "marketing",
-      "yosmel",
-      "dtor.var",
-      "aperez",
-      "moises",
-      "inversiones16",
-      "brian",
-      "amaury",
-      "facturacion1",
-      "supervisor1",
-    ]);
-  });
-
-  it("reproduce las diez filas del documento con sus porcentajes", () => {
-    const built = buildSiteUserTableRows(rows, { basisMs: hms("146:16:38") });
-
-    expect(built).toEqual([
-      { username: "marketing", hits: "1,556", incoming: "295.70", downloadTime: "153:27:44", browsingTime: "30:34:34", percentOfBrowsingTime: "20.9%" },
-      { username: "yosmel", hits: "2,530", incoming: "707.57", downloadTime: "100:59:35", browsingTime: "25:28:05", percentOfBrowsingTime: "17.4%" },
-      { username: "dtor.var", hits: "967", incoming: "238.84", downloadTime: "105:02:03", browsingTime: "12:54:00", percentOfBrowsingTime: "8.8%" },
-      { username: "aperez", hits: "327", incoming: "132.38", downloadTime: "34:40:58", browsingTime: "02:16:25", percentOfBrowsingTime: "1.6%" },
-      { username: "moises", hits: "152", incoming: "2.86", downloadTime: "08:10:25", browsingTime: "02:04:19", percentOfBrowsingTime: "1.4%" },
-      { username: "inversiones16", hits: "104", incoming: "20.65", downloadTime: "06:42:26", browsingTime: "01:32:09", percentOfBrowsingTime: "1.0%" },
-      { username: "brian", hits: "123", incoming: "97.77", downloadTime: "12:38:06", browsingTime: "01:17:30", percentOfBrowsingTime: "0.9%" },
-      { username: "amaury", hits: "119", incoming: "4.67", downloadTime: "03:46:29", browsingTime: "01:06:39", percentOfBrowsingTime: "0.8%" },
-      { username: "facturacion1", hits: "31", incoming: "0.07", downloadTime: "00:00:00", browsingTime: "00:30:23", percentOfBrowsingTime: "0.3%" },
-      { username: "supervisor1", hits: "24", incoming: "5.35", downloadTime: "02:59:10", browsingTime: "00:28:59", percentOfBrowsingTime: "0.3%" },
-    ]);
-  });
-
-  it("excluye las cuentas sin identificar del drill-down y del denominador", () => {
-    const withAnonymous = [
-      ...rows,
-      siteUser(null, facebook, 500, 900, "10:00:00", "05:00:00"),
-    ];
-
-    const built = buildSiteUserTableRows(withAnonymous, {
-      basisMs: hms("146:16:38"),
-    });
-
-    expect(built).toHaveLength(10);
-    expect(built[0].percentOfBrowsingTime).toBe("20.9%");
-  });
-});
-
-describe("buildTopUsersTableRows", () => {
-  it("ordena por Browsing Time aunque el título diga descargas", () => {
-    const rows = buildTopUsersTableRows(
+    const rows = buildTopSites(
       [
-        {
-          username: "amaury",
-          hits: 594867,
-          bytesIn: mb(604006.72),
-          bytesOut: mb(1.86),
-          elapsedMs: hms("8501:16:08"),
-          browsingMs: hms("418:44:36"),
-        },
-        {
-          username: "red.social2",
-          hits: 250426,
-          bytesIn: mb(47321.1),
-          bytesOut: mb(0.41),
-          elapsedMs: hms("4764:37:05"),
-          browsingMs: hms("726:14:18"),
-        },
+        site({ site: "muchos-hits.com", hits: 100, browsingMs: 1 * HOUR }),
+        site({ site: "mucho-tiempo.com", hits: 1, browsingMs: 5 * HOUR }),
       ],
-      47_535_600_000,
+      [],
     );
 
-    expect(rows.map((row) => row.username)).toEqual(["red.social2", "amaury"]);
-    expect(rows[0]).toEqual({
-      username: "red.social2",
-      hits: "250,426",
-      incoming: "47,321.10",
-      outgoing: "0.41",
-      downloadTime: "4764:37:05",
-      browsingTime: "726:14:18",
-      percentOfBrowsingTime: "5.5%",
-    });
-    expect(rows[1].percentOfBrowsingTime).toBe("3.2%");
+    expect(rows.map((row) => row.site)).toEqual([
+      "mucho-tiempo.com",
+      "muchos-hits.com",
+    ]);
+  });
+
+  it("excluye la telemetría y recorta a cinco filas", () => {
+    const sites = Array.from({ length: 6 }, (_value, index) =>
+      site({ site: `sitio${index}.com`, browsingMs: (index + 1) * HOUR }),
+    );
+    sites.push(site({ site: "telemetria.com", browsingMs: 99 * HOUR, telemetry: true }));
+
+    const rows = buildTopSites(sites, []);
+
+    expect(rows).toHaveLength(TOP_ROWS);
+    expect(rows.map((row) => row.site)).toEqual([
+      "sitio5.com",
+      "sitio4.com",
+      "sitio3.com",
+      "sitio2.com",
+      "sitio1.com",
+    ]);
+    expect(rows[0].browsingTime).toBe("6.00");
+  });
+
+  it("cuenta usuarios distintos por sitio y no el tráfico sin cuenta", () => {
+    const rows = buildTopSites(
+      [site({ site: "sitio.com", browsingMs: HOUR })],
+      [
+        pair({ site: "sitio.com", username: "u1" }),
+        pair({ site: "sitio.com", username: "u2" }),
+        pair({ site: "sitio.com", username: null }),
+        pair({ site: "otro.com", username: "u3" }),
+      ],
+    );
+
+    expect(rows[0].users).toBe("2");
+  });
+
+  it("formatea hh.mm con minutos de dos dígitos", () => {
+    const rows = buildTopSites(
+      [site({ site: "sitio.com", browsingMs: 2 * HOUR + 30 * 60 * 1000 })],
+      [],
+    );
+
+    expect(rows[0].browsingTime).toBe("2.30");
   });
 });
 
-describe("buildSocialSection", () => {
-  it("elige la red con más Browsing Time de usuarios, no la de más hits", () => {
-    const section = buildSocialSection([
-      siteUser("ana", "web.whatsapp.com", 10, 1, "00:10:00", "02:00:00"),
-      siteUser("brian", "web.whatsapp.com", 90, 1, "00:10:00", "01:00:00"),
-      siteUser("ana", "web.telegram.org", 10, 1, "00:10:00", "01:00:00"),
-      siteUser("carlos", "web.telegram.org", 80, 1, "00:10:00", "01:00:00"),
-      siteUser("dani", "www.facebook.com", 5, 1, "00:10:00", "00:30:00"),
+describe("buildTopUsers", () => {
+  it("ordena por tiempo de navegación y excluye la cuenta sin identificar", () => {
+    const rows = buildTopUsers([
+      user({ username: "u1", browsingMs: 3 * HOUR }),
+      user({ username: "u2", browsingMs: 5 * HOUR }),
+      user({ username: null, browsingMs: 9 * HOUR }),
     ]);
 
-    expect(section?.network).toBe("WhatsApp");
-    expect(section?.rows.map((row) => row.username)).toEqual(["ana", "brian"]);
-    expect(section?.rows[0].percentOfBrowsingTime).toBe("66.7%");
-    expect(section?.rows[1].percentOfBrowsingTime).toBe("33.3%");
+    expect(rows.map((row) => row.username)).toEqual(["u2", "u1"]);
   });
 
-  it("suma los dominios de la misma red antes de ordenar", () => {
-    const section = buildSocialSection([
-      siteUser("ana", "web.whatsapp.com", 10, 1, "00:10:00", "02:00:00"),
-      siteUser("ana", "whatsapp.com", 5, 1, "00:05:00", "01:00:00"),
-      siteUser("brian", "web.whatsapp.com", 10, 1, "00:10:00", "01:00:00"),
+  it("busca el nombre sin distinguir mayúsculas y deja vacío sin perfil", () => {
+    const rows = buildTopUsers(
+      [
+        user({ username: "Ana.Perez", browsingMs: 2 * HOUR }),
+        user({ username: "sin.perfil", browsingMs: 1 * HOUR }),
+      ],
+      {
+        "ana.perez": { fullName: "Ana Pérez", position: "Analista" },
+      },
+    );
+
+    expect(rows[0].fullName).toBe("Ana Pérez");
+    expect(rows[1].fullName).toBe("");
+  });
+
+  it("recorta a cinco filas", () => {
+    const users = Array.from({ length: 7 }, (_value, index) =>
+      user({ username: `u${index}`, browsingMs: (index + 1) * HOUR }),
+    );
+
+    expect(buildTopUsers(users)).toHaveLength(TOP_ROWS);
+  });
+});
+
+describe("buildTopDownloads", () => {
+  it("ordena por volumen descargado, no por tiempo", () => {
+    const rows = buildTopDownloads([
+      user({ username: "mucho-tiempo", browsingMs: 9 * HOUR, bytesIn: 1 * MEGABYTE }),
+      user({ username: "mucho-volumen", browsingMs: HOUR, bytesIn: 2 * GIGABYTE }),
     ]);
 
-    expect(section?.rows.map((row) => row.username)).toEqual(["ana", "brian"]);
-    expect(section?.rows[0].browsingTime).toBe("03:00:00");
-    expect(section?.rows[0].hits).toBe("15");
-    expect(section?.rows[0].percentOfBrowsingTime).toBe("75.0%");
+    expect(rows.map((row) => row.username)).toEqual([
+      "mucho-volumen",
+      "mucho-tiempo",
+    ]);
   });
 
-  it("devuelve null si no hay sitios de redes sociales", () => {
-    expect(
-      buildSocialSection([
-        siteUser("ana", "www.google.com", 10, 1, "00:10:00", "02:00:00"),
-        siteUser("ana", "www.youtube.com", 10, 1, "00:10:00", "02:00:00"),
-      ]),
-    ).toBeNull();
-  });
+  it("escribe MB por debajo de 1 GiB y GB desde 1 GiB", () => {
+    const rows = buildTopDownloads([
+      user({ username: "gigas", bytesIn: 2 * GIGABYTE }),
+      user({ username: "megas", bytesIn: 500 * MEGABYTE }),
+    ]);
 
-  it("ignora el tráfico sin cuenta", () => {
-    expect(
-      buildSocialSection([
-        siteUser(null, "web.whatsapp.com", 10, 1, "00:10:00", "02:00:00"),
-      ]),
-    ).toBeNull();
+    expect(rows[0].downloaded).toBe("2.00 GB");
+    expect(rows[1].downloaded).toBe("500.00 MB");
   });
 });
 
 describe("buildTracesSection", () => {
-  it("calcula las dos tablas: top por hits de cada clasificación", () => {
-    // Regla S20: el sistema calcula la lista, no la recibe. `picta.cu` encabeza
-    // la nacional por hits y `google.com` no entra en la internacional porque
-    // youtube tiene más.
-    const section = buildTracesSection({
-      totalHits: 91_300_000,
-      totalBrowsingMs: 47_535_600_000,
-      sites: [
-        site({ site: "www.youtube.com", hits: 129_351, browsingMs: hms("266:34:32") }),
-        site({ site: "google.com", hits: 90_921, browsingMs: hms("231:39:24") }),
-        site({ site: "www.picta.cu", hits: 639_073, browsingMs: hms("358:48:41") }),
+  it("arma las tres tablas con los perfiles recibidos", () => {
+    const traces = buildTracesSection({
+      sites: [site({ site: "sitio.com", browsingMs: HOUR })],
+      siteUsers: [pair({ site: "sitio.com", username: "u1" })],
+      users: [
+        user({
+          username: "u1",
+          browsingMs: HOUR,
+          bytesIn: MEGABYTE,
+        }),
       ],
-      siteUsers: [],
-      users: [],
+      profiles: {
+        u1: { fullName: "Ana Pérez", position: "Analista" },
+      },
     });
 
-    expect(section.internationalSites.map((row) => row.site)).toEqual([
-      "www.youtube.com",
-      "google.com",
+    expect(traces.topSites).toEqual([
+      { site: "sitio.com", browsingTime: "1.00", users: "1" },
     ]);
-    expect(section.nationalSites.map((row) => row.site)).toEqual([
-      "www.picta.cu",
+    expect(traces.topUsers).toEqual([
+      { username: "u1", fullName: "Ana Pérez", browsingTime: "1.00" },
     ]);
-  });
-
-  it("corta cada tabla en 10 y ordena por hits", () => {
-    const sites = Array.from({ length: 12 }, (_, index) =>
-      site({
-        site: `s${String(index).padStart(2, "0")}.com`,
-        hits: index,
-        browsingMs: hms("99:00:00"),
-      }),
-    );
-
-    const section = buildTracesSection({
-      totalHits: 1000,
-      totalBrowsingMs: 1_000_000,
-      sites,
-      siteUsers: [],
-      users: [],
-    });
-
-    expect(section.internationalSites).toHaveLength(10);
-    expect(section.internationalSites[0].site).toBe("s11.com");
-    expect(section.internationalSites[9].site).toBe("s02.com");
-  });
-
-  it("genera un drill-down por cada sitio de la tabla, en el mismo orden", () => {
-    const section = buildTracesSection({
-      totalHits: 1000,
-      totalBrowsingMs: 10_000_000,
-      sites: [
-        site({ site: "www.youtube.com", hits: 900, browsingMs: hms("10:00:00") }),
-        site({ site: "www.facebook.com", hits: 100, browsingMs: hms("20:00:00") }),
-      ],
-      siteUsers: [
-        siteUser("u1", "www.youtube.com", 900, 10, "01:00:00", "02:00:00"),
-        siteUser("u2", "www.facebook.com", 100, 5, "00:30:00", "00:10:00"),
-      ],
-      users: [],
-    });
-
-    expect(section.internationalSites.map((row) => row.site)).toEqual([
-      "www.youtube.com",
-      "www.facebook.com",
+    expect(traces.topDownloads).toEqual([
+      { username: "u1", fullName: "Ana Pérez", downloaded: "1.00 MB" },
     ]);
-    expect(section.siteDrilldowns.map((drilldown) => drilldown.site)).toEqual([
-      "www.youtube.com",
-      "www.facebook.com",
-    ]);
-    expect(section.siteDrilldowns[1].rows.map((row) => row.username)).toEqual([
-      "u2",
-    ]);
-  });
-
-  it("respeta las exclusiones institucionales al clasificar", () => {
-    // `une.cu` deja de ser nacional y compite en la tabla internacional.
-    const section = buildTracesSection({
-      totalHits: 10_000,
-      totalBrowsingMs: 1_000_000,
-      sites: [
-        site({ site: "elecmtz.une.cu", hits: 9000 }),
-        site({ site: "www.picta.cu", hits: 500 }),
-      ],
-      siteUsers: [],
-      users: [],
-      nationalExclusions: ["une.cu"],
-    });
-
-    expect(section.internationalSites.map((row) => row.site)).toEqual([
-      "elecmtz.une.cu",
-    ]);
-    expect(section.nationalSites.map((row) => row.site)).toEqual([
-      "www.picta.cu",
-    ]);
-  });
-});
-
-describe("selectTopSites", () => {
-  it("ordena por hits y no por Browsing Time", () => {
-    const selected = selectTopSites([
-      site({ site: "www.youtube.com", hits: 900, browsingMs: hms("01:00:00") }),
-      site({ site: "google.com", hits: 5000, browsingMs: hms("09:00:00") }),
-      site({ site: "www.picta.cu", hits: 7000, browsingMs: hms("05:00:00") }),
-    ]);
-
-    expect(selected.map((row) => row.site)).toEqual([
-      "google.com",
-      "www.youtube.com",
-    ]);
-  });
-
-  it("respeta las exclusiones al clasificar", () => {
-    // `une.cu` es una exclusión institucional: sus dominios dejan de ser
-    // nacionales y pasan a competir en la tabla internacional.
-    const selected = selectTopSites(
-      [
-        site({ site: "elecmtz.une.cu", hits: 9000 }),
-        site({ site: "www.youtube.com", hits: 900 }),
-      ],
-      { nationalExclusions: ["une.cu"] },
-    );
-
-    expect(selected.map((row) => row.site)).toEqual([
-      "elecmtz.une.cu",
-      "www.youtube.com",
-    ]);
-  });
-
-  it("excluye la telemetría aunque tenga más hits (S26)", () => {
-    const selected = selectTopSites([
-      site({ site: "www.youtube.com", hits: 10 }),
-      site({ site: "ctldl.windowsupdate.com", hits: 9000, telemetry: true }),
-      site({ site: "watson.microsoft.com", hits: 8000, telemetry: true }),
-    ]);
-
-    // La telemetría sigue en los totales: solo deja de competir por un puesto.
-    expect(selected.map((row) => row.site)).toEqual(["www.youtube.com"]);
   });
 });
