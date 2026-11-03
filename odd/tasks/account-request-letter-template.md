@@ -66,5 +66,11 @@ Rama: `feat/account-request-letter-template` · Estrategia: `ask-on-risk` · Run
   `npx tsc --noEmit` → sin errores; `pnpm lint` → 0 errores (1 warning
   preexistente en `app/(auth)/actions/signout-action.ts`); `prisma validate` →
   esquema válido. La migración `20261102120000_add_account_request_user_account_fields`
-  queda creada pero no aplicada a la base configurada: aplicarla es una decisión
-  de despliegue del usuario (`pnpm db:migrate`).
+  fue aplicada a la base configurada con `prisma migrate deploy` y verificada:
+  `cuentaUsuario` (text, nullable), `actividadRealiza` (text, nullable) y
+  `administradorSistema` (boolean, not null, default false);
+  `prisma migrate status` → `Database schema is up to date!`.
+- **L5** — La revisión nativa de RDD quedó bloqueada en la validación dirigida:
+  `review-validator` devolvió `validator_result_not_admissible` dos veces, así
+  que no se emitió recibo. La corrección aplicada fue una línea explícita
+  `administradorSistema` en el update (el `...data` ya lo persistía).
