@@ -1,7 +1,8 @@
 "use client";
-import Field from "@/components/field";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
+import { toast } from "sonner";
+import Field from "@/components/field";
 import { Button } from "@/components/ui/button";
 import { UpdateUserState } from "@/lib/types";
 import { UpdateUserAction } from "../actions/update-user-action";
@@ -26,11 +27,20 @@ export default function UpdateUserForm({ initialUser }: Props) {
     UpdateUserAction,
     initialState,
   );
+
+  useEffect(() => {
+    if (state.success && state.message) {
+      toast.success(state.message);
+    } else if (state.dbErrors?.message) {
+      toast.error(state.dbErrors.message);
+    }
+  }, [state]);
+
   return (
-    <div className="flex h-full flex-col gap-4">
-      <h2 className="text-xl font-semibold">Datos de la cuenta</h2>
+    <div className="flex flex-col gap-4">
+      <h3 className="text-base font-medium">Datos de la cuenta</h3>
       <form
-        className="flex flex-1 flex-col space-y-2 rounded-xl border p-6"
+        className="flex flex-col space-y-2 rounded-xl border p-6"
         action={action}
       >
         <Field
@@ -54,13 +64,9 @@ export default function UpdateUserForm({ initialUser }: Props) {
           name="position"
           defaultValue={state.data?.position ?? initialUser.position ?? ""}
         />
-        <Button className="mt-auto">
+        <Button className="mt-2 self-start" type="submit" disabled={pending}>
           {pending ? "Enviando..." : "Guardar"}
         </Button>
-        {state.success && <p className="text-success">{state.message}</p>}
-        {state.dbErrors && (
-          <p className="text-destructive">{state.dbErrors.message}</p>
-        )}
       </form>
     </div>
   );

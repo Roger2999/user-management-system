@@ -1,9 +1,10 @@
 import type { Prisma } from "@/generated/prisma/client";
 import { AuditAction } from "@/generated/prisma/enums";
 
-/** Entidades auditables. Hoy solo existe la solicitud de cuenta. */
+/** Entidades auditables. */
 export const AUDIT_ENTITY = {
   ACCOUNT_REQUEST: "AccountRequest",
+  USER: "User",
 } as const;
 
 export type AuditActor = {
