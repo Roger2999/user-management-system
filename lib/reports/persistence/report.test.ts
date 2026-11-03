@@ -26,7 +26,12 @@ const PATTERN = "__reports-test.example";
 
 function day(
   name: string,
-  pairs: { site: string; username: string | null; hits: number }[],
+  pairs: {
+    site: string;
+    username: string | null;
+    hits: number;
+    browsingMs?: number;
+  }[],
 ): DailyMetrics {
   return {
     day: name,
@@ -44,7 +49,7 @@ function day(
       hits: pair.hits,
       bytesIn: 0,
       elapsedMs: 0,
-      browsingMs: 0,
+      browsingMs: pair.browsingMs ?? 0,
     })),
   };
 }
@@ -61,8 +66,12 @@ const GENERATE_DATES = GENERATE_PERIOD.days.map(
 );
 
 const DAYS = [
-  day("2099-02-01", [{ site: SITE, username: USER, hits: 2 }]),
-  day("2099-02-02", [{ site: SITE, username: USER, hits: 3 }]),
+  day("2099-02-01", [
+    { site: SITE, username: USER, hits: 2, browsingMs: 1_500 },
+  ]),
+  day("2099-02-02", [
+    { site: SITE, username: USER, hits: 3, browsingMs: 1_500 },
+  ]),
 ];
 
 describe.skipIf(!enabled)("persistencia del informe mensual", () => {
@@ -130,8 +139,12 @@ describe.skipIf(!enabled)("persistencia del informe mensual", () => {
     const reports = await db().monthlyReport.count({
       where: { year: YEAR, month: { in: [MONTH, GENERATE_MONTH] } },
     });
-    const rules = await db().categoryRule.count({ where: { pattern: PATTERN } });
-    const accounts = await db().proxyAccount.count({ where: { username: USER } });
+    const rules = await db().categoryRule.count({
+      where: { pattern: PATTERN },
+    });
+    const accounts = await db().proxyAccount.count({
+      where: { username: USER },
+    });
     await prisma.$disconnect();
 
     expect(reports).toBe(0);
@@ -140,7 +153,11 @@ describe.skipIf(!enabled)("persistencia del informe mensual", () => {
   }, 60_000);
 
   it("guarda el informe y detecta los hallazgos del período", async () => {
-    const report = buildMonthlyReport({ year: YEAR, month: MONTH, daily: DAYS });
+    const report = buildMonthlyReport({
+      year: YEAR,
+      month: MONTH,
+      daily: DAYS,
+    });
 
     const saved = await saveMonthlyReport(db(), {
       report,
@@ -173,21 +190,19 @@ describe.skipIf(!enabled)("persistencia del informe mensual", () => {
       proxyAccountId: USER,
       url: SITE,
       hits: 5,
+      browsingMs: 3_000,
       disposition: "PENDING",
     });
-    expect(findings[0].firstSeen).toEqual(
-      new Date("2099-02-01T12:00:00.000Z"),
-    );
-    expect(findings[0].lastSeen).toEqual(
-      new Date("2099-02-02T12:00:00.000Z"),
-    );
+    expect(findings[0].firstSeen).toEqual(new Date("2099-02-01T12:00:00.000Z"));
+    expect(findings[0].lastSeen).toEqual(new Date("2099-02-02T12:00:00.000Z"));
   }, 60_000);
 
   it("regenerar conserva la revisión y actualiza la evidencia", async () => {
     const before = await db().reportFinding.findFirst({
       where: { monthlyReport: { year: YEAR, month: MONTH } },
     });
-    if (before === null) throw new Error("falta el hallazgo de la prueba anterior");
+    if (before === null)
+      throw new Error("falta el hallazgo de la prueba anterior");
 
     await db().reportFinding.update({
       where: { id: before.id },
@@ -195,10 +210,18 @@ describe.skipIf(!enabled)("persistencia del informe mensual", () => {
     });
 
     const days = [
-      day("2099-02-01", [{ site: SITE, username: USER, hits: 4 }]),
-      day("2099-02-02", [{ site: SITE, username: USER, hits: 6 }]),
+      day("2099-02-01", [
+        { site: SITE, username: USER, hits: 4, browsingMs: 4_000 },
+      ]),
+      day("2099-02-02", [
+        { site: SITE, username: USER, hits: 6, browsingMs: 6_000 },
+      ]),
     ];
-    const report = buildMonthlyReport({ year: YEAR, month: MONTH, daily: days });
+    const report = buildMonthlyReport({
+      year: YEAR,
+      month: MONTH,
+      daily: days,
+    });
 
     const saved = await saveMonthlyReport(db(), {
       report,
@@ -215,6 +238,7 @@ describe.skipIf(!enabled)("persistencia del informe mensual", () => {
     expect(saved.findings).toBe(1);
     expect(after).toMatchObject({
       hits: 10,
+      browsingMs: 10_000,
       disposition: "CONFIRMED",
       measure: "bloqueado en el proxy",
     });
@@ -253,7 +277,11 @@ describe.skipIf(!enabled)("persistencia del informe mensual", () => {
       data: { active: false },
     });
 
-    const report = buildMonthlyReport({ year: YEAR, month: MONTH, daily: DAYS });
+    const report = buildMonthlyReport({
+      year: YEAR,
+      month: MONTH,
+      daily: DAYS,
+    });
     const saved = await saveMonthlyReport(db(), {
       report,
       days: DAYS,

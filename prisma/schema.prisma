@@ -467,6 +467,7 @@ model ReportFinding {
 
   url         String
   hits        Int
+  browsingMs  Int                @default(0)
   firstSeen   DateTime
   lastSeen    DateTime
   disposition FindingDisposition @default(PENDING)

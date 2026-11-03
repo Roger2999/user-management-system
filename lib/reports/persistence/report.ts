@@ -13,7 +13,8 @@ import type { MonthlyReport } from "../model/monthly";
  *
  * **Los hallazgos conservan su revisión.** Regenerar el informe vuelve a
  * detectar coincidencias, pero una coincidencia que ya existía conserva su
- * disposición y su medida; solo se actualizan los hits y las fechas. Una
+ * disposición y su medida; solo se actualizan los hits, el browsing time y las
+ * fechas. Una
  * coincidencia que desapareció se borra. Así una corrección del período no
  * obliga a revisar de nuevo lo ya revisado.
  */
@@ -144,6 +145,7 @@ export async function saveMonthlyReport(
       const current = existingByKey.get(key);
       const evidence = {
         hits: candidate.hits,
+        browsingMs: candidate.browsingMs,
         firstSeen: candidate.firstSeen,
         lastSeen: candidate.lastSeen,
       };

@@ -22,8 +22,9 @@ function pair(
   site: string,
   username: string | null,
   hits: number,
+  browsingMs = 0,
 ): DailyMetrics["siteUsers"][number] {
-  return { site, username, hits, bytesIn: 0, elapsedMs: 0, browsingMs: 0 };
+  return { site, username, hits, bytesIn: 0, elapsedMs: 0, browsingMs };
 }
 
 function rule(overrides: Partial<CategoryRule>): CategoryRule {
@@ -41,8 +42,14 @@ describe("detectFindings", () => {
   it("suma los hits del par y guarda el primer y el último día", () => {
     const found = detectFindings(
       [
-        day({ day: "2026-05-02", siteUsers: [pair("www.example.com", "brian", 3)] }),
-        day({ day: "2026-05-01", siteUsers: [pair("www.example.com", "brian", 2)] }),
+        day({
+          day: "2026-05-02",
+          siteUsers: [pair("www.example.com", "brian", 3)],
+        }),
+        day({
+          day: "2026-05-01",
+          siteUsers: [pair("www.example.com", "brian", 2)],
+        }),
       ],
       [rule({})],
     );
@@ -56,6 +63,32 @@ describe("detectFindings", () => {
     });
     expect(found[0].firstSeen).toEqual(new Date("2026-05-01T12:00:00.000Z"));
     expect(found[0].lastSeen).toEqual(new Date("2026-05-02T12:00:00.000Z"));
+  });
+
+  it("suma el browsing time de cada par sin mezclar usuarios", () => {
+    const found = detectFindings(
+      [
+        day({
+          day: "2026-05-01",
+          siteUsers: [
+            pair("www.example.com", "brian", 2, 90_000),
+            pair("www.example.com", "yosmel", 1, 10_000),
+          ],
+        }),
+        day({
+          day: "2026-05-02",
+          siteUsers: [pair("www.example.com", "brian", 3, 30_000)],
+        }),
+      ],
+      [rule({})],
+    );
+
+    const byUser = new Map(
+      found.map((finding) => [finding.username, finding.browsingMs]),
+    );
+
+    expect(byUser.get("brian")).toBe(120_000);
+    expect(byUser.get("yosmel")).toBe(10_000);
   });
 
   it("produce una evidencia por usuario y conserva el tráfico sin cuenta", () => {
@@ -73,9 +106,11 @@ describe("detectFindings", () => {
       [rule({})],
     );
 
-    expect(
-      found.map((finding) => finding.username ?? "").sort(),
-    ).toEqual(["", "brian", "yosmel"]);
+    expect(found.map((finding) => finding.username ?? "").sort()).toEqual([
+      "",
+      "brian",
+      "yosmel",
+    ]);
     expect(found.find((finding) => finding.username === null)?.hits).toBe(4);
   });
 
@@ -109,7 +144,9 @@ describe("detectFindings", () => {
   });
 
   it("ignora las reglas inactivas y no inventa hallazgos sin reglas", () => {
-    const days = [day({ day: "2026-05-01", siteUsers: [pair("www.example.com", "u", 1)] })];
+    const days = [
+      day({ day: "2026-05-01", siteUsers: [pair("www.example.com", "u", 1)] }),
+    ];
 
     expect(detectFindings(days, [rule({ active: false })])).toEqual([]);
     expect(detectFindings(days, [])).toEqual([]);
@@ -117,7 +154,12 @@ describe("detectFindings", () => {
 
   it("ignora los pares sin hits", () => {
     const found = detectFindings(
-      [day({ day: "2026-05-01", siteUsers: [pair("www.example.com", "u", 0)] })],
+      [
+        day({
+          day: "2026-05-01",
+          siteUsers: [pair("www.example.com", "u", 0)],
+        }),
+      ],
       [rule({})],
     );
 
