@@ -7,7 +7,7 @@ export function ScheduleSection({ user }: { user: AccountRequest }) {
     <>
       <Banner>DÍAS Y HORAS DE USO DE LA CUENTA:</Banner>
 
-      <Row h={16.5}>
+      <Row h={14.4}>
         <Cell end className="gap-[10pt]">
           <span className="flex items-center gap-1">
             <span>Lunes a Viernes</span>
