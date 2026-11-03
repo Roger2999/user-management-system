@@ -71,10 +71,10 @@ antivirus, USB, vulnerabilidades, SIEM, respaldos ni firmas.
 ## Tasks
 
 - **T1** — Documento de seguimiento y espejo en Engram. Route: inline. Status: hecho.
-- **T2** — Plantilla sanitizada v2, `TEMPLATE_VERSION=2` y archivo de la v1. Route: inline. Spec: S1. Status: pendiente.
-- **T3** — Formatos `H.MM` / MB-GB, armado de las tres tablas y perfiles. Route: inline. Spec: S4-S8. Status: pendiente.
-- **T4** — Mapa de tablas 6/7/8, campos del período, ancla de la declaración y retiro del vaciado. Route: inline. Spec: S2, S3. Status: pendiente.
-- **T5** — Tests de T2-T4 y documento dorado. Route: inline. Spec: S11. Status: pendiente.
+- **T2** — Plantilla sanitizada v2, `TEMPLATE_VERSION=2` y archivo de la v1. Route: inline. Spec: S1. Status: hecho (`e22e41b`; asset local en `storage/templates/`, v1 en `monthly-report-v1.docx`).
+- **T3** — Formatos `H.MM` / MB-GB, armado de las tres tablas y perfiles. Route: inline. Spec: S4-S8. Status: hecho (`e22e41b`).
+- **T4** — Mapa de tablas 6/7/8, campos del período, ancla de la declaración y retiro del vaciado. Route: inline. Spec: S2, S3. Status: hecho (`e22e41b`).
+- **T5** — Tests de T2-T4 y documento dorado. Route: inline. Spec: S11. Status: hecho (`e22e41b`, `3095efe`; PDF piloto de octubre verificado con LibreOffice).
 - **T6** — Tabla 4, categoría `MALWARE`, checkboxes y orden de generación. Route: inline. Spec: S9, S10. Status: pendiente.
 - **T7** — Piloto octubre, suite/`tsc`/`eslint` y despliegue. Route: inline. Spec: S11, S12. Status: pendiente.
 
@@ -125,3 +125,19 @@ y las cinco preguntas de incidencias.
 - Supuestos registrados: "sitios más visitados" ordena por `Browsing Time` (la
   columna que muestra); `hh.mm` se escribe `H.MM` (ej. `266.34`); la tabla 6
   incluye sitios nacionales e internacionales.
+
+### L6 — Unidad 1 (plantilla + trazas)
+
+- `e22e41b` adapta el documento: tablas 6/7/8, campos del período, ancla de la
+  declaración, retiro de `blank-sections`, perfiles desde `AccountRequest` con
+  fallback a `ProxyAccount`, y `TEMPLATE_VERSION=2`.
+- `3095efe` agrega la prueba contra la plantilla real (se salta si el asset no
+  está, como en CI).
+- Verificación local: 234 tests pasan, 9 saltados; `tsc` y `eslint` limpios.
+  Piloto octubre 2026 renderizado a PDF: título, rango, emisión, las tres
+  tablas, la declaración y el cierre salen correctos; no queda ningún dato de
+  octubre del ejemplar.
+- El archivo v1 quedó en `storage/templates/monthly-report-v1.docx`; la v2
+  sanitizada reemplazó `monthly-report.docx`. `storage/` sigue fuera de git.
+- Pendiente (T6): tabla 4 de incidencias, `MALWARE`, checkboxes y reordenar la
+  generación para que las medidas revisadas entren al documento.
