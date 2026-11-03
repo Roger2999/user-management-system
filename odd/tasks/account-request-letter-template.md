@@ -79,3 +79,6 @@ Rama: `feat/account-request-letter-template` · Estrategia: `ask-on-risk` · Run
   `[X]` / `[  ]`); la fecha de expiración ya no lleva guiones bajos además del
   borde (un solo subrayado); y los nombres de PC e inventario ya no llevan
   subrayado interno además del borde de fila.
+- **L7** — Corrección de L6: se restauró el placeholder de la fecha de
+  expiración (`____/______/202___`) y se quitó su borde inferior, de modo que
+  no quede doble subrayado. Cuando hay fecha, se imprime como texto sin línea.
