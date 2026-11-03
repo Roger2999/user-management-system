@@ -34,7 +34,7 @@ export function ScheduleSection({ user }: { user: AccountRequest }) {
       </Row>
 
       <Row h={25.1}>
-        <Cell w="w-[42.4%]" className="flex-col items-start">
+        <Cell w="w-[42.4%]" className="flex-col items-start justify-center">
           <span className="flex w-full items-center gap-1">
             <span>No laborables: Sábado de</span>
             <span className="min-w-10 border-b border-black text-center">

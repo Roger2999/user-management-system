@@ -22,9 +22,17 @@ export function UserAccountSection({ user }: { user: AccountRequest }) {
         </Cell>
       </Row>
 
-      <Row h={12.7}>
-        <Cell w="w-[30%]">{user.cuentaUsuario || "\u00A0"}</Cell>
-        <Cell w="w-[40%]">{user.actividadRealiza || "\u00A0"}</Cell>
+      <Row h={19}>
+        <Cell w="w-[30%]">
+          <div className="line-clamp-2 w-full break-words">
+            {user.cuentaUsuario || "\u00A0"}
+          </div>
+        </Cell>
+        <Cell w="w-[40%]">
+          <div className="line-clamp-2 w-full break-words">
+            {user.actividadRealiza || "\u00A0"}
+          </div>
+        </Cell>
         <Cell end />
       </Row>
     </>

@@ -82,3 +82,14 @@ Rama: `feat/account-request-letter-template` · Estrategia: `ask-on-risk` · Run
 - **L7** — Corrección de L6: se restauró el placeholder de la fecha de
   expiración (`____/______/202___`) y se quitó su borde inferior, de modo que
   no quede doble subrayado. Cuando hay fecha, se imprime como texto sin línea.
+- **L8** — Ajustes de la revisión visual completa: se quitó `labelsH={17.8}` de
+  la cuarta firma (la fila de etiquetas es de una línea), lo que devuelve la
+  hoja a 1056.0 px frente a 1056.2 px de Letter, con 6.35 mm de margen inferior;
+  `actividadRealiza` y `cuentaUsuario` viven en una fila de 19 pt con
+  `line-clamp-2 break-words` (el máximo de 500 se mantiene en el formulario y la
+  impresión trunca a dos líneas); la fila Temporal y el bloque No laborables
+  quedan centrados verticalmente; Tipo de personal y APN se distribuyen con
+  `justify-between`; y TIPO DE GESTIÓN usa tres columnas iguales de 24.9%.
+  Verificación: `npx tsc --noEmit` limpio, `pnpm test` → 290 passed / 9 skipped,
+  `pnpm lint` → 0 errores (1 warning preexistente), render headless a 216 mm con
+  hoja de 1056.0 px y contenido de 1010.3 px.

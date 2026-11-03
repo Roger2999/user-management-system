@@ -30,7 +30,7 @@ export function GestionSection({ user }: { user: AccountRequest }) {
       </Row>
 
       <Row h={9.7}>
-        <Cell end className="gap-[14pt]">
+        <Cell end className="justify-between">
           <span className="flex items-center gap-1">
             <span className="font-bold">Directivo</span>
             <CB checked={user.staffType === "EXECUTIVE"} />

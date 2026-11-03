@@ -20,7 +20,7 @@ export function AccountTypeSection({ user }: { user: AccountRequest }) {
       </Row>
 
       <Row h={14.4}>
-        <Cell end className="items-start pt-[2pt]">
+        <Cell end>
           <span className="flex items-center gap-2">
             <span className="flex items-center gap-1">
               <span>Temporal</span>

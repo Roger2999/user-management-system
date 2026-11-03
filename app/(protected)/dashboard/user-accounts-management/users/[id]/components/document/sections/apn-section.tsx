@@ -8,7 +8,7 @@ export function ApnSection({ user }: { user: AccountRequest }) {
       <Banner>ACCESO POR APN</Banner>
 
       <Row h={10.5}>
-        <Cell end className="gap-[10pt]">
+        <Cell end className="justify-between">
           <span className="flex items-center gap-1">
             <span>Correo nacional</span>
             <CB checked={user.apnNationalEmail} />

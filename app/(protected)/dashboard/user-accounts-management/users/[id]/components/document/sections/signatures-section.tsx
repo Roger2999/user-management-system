@@ -42,7 +42,6 @@ export function SignaturesSection({ user }: { user: UserWithSignatures }) {
       />
       <SignatureBlock
         title="EJECUTADO POR (Especialista que configura la cuenta de usuario y los servicios)"
-        labelsH={17.8}
         signH={17.8}
         dateValue={executed?.signedAt}
         nameValue={executed?.fullName}
