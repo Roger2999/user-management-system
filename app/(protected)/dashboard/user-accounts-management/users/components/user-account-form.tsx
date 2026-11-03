@@ -490,14 +490,33 @@ export default function UserAccountForm({
 
         <Card>
           <CardHeader>
-            <CardTitle>Software</CardTitle>
+            <CardTitle>Software y cuenta de usuario</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <Field
               label="Software autorizado"
               name="authorizedSoftware"
               defaultValue={state.data?.authorizedSoftware}
               errors={state.validationErrors?.authorizedSoftware}
+            />
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <Field
+                label="Cuenta de usuario"
+                name="cuentaUsuario"
+                defaultValue={state.data?.cuentaUsuario}
+                errors={state.validationErrors?.cuentaUsuario}
+              />
+              <Field
+                label="Actividad que realiza"
+                name="actividadRealiza"
+                defaultValue={state.data?.actividadRealiza}
+                errors={state.validationErrors?.actividadRealiza}
+              />
+            </div>
+            <CheckboxField
+              label="Administrador de sistema"
+              name="administradorSistema"
+              defaultChecked={!!initialData?.administradorSistema}
             />
           </CardContent>
         </Card>

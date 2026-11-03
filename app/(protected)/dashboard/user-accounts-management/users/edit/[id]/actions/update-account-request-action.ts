@@ -85,6 +85,9 @@ export async function updateAccountRequestAction(
     additionalPcAssetTag: optionalTextField(formData, "additionalPcAssetTag"),
 
     authorizedSoftware: optionalTextField(formData, "authorizedSoftware"),
+    cuentaUsuario: optionalTextField(formData, "cuentaUsuario"),
+    actividadRealiza: optionalTextField(formData, "actividadRealiza"),
+    administradorSistema: checkboxField(formData, "administradorSistema"),
     deprovisioningReasons: optionalTextField(formData, "deprovisioningReasons"),
     deprovisionedAt: optionalTextField(formData, "deprovisionedAt"),
   };
@@ -151,6 +154,9 @@ export async function updateAccountRequestAction(
     additionalPcAssetTag: fields.additionalPcAssetTag,
 
     authorizedSoftware: fields.authorizedSoftware,
+    cuentaUsuario: fields.cuentaUsuario,
+    actividadRealiza: fields.actividadRealiza,
+    administradorSistema: fields.administradorSistema,
     deprovisioningReasons: fields.deprovisioningReasons,
     deprovisionedAt: fields.deprovisionedAt,
   };
@@ -228,6 +234,8 @@ export async function updateAccountRequestAction(
           additionalPcName: data.additionalPcName ?? null,
           additionalPcAssetTag: data.additionalPcAssetTag ?? null,
           authorizedSoftware: data.authorizedSoftware ?? null,
+          cuentaUsuario: data.cuentaUsuario ?? null,
+          actividadRealiza: data.actividadRealiza ?? null,
           deprovisioningReasons: data.deprovisioningReasons ?? null,
         },
       });

@@ -83,6 +83,9 @@ export async function createUserAccountAction(
     additionalPcAssetTag: optionalTextField(formData, "additionalPcAssetTag"),
 
     authorizedSoftware: optionalTextField(formData, "authorizedSoftware"),
+    cuentaUsuario: optionalTextField(formData, "cuentaUsuario"),
+    actividadRealiza: optionalTextField(formData, "actividadRealiza"),
+    administradorSistema: checkboxField(formData, "administradorSistema"),
     deprovisioningReasons: optionalTextField(formData, "deprovisioningReasons"),
     deprovisionedAt: optionalTextField(formData, "deprovisionedAt"),
   };
@@ -148,6 +151,9 @@ export async function createUserAccountAction(
     additionalPcAssetTag: fields.additionalPcAssetTag,
 
     authorizedSoftware: fields.authorizedSoftware,
+    cuentaUsuario: fields.cuentaUsuario,
+    actividadRealiza: fields.actividadRealiza,
+    administradorSistema: fields.administradorSistema,
     deprovisioningReasons: fields.deprovisioningReasons,
     deprovisionedAt: fields.deprovisionedAt,
   };

@@ -214,9 +214,9 @@ model AccountRequest {
   authorizedSoftware String?
 
   // User account
-  //cuentaUsuario        String?
-  //actividadRealiza     String?
-  //administradorSistema Boolean @default(false)
+  cuentaUsuario        String?
+  actividadRealiza     String?
+  administradorSistema Boolean @default(false)
 
   // Signatures
   signatures AccountRequestSignature[]
