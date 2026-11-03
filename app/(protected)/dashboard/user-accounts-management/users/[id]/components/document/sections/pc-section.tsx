@@ -18,14 +18,10 @@ export function PcSection({ user }: { user: AccountRequest }) {
 
       <Row h={12.7}>
         <Cell w="w-[36.8%]" className="flex-col items-stretch justify-center">
-          <span className="block w-full border-b border-black">
-            {user.pcName || "\u00A0"}
-          </span>
+          <span className="block w-full">{user.pcName || "\u00A0"}</span>
         </Cell>
         <Cell end className="flex-col items-stretch justify-center">
-          <span className="block w-full border-b border-black">
-            {user.additionalPcName || "\u00A0"}
-          </span>
+          <span className="block w-full">{user.additionalPcName || "\u00A0"}</span>
         </Cell>
       </Row>
 
@@ -40,12 +36,10 @@ export function PcSection({ user }: { user: AccountRequest }) {
 
       <Row h={12.7}>
         <Cell w="w-[36.8%]" className="flex-col items-stretch justify-center">
-          <span className="block w-full border-b border-black">
-            {user.pcAssetTag || "\u00A0"}
-          </span>
+          <span className="block w-full">{user.pcAssetTag || "\u00A0"}</span>
         </Cell>
         <Cell end className="flex-col items-stretch justify-center">
-          <span className="block w-full border-b border-black">
+          <span className="block w-full">
             {user.additionalPcAssetTag || "\u00A0"}
           </span>
         </Cell>

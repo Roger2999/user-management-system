@@ -74,3 +74,8 @@ Rama: `feat/account-request-letter-template` · Estrategia: `ask-on-risk` · Run
   `review-validator` devolvió `validator_result_not_admissible` dos veces, así
   que no se emitió recibo. La corrección aplicada fue una línea explícita
   `administradorSistema` en el update (el `...data` ya lo persistía).
+- **L6** — Ajustes pedidos tras revisar la solicitud de prueba: las casillas se
+  dibujan como cuadrados de 7.2 pt con `X` cuando están marcadas (antes eran
+  `[X]` / `[  ]`); la fecha de expiración ya no lleva guiones bajos además del
+  borde (un solo subrayado); y los nombres de PC e inventario ya no llevan
+  subrayado interno además del borde de fila.

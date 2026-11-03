@@ -29,7 +29,7 @@ export function AccountTypeSection({ user }: { user: AccountRequest }) {
             <span className="flex items-center gap-[4pt]">
               <span>Fecha de expiración</span>
               <span className="min-w-[70pt] border-b border-black text-center">
-                {formatDate(user.expiresAt) || "____/______/202___"}
+                {formatDate(user.expiresAt) || "\u00A0"}
               </span>
             </span>
           </span>
