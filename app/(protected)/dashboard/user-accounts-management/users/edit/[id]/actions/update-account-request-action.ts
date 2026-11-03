@@ -236,6 +236,7 @@ export async function updateAccountRequestAction(
           authorizedSoftware: data.authorizedSoftware ?? null,
           cuentaUsuario: data.cuentaUsuario ?? null,
           actividadRealiza: data.actividadRealiza ?? null,
+          administradorSistema: data.administradorSistema,
           deprovisioningReasons: data.deprovisioningReasons ?? null,
         },
       });
