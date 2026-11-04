@@ -105,3 +105,15 @@ docs): **inline** para todos los tasks. No hubo razón del Writer trigger
 - Pendiente: el piloto contra un DC real (no hay AD en este entorno) —
   crear la cuenta de servicio en el dominio, correr el sync desde settings
   y regenerar el informe de octubre para ver los nombres llenos (T7).
+
+### L7 — Native review (RDD, v2)
+
+- Candidato: rama vs `c1c20fd`, 17 archivos / 842 líneas. Assessment: `high`
+  (`dangerous_sink` en `lib/ad/client.ts` — bind de credenciales de dominio).
+- Consentido "Review this change" en la UI; lentes `risk` + `reliability`;
+  cierre `approved`, ack `gentle-ai.review-acknowledged/v1` (autoridad quemada).
+- 8 hallazgos informativos, ninguno bloqueante, guardados como mejoras
+  futuras en L5: contadores de resumen (deshabilitadas ya inactivas cuenta
+  mal), sync no transaccional (parcial observable, convergente por
+  idempotencia), cliente LDAP real sin cobertura de pruebas (depende del
+  piloto DC), mensaje de UI con nombres en minúscula del `AD_URL`.
