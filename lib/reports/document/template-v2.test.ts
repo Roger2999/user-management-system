@@ -51,6 +51,18 @@ describe.skipIf(!hasTemplate)("plantilla oficial v2", () => {
             },
           ],
         },
+        incidents: [
+          {
+            url: "www.incidencia.com",
+            category: "ADULT",
+            label: "Contenido para adultos",
+            username: "ana",
+            fullName: "Ana Pérez",
+            position: "Analista",
+            measure: "Se bloqueó el sitio.",
+          },
+        ],
+        incidentCategories: new Set(["ADULT"]),
         period: { year: 2026, month: 10 },
         generatedAt: Date.UTC(2026, 10, 3, 14, 0, 0),
         declaration: "Cobertura completa: 31 de 31 días importados.",
@@ -68,8 +80,15 @@ describe.skipIf(!hasTemplate)("plantilla oficial v2", () => {
     expect(result).toContain("1.50 GB");
     expect(result).toContain("Cobertura completa: 31 de 31 días importados.");
 
+    // Tabla 4 y pregunta de ADS marcada; el resto de preguntas queda en No.
+    expect(result).toContain("www.incidencia.com");
+    expect(result).toContain("Contenido para adultos");
+    expect(result).toContain("Se bloqueó el sitio.");
+    expect(result).toContain(
+      "Visitas a sitios de contenido pornográfico o de adultos (citas, búsqueda de parejas, eróticos) Si __X__",
+    );
+
     // El ejemplar de octubre no puede sobrevivir a la generación.
-    expect(result).not.toContain("No __X__");
     expect(result).not.toContain("___0____");
     expect(result).not.toContain("2 / 11/ 2026");
     expect(result).not.toContain("9/ 11/ 2026");

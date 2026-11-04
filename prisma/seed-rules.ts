@@ -63,6 +63,12 @@ async function main() {
       "AVISO: SUBVERSIVE no tiene patrones. Esa lista la define el especialista.",
     );
   }
+
+  if (!byCategory.some((row) => row.category === "MALWARE")) {
+    console.warn(
+      "AVISO: MALWARE no tiene patrones. Esa lista la define el especialista.",
+    );
+  }
 }
 
 main()

@@ -20,11 +20,16 @@ const TABLE = (rows: string[][]) =>
     .join("")}</w:tblGrid>${rows.map(ROW).join("")}</w:tbl>`;
 const P = (text: string) => `<w:p><w:r><w:t>${text}</w:t></w:r></w:p>`;
 
+/** Pregunta de la plantilla: `Si ____` y `No ____` en `<w:t>` separados por tab. */
+const QUESTION = (prefix: string) =>
+  `<w:p><w:r><w:t>${prefix} Si ____</w:t><w:tab/><w:t xml:space="preserve">No ____ </w:t></w:r></w:p>`;
+
 const cols = (count: number, prefix: string) =>
   Array.from({ length: count }, (_value, index) => `${prefix}${index}`);
 
 const dummy = (prefix: string) => TABLE([cols(2, `${prefix}h`), cols(2, prefix)]);
 const four = (prefix: string) => TABLE([cols(4, `${prefix}h`), cols(4, prefix)]);
+const seven = (prefix: string) => TABLE([cols(7, `${prefix}h`), cols(7, prefix)]);
 
 /**
  * Documento sintético con la estructura de la plantilla v2: las tablas 6-8 son
@@ -39,7 +44,7 @@ function template(): string {
     dummy("t1"),
     dummy("t2"),
     dummy("t3"),
-    dummy("t4"),
+    seven("inc"),
     dummy("t5"),
     four("sites"),
     P("Sitios web más visitados:"),
@@ -48,6 +53,8 @@ function template(): string {
     four("downloads"),
     P("Usuarios con más descargas."),
     TABLE([cols(2, "manual-h"), cols(2, "manual")]),
+    QUESTION("Visitas a sitios de contenido pornográfico o de adultos (citas, búsqueda de parejas, eróticos)"),
+    QUESTION("Visitas a sitios de malware."),
     P("Uso de correo por webmail en servidores nacionales:"),
     TABLE([cols(3, "usb-h"), cols(3, "usb")]),
     P("Día del comité: ___ / ___ / 202_"),
@@ -75,12 +82,35 @@ const downloadRow = (username: string) => ({
   downloaded: "500.00 MB",
 });
 
+const incidentRow = (url: string, measure = "") => ({
+  url,
+  category: "ADULT" as const,
+  label: "Contenido para adultos",
+  username: "ana",
+  fullName: "Ana Pérez",
+  position: "Analista",
+  measure,
+});
+
 function traces(): TracesSection {
   return {
     topSites: [siteRow("www.internacional.com")],
     topUsers: [userRow("usuario.uno")],
     topDownloads: [downloadRow("usuario.uno")],
   };
+}
+
+function buildIncidentDoc(incidents: readonly ReturnType<typeof incidentRow>[], categories: readonly ("ADULT" | "SUBVERSIVE" | "ANON_PROXY" | "MINING" | "MALWARE")[]): string {
+  return readDocumentXml(
+    buildReportDocument({
+      template: templateBytes(),
+      traces: traces(),
+      incidents,
+      incidentCategories: new Set(categories),
+      period: { year: 2026, month: 6 },
+      generatedAt: EMISSION,
+    }),
+  );
 }
 
 function tableText(documentXml: string, index: number): string {
@@ -143,6 +173,19 @@ describe("buildReportDocument", () => {
       "Y para que así conste se firma la presente a los 2 días del mes de julio del año 2026",
     );
     expect(result).toContain("Día del comité: ___ / ___ / 2026");
+  });
+
+  it("arma la tabla 4 y marca las preguntas de incidencias", () => {
+    const result = buildIncidentDoc(
+      [incidentRow("www.malware.com", "Se bloqueó el sitio.")],
+      ["ADULT"],
+    );
+
+    expect(tableText(result, 4)).toContain("www.malware.com");
+    expect(tableText(result, 4)).toContain("Contenido para adultos");
+    expect(tableText(result, 4)).toContain("Se bloqueó el sitio.");
+    expect(result).toContain("Si __X__");
+    expect(result).toContain("No __X__");
   });
 
   it("inserta la declaración antes del bloque manual de correo", () => {

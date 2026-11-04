@@ -17,17 +17,26 @@ import type {
   UserProfiles,
 } from "./assembly/section-traces";
 import type { DailyMetrics } from "./metrics/aggregate";
+import type {
+  IncidentCategory,
+  IncidentRow,
+} from "./findings/incidents";
 import { buildDeclarationText, emitDeclaration } from "./document/declarations";
 import { buildMonthlyReport, type MonthlyReport } from "./model/monthly";
 import { DEFAULT_TIME_ZONE } from "./time";
 import { readDocumentXml, replaceDocumentXml } from "./document/docx";
 import { emitTracesSection } from "./document/emit";
+import { emitIncidents } from "./document/incidents";
 import { fillPeriodFields } from "./document/period";
 
 export type ReportDocumentInput = {
   /** Bytes del `.docx` oficial, sin modificar. */
   template: Uint8Array;
   traces: TracesSection;
+  /** Hallazgos ya revisados que van a la tabla 4. Sin campo no se toca la tabla. */
+  incidents?: readonly IncidentRow[];
+  /** Categorías con hallazgos, para marcar `Si __X__` en las preguntas. */
+  incidentCategories?: ReadonlySet<IncidentCategory>;
   /** Período informado. */
   period: { year: number; month: number };
   /** Instante de emisión; la fecha del documento se calcula en la zona local. */
@@ -46,7 +55,16 @@ export function buildReportDocument(input: ReportDocumentInput): Uint8Array {
 
   const withTraces = emitTracesSection(xml, input.traces);
 
-  const dated = fillPeriodFields(withTraces, {
+  const withIncidents =
+    input.incidents === undefined
+      ? withTraces
+      : emitIncidents(
+          withTraces,
+          input.incidents,
+          input.incidentCategories ?? new Set(),
+        );
+
+  const dated = fillPeriodFields(withIncidents, {
     month: input.period.month,
     year: input.period.year,
     generatedAt: input.generatedAt,
@@ -73,6 +91,10 @@ export type MonthlyDocumentInput = {
   timeZone?: string;
   /** Perfiles por `username` en minúsculas; los resuelve la capa de generación. */
   profiles?: UserProfiles;
+  /** Hallazgos ya revisados que van a la tabla 4. */
+  incidents?: readonly IncidentRow[];
+  /** Categorías con hallazgos, para marcar `Si __X__` en las preguntas. */
+  incidentCategories?: ReadonlySet<IncidentCategory>;
   limit?: number;
   browsingTimeCalibrated?: boolean;
 };
@@ -99,6 +121,8 @@ export function buildMonthlyDocument(
   const document = buildReportDocument({
     template: input.template,
     traces: report.traces,
+    incidents: input.incidents,
+    incidentCategories: input.incidentCategories,
     period: input.period,
     generatedAt: input.generatedAt,
     timeZone: input.timeZone,

@@ -12,6 +12,10 @@ import type { RuleCategory, RuleMatchType } from "./matcher";
  * falsos con nombre y apellidos en un informe oficial. El motor ya soporta la
  * categoría: la lista real la carga el especialista.
  *
+ * `MALWARE` sigue la misma regla: una lista inventada de dominios de descarga
+ * produce falsos positivos con nombre y apellidos. La columna existe y el
+ * especialista define los patrones.
+ *
  * Todos los patrones son `SUFFIX`: `pornhub.com` cubre `pornhub.com` y
  * `www.pornhub.com` sin repetir cada subdominio. Se comparan contra el hostname
  * persistido, en minúsculas.

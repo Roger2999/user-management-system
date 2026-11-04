@@ -20,6 +20,7 @@ const CATEGORY_LABEL: Record<string, string> = {
   SUBVERSIVE: "C/R o subversivo",
   ANON_PROXY: "Proxy anónimo",
   MINING: "Minería",
+  MALWARE: "Malware",
 };
 
 type Snapshot = {

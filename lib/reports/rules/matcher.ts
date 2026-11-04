@@ -12,7 +12,8 @@ export type RuleCategory =
   | "ADULT"
   | "SUBVERSIVE"
   | "ANON_PROXY"
-  | "MINING";
+  | "MINING"
+  | "MALWARE";
 
 export type RuleMatchType = "DOMAIN" | "SUFFIX" | "CONTAINS";
 

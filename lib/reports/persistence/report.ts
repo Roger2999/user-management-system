@@ -1,5 +1,9 @@
 import { Prisma, type PrismaClient } from "@/generated/prisma/client";
 import { detectFindings } from "../findings/detect";
+import {
+  isIncidentCategory,
+  type IncidentSource,
+} from "../findings/incidents";
 import type { DailyMetrics } from "../metrics/aggregate";
 import type { MonthlyReport } from "../model/monthly";
 
@@ -23,7 +27,11 @@ export type SaveMonthlyReportInput = {
   /** Días del período, para la evidencia de los hallazgos. */
   days: readonly DailyMetrics[];
   templateVersion: number;
-  docxSha256: string;
+  /**
+   * Hash del `.docx`. Se omite al persistir los hallazgos antes de armar el
+   * documento; se completa después con `updateReportDocument`.
+   */
+  docxSha256?: string;
   issuedOn: Date;
 };
 
@@ -176,4 +184,66 @@ export async function saveMonthlyReport(
 
     return { id: row.id, findings: candidates.length };
   });
+}
+
+/**
+ * Completa el hash del documento después de escribirlo.
+ *
+ * La generación persiste primero los hallazgos para poder releerlos con su
+ * medida; el `.docx` se arma después y el hash se guarda al final. Una fila
+ * sin hash es un informe cuyos hallazgos existen pero cuyo archivo todavía no
+ * se emitió.
+ */
+export async function updateReportDocument(
+  prisma: PrismaClient,
+  input: { id: string; docxSha256: string },
+): Promise<void> {
+  await prisma.monthlyReport.update({
+    where: { id: input.id },
+    data: { docxSha256: input.docxSha256 },
+  });
+}
+
+/**
+ * Hallazgos del informe con su revisión, listos para la tabla 4.
+ *
+ * Se leen después de persistir: la medida y la disposición las puso una persona
+ * en la UI y son las que tienen que salir en el documento. El nombre y el cargo
+ * se resuelven con los perfiles que ya cargó la generación; `ProxyAccount` es
+ * solo el respaldo.
+ */
+export async function loadReportIncidents(
+  prisma: PrismaClient,
+  monthlyReportId: string,
+): Promise<IncidentSource[]> {
+  const findings = await prisma.reportFinding.findMany({
+    where: { monthlyReportId },
+    select: {
+      url: true,
+      disposition: true,
+      measure: true,
+      proxyAccountId: true,
+      categoryRule: { select: { category: true } },
+      proxyAccount: { select: { displayName: true, position: true } },
+    },
+    orderBy: { url: "asc" },
+  });
+
+  const incidents: IncidentSource[] = [];
+
+  for (const finding of findings) {
+    if (!isIncidentCategory(finding.categoryRule.category)) continue;
+
+    incidents.push({
+      url: finding.url,
+      category: finding.categoryRule.category,
+      username: finding.proxyAccountId,
+      disposition: finding.disposition,
+      measure: finding.measure,
+      proxyFullName: finding.proxyAccount?.displayName ?? undefined,
+      proxyPosition: finding.proxyAccount?.position ?? undefined,
+    });
+  }
+
+  return incidents;
 }

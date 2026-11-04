@@ -1,20 +1,30 @@
 import { createHash } from "node:crypto";
 import prisma from "@/lib/prisma";
 import type { UserProfile, UserProfiles } from "./assembly/section-traces";
+import { buildDeclarationText } from "./document/declarations";
+import { buildIncidents } from "./findings/incidents";
+import { buildMonthlyReport } from "./model/monthly";
 import { loadDailyMetrics } from "./persistence/load";
-import { saveMonthlyReport } from "./persistence/report";
-import { buildMonthlyDocument } from "./report";
+import {
+  loadReportIncidents,
+  saveMonthlyReport,
+  updateReportDocument,
+} from "./persistence/report";
+import { buildReportDocument } from "./report";
 import { readTemplate, TEMPLATE_VERSION, writeReportDocument } from "./storage";
 import { monthlyPeriod } from "./time";
 
 /**
  * Generación del informe mensual desde lo persistido.
  *
- * No vuelve a leer los logs: reconstruye los días desde la base, arma el modelo
- * y el `.docx`, guarda el documento y persiste el informe con sus hallazgos.
- * El archivo se escribe antes de la fila: si la base falla, el `.docx` queda
- * huérfano pero se sobrescribe en la próxima generación; si se escribiera
- * después, la fila podría apuntar a un archivo inexistente.
+ * No vuelve a leer los logs: reconstruye los días desde la base, persiste los
+ * hallazgos, los relee con la disposición y la medida que revisó una persona y
+ * recién entonces arma el `.docx`.
+ *
+ * El orden importa: el documento incluye las medidas, y las medidas viven en la
+ * base. Por eso primero se persiste y se relee, después se escribe el archivo y
+ * al final se guarda su hash. Si el proceso se cae entre medio, la próxima
+ * generación reescribe todo.
  */
 
 export class ReportGenerationError extends Error {}
@@ -99,23 +109,42 @@ export async function generateMonthlyReport(
   ]);
   const generatedAt = Date.now();
 
-  const { report, document } = buildMonthlyDocument({
-    template,
+  const report = buildMonthlyReport({
+    year,
+    month,
+    daily: days,
+    profiles,
+  });
+
+  // Persistir primero es lo que permite que la tabla 4 salga con las medidas
+  // que la persona ya revisó en la UI.
+  const saved = await saveMonthlyReport(prisma, {
+    report,
     days,
+    templateVersion: TEMPLATE_VERSION,
+    issuedOn: new Date(generatedAt),
+  });
+
+  const sources = await loadReportIncidents(prisma, saved.id);
+  const incidents = buildIncidents(sources, profiles);
+  const incidentCategories = new Set(
+    incidents.map((incident) => incident.category),
+  );
+
+  const document = buildReportDocument({
+    template,
+    traces: report.traces,
+    incidents,
+    incidentCategories,
     period: { year, month },
     generatedAt,
-    profiles,
+    declaration: buildDeclarationText(report),
   });
 
   const docxSha256 = createHash("sha256").update(document).digest("hex");
 
   await writeReportDocument(year, month, document);
+  await updateReportDocument(prisma, { id: saved.id, docxSha256 });
 
-  return saveMonthlyReport(prisma, {
-    report,
-    days,
-    templateVersion: TEMPLATE_VERSION,
-    docxSha256,
-    issuedOn: new Date(generatedAt),
-  });
+  return { id: saved.id, findings: saved.findings };
 }
