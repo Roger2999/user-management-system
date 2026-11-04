@@ -75,8 +75,8 @@ antivirus, USB, vulnerabilidades, SIEM, respaldos ni firmas.
 - **T3** — Formatos `H.MM` / MB-GB, armado de las tres tablas y perfiles. Route: inline. Spec: S4-S8. Status: hecho (`e22e41b`).
 - **T4** — Mapa de tablas 6/7/8, campos del período, ancla de la declaración y retiro del vaciado. Route: inline. Spec: S2, S3. Status: hecho (`e22e41b`).
 - **T5** — Tests de T2-T4 y documento dorado. Route: inline. Spec: S11. Status: hecho (`e22e41b`, `3095efe`; PDF piloto de octubre verificado con LibreOffice).
-- **T6** — Tabla 4, categoría `MALWARE`, checkboxes y orden de generación. Route: inline. Spec: S9, S10. Status: pendiente.
-- **T7** — Piloto octubre, suite/`tsc`/`eslint` y despliegue. Route: inline. Spec: S11, S12. Status: pendiente.
+- **T6** — Tabla 4, categoría `MALWARE`, checkboxes y orden de generación. Route: inline. Spec: S9, S10. Status: hecho (`ffcded9`).
+- **T7** — Piloto octubre, suite/`tsc`/`eslint` y despliegue. Route: inline. Spec: S11, S12. Status: hecho (piloto PDF de ambas unidades; `5fa9de3` documenta la copia de la plantilla al servidor; el `scp` del asset queda como paso del despliegue).
 
 ## Log
 
@@ -141,3 +141,20 @@ y las cinco preguntas de incidencias.
   sanitizada reemplazó `monthly-report.docx`. `storage/` sigue fuera de git.
 - Pendiente (T6): tabla 4 de incidencias, `MALWARE`, checkboxes y reordenar la
   generación para que las medidas revisadas entren al documento.
+
+### L7 — Unidad 2 (incidencias)
+
+- `ffcded9`: tabla 4 desde los hallazgos persistidos y releídos con su
+  disposición y medida; falsos positivos excluidos; cinco preguntas `Si __X__ /
+  No __X__` marcadas por categoría (las subpreguntas del GST quedan manuales);
+  `MALWARE` agregado a `RuleCategory` (enum, migración
+  `20261103190000_add_malware_rule_category`, aviso en el seed y etiqueta en la
+  UI sin patrones por defecto, igual que `SUBVERSIVE`).
+- Orden de generación nuevo (S10): persistir hallazgos → releerlos → armar el
+  documento → escribir el `.docx` → guardar el hash del archivo.
+- Verificación: 246 tests pasan, 9 saltados; `tsc` y `eslint` limpios. Piloto
+  octubre con hallazgos: la tabla sella filas y las preguntas quedan marcadas en
+  el PDF con LibreOffice.
+- `5fa9de3`: DEPLOYMENT_GUIDE (sección 7.5.1, copia de la plantilla por `scp`)
+  y README (módulo del informe mensual). El despliegue real es decisión del
+  usuario: aplicar la migración en producción y copiar `monthly-report.docx` v2.
