@@ -244,6 +244,19 @@ NODE_ENV=production
 # El remitente actual (onboarding@resend.dev) es de prueba; para producción
 # se necesita un dominio verificado en Resend.
 RESEND_API_KEY=re_xxxxxxxxxxxxx
+
+# ====== DIRECTORIO DE CUENTAS (ACTIVE DIRECTORY) ======
+# Recomendadas a partir del despliegue: llenan nombre, cargo y área de las
+# cuentas de proxy que usa el informe mensual. Sin ellas el botón
+# «Sincronizar desde AD» queda deshabilitado y el resto de la app funciona.
+# LDAPS obligatorio (nunca `ldap://`): el bind cruza la red con credenciales
+# de dominio. La cuenta de servicio sólo necesita permiso de lectura sobre
+# la OU indicada; administrador del dominio no hace falta.
+AD_URL="ldaps://<DC_TU-DOMINIO>:636"
+AD_BIND_DN="CN=svc-ums-sync,OU=Servicios,DC=tu,DC=dominio"
+AD_BIND_PASSWORD="<CONTRASEÑA_DE_SERVICIO>"
+AD_USER_SEARCH_BASE="OU=Usuarios,DC=tu,DC=dominio"
+AD_TLS_INSECURE=""
 ```
 
 Proteger y dar propiedad:
@@ -252,6 +265,16 @@ Proteger y dar propiedad:
 chown ums:ums /opt/user-management-system/.env
 chmod 600 /opt/user-management-system/.env
 ```
+
+> **Directorio de cuentas (AD):** las variables `AD_*` llenan el nombre y el
+> cargo de la cuenta de proxy en el informe mensual. En el DC se crea una
+> única cuenta de servicio (`svc-ums-sync`) con permiso de **lectura** sobre
+> la OU de usuarios, y en la app se dispara la sincronización desde
+> **Configuración > Directorio de cuentas > Sincronizar desde AD** (solo
+> administrador). Si el DC usa certificados autofirmados sin CA interna,
+> defíní `AD_TLS_INSECURE="true"`; en un dominio con CA funcional dejalo
+> vacío. Sin AD configurado, el botón queda deshabilitado y el resto de la
+> app funciona igual.
 
 > **Importante:** las variables `NEXT_PUBLIC_*` se incrustan en el bundle en tiempo de **build**. Por eso el `.env` debe existir **antes** de `pnpm build`. Las variables de servidor (`DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`) se leen en tiempo de ejecución.
 

@@ -165,6 +165,11 @@ Abrí [http://localhost:3000](http://localhost:3000).
 | `SEED_ADMIN_EMAIL`             | No          | Email del admin inicial (`admin@localhost` por defecto)                                                                                           |
 | `SEED_ADMIN_FULLNAME`          | No          | Nombre completo del admin inicial (`Administrador` por defecto)                                                                                   |
 | `SEED_ADMIN_POSITION`          | No          | Cargo del admin inicial (`Administrador` por defecto)                                                                                             |
+| `AD_URL`                       | No          | URL LDAPS del controlador de dominio (`ldaps://dc.tu-empresa.local:636`). Las cuatro variables de AD llenan el directorio de cuentas; sin ellas el botón «Sincronizar desde AD» queda deshabilitado |
+| `AD_BIND_DN`                   | No          | DN de la cuenta de servicio de solo lectura en el dominio                                                                                          |
+| `AD_BIND_PASSWORD`             | No          | Contraseña de esa cuenta de servicio                                                                                                               |
+| `AD_USER_SEARCH_BASE`          | No          | DN de la OU de usuarios a sincronizar (dominio completo)                                                                                            |
+| `AD_TLS_INSECURE`              | No          | `true` para aceptar el certificado autofirmado del DC. Déjalo vacío en un dominio con CA interna                                                     |
 
 \* `lib/resend.ts` usa un placeholder cuando `RESEND_API_KEY` no está definida, para no romper el import ni el build. La recuperación de contraseña solo funciona con una clave real y un dominio verificado en Resend.
 
