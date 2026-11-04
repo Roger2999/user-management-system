@@ -5,11 +5,22 @@ import UpdateUserForm from "./components/update-user-form";
 import ChangePasswordForm from "./components/change-password-form";
 import CreateUserForm from "./components/create-user-form";
 import SessionsList from "./components/sessions-list";
+import AdDirectorySyncCard from "./components/ad-directory-sync-card";
+import { loadAdConfig } from "@/lib/ad/config";
 
 export default async function SettingsPage() {
   const sessionData = await getSession();
   const sessions = await auth.api.listSessions({ headers: await headers() });
   const user = sessionData?.user;
+  // Una configuración mal escrita (protocolo distinto a LDAPS) lanza: la
+  // pantalla no debe caer por eso, sólo mostrar el botón deshabilitado.
+  const adConfigured = (() => {
+    try {
+      return loadAdConfig(process.env) !== null;
+    } catch {
+      return false;
+    }
+  })();
   return (
     <div className="flex flex-col items-center gap-10">
       <h1 className="text-2xl font-semibold">Configuración</h1>
@@ -26,9 +37,14 @@ export default async function SettingsPage() {
         />
         <ChangePasswordForm />
         {user?.role === "ADMIN" && (
-          <div className="md:col-span-2">
-            <CreateUserForm />
-          </div>
+          <>
+            <div className="md:col-span-2">
+              <CreateUserForm />
+            </div>
+            <div className="md:col-span-2">
+              <AdDirectorySyncCard adConfigured={adConfigured} />
+            </div>
+          </>
         )}
         <div className="md:col-span-2">
           <SessionsList
