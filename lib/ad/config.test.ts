@@ -32,11 +32,11 @@ describe("loadAdConfig", () => {
   });
 
   it.each([
-    ["AD_URL", "ldaps://dc.corp.local:636"],
-    ["AD_BIND_DN", VALID.AD_BIND_DN],
-    ["AD_BIND_PASSWORD", "secret"],
-    ["AD_USER_SEARCH_BASE", VALID.AD_USER_SEARCH_BASE],
-  ])("sin %s la sincronización queda no configurada", (variable, value) => {
+    "AD_URL",
+    "AD_BIND_DN",
+    "AD_BIND_PASSWORD",
+    "AD_USER_SEARCH_BASE",
+  ] as const)("sin %s la sincronización queda no configurada", (variable) => {
     const env = { ...VALID, [variable]: undefined };
     expect(loadAdConfig(env)).toBeNull();
   });
