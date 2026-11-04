@@ -279,6 +279,19 @@ sudo -u ums bash -lc 'set -a; . ./.env; set +a; pnpm exec prisma migrate deploy'
 >
 > En un despliegue nuevo, corré además `pnpm db:seed` para crear el administrador inicial (ver sección 15.1).
 
+### 7.5.1 Plantilla oficial del informe mensual
+
+El módulo de informe mensual compila una plantilla Word que vive en `storage/templates/monthly-report.docx`. La carpeta `storage/` está ignorada en git, así que hay que copiarla al servidor una vez (y cada vez que cambie la plantilla):
+
+```bash
+# Desde la máquina de trabajo, hacia el LXC:
+scp storage/templates/monthly-report.docx ums@<IP_DEL_LXC>:/opt/user-management-system/storage/templates/monthly-report.docx
+```
+
+- La plantilla v2 es la del documento oficial **"Informe Mensual de Ciberseguridad"**; la anterior quedó archivada como `monthly-report-v1.docx` en la máquina de trabajo.
+- `TEMPLATE_VERSION` en `lib/reports/storage.ts` va a la par: v2 desde el presente release.
+- No se requiere reinicio del servicio: la plantilla se lee en cada generación.
+
 ### 7.6 Compilar
 
 ```bash

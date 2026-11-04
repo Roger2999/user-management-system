@@ -12,6 +12,7 @@ Sistema de autenticación, gestión de solicitudes de cuentas de usuario y flujo
 | Solicitudes de cuenta      | Alta, actualización y baja de cuentas de usuario, con validación de campos únicos                                    |
 | Flujo de firmas            | Etapas `Solicitado → Revisado → Aprobado → Ejecutado`, inmutables y ordenadas                                        |
 | Dashboard                  | Estadísticas de solicitudes: pendientes de firma, expiradas, por tipo y por cuenta                                   |
+| Informe mensual            | Genera el informe oficial de ciberseguridad (.docx) desde los logs del proxy: trazas, incidencias y fechado           |
 | Configuración              | Editar perfil (username / nombre visible), cambiar contraseña, revocar sesiones                                      |
 | Extras                     | Tema claro / oscuro / océano / sistema, impresión de plantilla de solicitud, búsqueda y filtros                      |
 
