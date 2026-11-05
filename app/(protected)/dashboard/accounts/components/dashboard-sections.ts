@@ -1,3 +1,5 @@
+import type { FilterValue } from "@/lib/filters";
+
 import {
   AlarmClock,
   BadgeCheck,
@@ -9,7 +11,7 @@ import {
 } from "lucide-react";
 
 export interface DashboardStatCard {
-  value: string;
+  value: FilterValue;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   tone?: "default" | "destructive" | "amber";

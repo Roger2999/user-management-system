@@ -68,7 +68,7 @@ export default function NotificationBell({ count7, count1, accounts }: Props) {
           <>
             <DropdownMenuItem asChild>
               <Link
-                href={`/dashboard/accounts/users?filter=${encodeURIComponent("expiring7")}`}
+                href={`/dashboard/accounts/users?filter=${encodeURIComponent("expiredIn7")}`}
                 className="flex w-full items-center justify-between"
               >
                 <span>Expiran en ≤7 días</span>
@@ -77,7 +77,7 @@ export default function NotificationBell({ count7, count1, accounts }: Props) {
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link
-                href={`/dashboard/accounts/users?filter=${encodeURIComponent("expiring1")}`}
+                href={`/dashboard/accounts/users?filter=${encodeURIComponent("expiredIn1")}`}
                 className="flex w-full items-center justify-between"
               >
                 <span>Expiran en ≤1 día</span>

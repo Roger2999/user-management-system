@@ -11,9 +11,10 @@ import {
 import type { FilterConfig } from "@/lib/filters";
 
 export async function getAccountsCounts(): Promise<Record<string, number>> {
-  const expiredFilter = getExpiredFilter();
-  const expiringIn7DaysFilter = getExpiringIn7DaysFilter();
-  const expiringIn1DayFilter = getExpiringIn1DayFilter();
+  const now = new Date();
+  const expiredFilter = getExpiredFilter(now);
+  const expiringIn7DaysFilter = getExpiringIn7DaysFilter(now);
+  const expiringIn1DayFilter = getExpiringIn1DayFilter(now);
 
   const entries: FilterConfig[] = [
     ...filtersByAllUsers,

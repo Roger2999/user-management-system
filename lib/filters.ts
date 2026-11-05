@@ -1,7 +1,31 @@
 import type { Prisma } from "@/lib/db";
+import {
+  expiredAt,
+  expiringWithin,
+  pendingSignature,
+} from "@/modules/accounts/queries";
+
+export const FILTER_VALUES = [
+  "all",
+  "new",
+  "update",
+  "deprovisioning",
+  "permanent",
+  "temporary",
+  "pendingSignature",
+  "expired",
+  "expiredIn7",
+  "expiredIn1",
+] as const;
+
+export type FilterValue = (typeof FILTER_VALUES)[number];
+
+export function isFilterValue(value: string): value is FilterValue {
+  return (FILTER_VALUES as readonly string[]).includes(value);
+}
 
 export interface FilterConfig {
-  value: string;
+  value: FilterValue;
   label: string;
   where: Prisma.AccountRequestWhereInput;
 }
@@ -45,51 +69,31 @@ export const pendingSignatureFilter: FilterConfig[] = [
   {
     value: "pendingSignature",
     label: "Pendientes de firma",
-    where: {
-      OR: [
-        { signatures: { none: { stage: "requested" } } },
-        { signatures: { none: { stage: "revised" } } },
-        { signatures: { none: { stage: "approved" } } },
-        { signatures: { none: { stage: "executed" } } },
-      ],
-    },
+    where: pendingSignature(),
   },
 ];
 
-export function getExpiredFilter(): FilterConfig {
+export function getExpiredFilter(now = new Date()): FilterConfig {
   return {
     value: "expired",
     label: "Cuentas expiradas",
-    where: {
-      accountType: "TEMPORARY",
-      expiresAt: { lte: new Date() },
-    },
+    where: expiredAt(now),
   };
 }
 
-export function getExpiringIn7DaysFilter(): FilterConfig {
-  const now = new Date();
-  const in7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+export function getExpiringIn7DaysFilter(now = new Date()): FilterConfig {
   return {
     value: "expiredIn7",
     label: "Expiran en <=7 dias",
-    where: {
-      accountType: "TEMPORARY",
-      expiresAt: { gte: now, lte: in7Days },
-    },
+    where: expiringWithin(now, 7),
   };
 }
 
-export function getExpiringIn1DayFilter(): FilterConfig {
-  const now = new Date();
-  const in1Day = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+export function getExpiringIn1DayFilter(now = new Date()): FilterConfig {
   return {
     value: "expiredIn1",
     label: "Expiran en <=1 dias",
-    where: {
-      accountType: "TEMPORARY",
-      expiresAt: { gte: now, lte: in1Day },
-    },
+    where: expiringWithin(now, 1),
   };
 }
 
@@ -99,13 +103,16 @@ const staticFilters: FilterConfig[] = [
   ...pendingSignatureFilter,
 ];
 
-export function getFilterConfig(value: string): FilterConfig {
+export function getFilterConfig(
+  value: FilterValue,
+  now = new Date(),
+): FilterConfig {
   const staticFilter = staticFilters.find((f) => f.value === value);
   if (staticFilter) return staticFilter;
 
-  if (value === "expired") return getExpiredFilter();
-  if (value === "expiredIn7") return getExpiringIn7DaysFilter();
-  if (value === "expiredIn1") return getExpiringIn1DayFilter();
+  if (value === "expired") return getExpiredFilter(now);
+  if (value === "expiredIn7") return getExpiringIn7DaysFilter(now);
+  if (value === "expiredIn1") return getExpiringIn1DayFilter(now);
 
   return filtersByAllUsers[0];
 }

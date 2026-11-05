@@ -138,7 +138,8 @@ app/
 components/                         # Navegación y componentes compartidos (shadcn/ui en ui/)
 modules/                            # Dominios con lógica propia y sus tests
 ├── reports/                        # Pipeline de informes: parser, métricas, hallazgos, .docx
-└── ad/                             # Sincronización con Active Directory (LDAPS)
+├── ad/                             # Sincronización con Active Directory (LDAPS)
+└── accounts/                       # Predicados compartidos de solicitudes (expiración, firmas)
 
 lib/                                # Infraestructura transversal, sin lógica de rutas
 ├── auth.ts / auth-client.ts        # Better Auth (servidor y cliente)

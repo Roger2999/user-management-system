@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import LinkButton from "@/components/link-button";
 import UsersTable from "./components/users-table";
 import SuccessToast from "./components/success-toast";
-import { getFilterConfig } from "@/lib/filters";
+import { getFilterConfig, isFilterValue } from "@/lib/filters";
 import TableSkeleton from "./components/table-skeleton";
 import SearchBar from "./components/search-bar";
 
@@ -17,7 +17,8 @@ interface Props {
 
 export default async function UsersPage({ searchParams }: Props) {
   const { filter, page, search } = await searchParams;
-  const filterValue = typeof filter === "string" ? filter : "all";
+  const filterValue =
+    typeof filter === "string" && isFilterValue(filter) ? filter : "all";
   const pageValue =
     typeof page === "string" ? Math.max(1, Number(page) || 1) : 1;
   const filterConfig = getFilterConfig(filterValue);

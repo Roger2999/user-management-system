@@ -1,26 +1,18 @@
 import { cache } from "react";
 import prisma from "@/lib/prisma";
+import { expiringWithin } from "@/modules/accounts/queries";
 import NotificationBell from "./notification-bell";
 
 const getExpiringAccounts = cache(async () => {
   const now = new Date();
-  const in7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-  const in1Day = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-
-  const whereBase = {
-    accountType: "TEMPORARY" as const,
-    expiresAt: { gte: now },
-  };
+  const in7Days = expiringWithin(now, 7);
+  const in1Day = expiringWithin(now, 1);
 
   const [count7, count1, accounts] = await Promise.all([
-    prisma.accountRequest.count({
-      where: { ...whereBase, expiresAt: { gte: now, lte: in7Days } },
-    }),
-    prisma.accountRequest.count({
-      where: { ...whereBase, expiresAt: { gte: now, lte: in1Day } },
-    }),
+    prisma.accountRequest.count({ where: in7Days }),
+    prisma.accountRequest.count({ where: in1Day }),
     prisma.accountRequest.findMany({
-      where: { ...whereBase, expiresAt: { gte: now, lte: in7Days } },
+      where: in7Days,
       select: {
         id: true,
         fullName: true,
