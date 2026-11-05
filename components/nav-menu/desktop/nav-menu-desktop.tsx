@@ -15,11 +15,10 @@ export default async function NavMenuDesktop() {
       <Link href={"/dashboard"}>
         <Image
           src={"/une-logo.png"}
-          width={20}
-          height={20}
-          className="min-h-12 min-w-16 transition-transform duration-100 ease-in hover:-translate-y-1 hover:scale-110"
+          className="mt-2 max-h-12 max-w-24 transition-transform duration-100 ease-in hover:-translate-y-1 hover:scale-110"
           priority
           alt="logo de UNE"
+          fill
         />
       </Link>
 

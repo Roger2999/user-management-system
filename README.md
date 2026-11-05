@@ -93,6 +93,11 @@ El cliente Prisma se genera solo (`postinstall`, `predev`, `prebuild`) y no se v
 | `GITHUB_CLIENT_ID`             | No            | Client ID de GitHub OAuth (login social).                                                                                                    |
 | `GITHUB_CLIENT_SECRET`         | No            | Secret de GitHub OAuth.                                                                                                                      |
 | `SEED_ADMIN_*`                 | No            | Username, contraseña, email, nombre y cargo del admin inicial. Valores por defecto: `admin` / `admin` / `admin@localhost`.                   |
+| `AD_URL`                       | No          | URL LDAPS del controlador de dominio (`ldaps://dc.tu-empresa.local:636`). Las cuatro variables de AD llenan el directorio de cuentas; sin ellas el botón «Sincronizar desde AD» queda deshabilitado |
+| `AD_BIND_DN`                   | No          | DN de la cuenta de servicio de solo lectura en el dominio                                                                                          |
+| `AD_BIND_PASSWORD`             | No          | Contraseña de esa cuenta de servicio                                                                                                               |
+| `AD_USER_SEARCH_BASE`          | No          | DN de la OU de usuarios a sincronizar (dominio completo)                                                                                            |
+| `AD_TLS_INSECURE`              | No          | `true` para aceptar el certificado autofirmado del DC. Déjalo vacío en un dominio con CA interna                                                     |
 
 ## Comandos
 

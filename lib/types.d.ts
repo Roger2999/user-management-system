@@ -198,3 +198,9 @@ export type DeleteUserAccountState = {
   success?: boolean;
   dbErrors?: DbError;
 };
+
+export type SyncAdDirectoryState = {
+  status: "idle" | "success" | "error";
+  /** Mensaje listo para la pantalla: resumen de la corrida o el motivo real del fallo. */
+  message?: string;
+};

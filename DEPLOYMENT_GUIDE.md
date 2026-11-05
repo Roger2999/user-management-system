@@ -141,6 +141,19 @@ NEXT_PUBLIC_BETTER_AUTH_URL=https://ums.elecmtz.une.cu
 # verificado en Resend.
 RESEND_API_KEY=re_xxxxxxxxxxxxx
 
+# ====== DIRECTORIO DE CUENTAS (ACTIVE DIRECTORY) ======
+# Recomendadas a partir del despliegue: llenan nombre, cargo y área de las
+# cuentas de proxy que usa el informe mensual. Sin ellas el botón
+# «Sincronizar desde AD» queda deshabilitado y el resto de la app funciona.
+# LDAPS obligatorio (nunca `ldap://`): el bind cruza la red con credenciales
+# de dominio. La cuenta de servicio sólo necesita permiso de lectura sobre
+# la OU indicada; administrador del dominio no hace falta.
+AD_URL="ldaps://<DC_TU-DOMINIO>:636"
+AD_BIND_DN="CN=svc-ums-sync,OU=Servicios,DC=tu,DC=dominio"
+AD_BIND_PASSWORD="<CONTRASEÑA_DE_SERVICIO>"
+AD_USER_SEARCH_BASE="OU=Usuarios,DC=tu,DC=dominio"
+AD_TLS_INSECURE=""
+
 # Opcionales: por defecto la plantilla se busca en
 # storage/templates/monthly-report.docx y los emitidos van a storage/reports.
 # REPORTS_TEMPLATE_PATH=
@@ -153,6 +166,17 @@ chmod 600 /opt/user-management-system/.env
 ```
 
 > No definir `NODE_ENV` en `.env`: `next build` y `next start` lo fijan. Definirlo afecta además a `pnpm install` (podría omitir las devDependencies que el build necesita).
+
+> **Directorio de cuentas (AD):** las variables `AD_*` llenan el nombre y el
+> cargo de la cuenta de proxy en el informe mensual. En el DC se crea una
+> única cuenta de servicio (`svc-ums-sync`) con permiso de **lectura** sobre
+> la OU de usuarios, y en la app se dispara la sincronización desde
+> **Configuración > Directorio de cuentas > Sincronizar desde AD** (solo
+> administrador). Si el DC usa certificados autofirmados sin CA interna,
+> defíní `AD_TLS_INSECURE="true"`; en un dominio con CA funcional dejalo
+> vacío. Sin AD configurado, el botón queda deshabilitado y el resto de la
+> app funciona igual.
+>
 
 ### 4.3 Dependencias y migraciones
 
