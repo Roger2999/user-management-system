@@ -1,242 +1,162 @@
 # User Management System
 
-Sistema de autenticación, gestión de solicitudes de cuentas de usuario y flujo de aprobación con firmas por etapas. Construido con Next.js, Better Auth y Prisma.
+Aplicación interna de autenticación, solicitudes de cuentas de usuario con firmas por etapas e informes mensuales de tráfico web. Next.js 16 (App Router), Better Auth y Prisma 7 sobre PostgreSQL.
 
-## Funcionalidades
+## Módulos
 
-| Módulo                     | Descripción                                                                                                          |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Autenticación              | Inicio de sesión por **username** + contraseña, alta de usuarios por **ADMIN** desde Configuración, cierre de sesión |
-| Recuperación de contraseña | Email con enlace de restablecimiento (Resend), token con expiración                                                  |
-| Roles y autorización       | `USER` / `ADMIN`; toda la gestión exige rol `ADMIN` (server actions + rutas protegidas)                              |
-| Solicitudes de cuenta      | Alta, actualización y baja de cuentas de usuario, con validación de campos únicos                                    |
-| Flujo de firmas            | Etapas `Solicitado → Revisado → Aprobado → Ejecutado`, inmutables y ordenadas                                        |
-| Dashboard                  | Estadísticas de solicitudes: pendientes de firma, expiradas, por tipo y por cuenta                                   |
-| Configuración              | Editar perfil (username / nombre visible), cambiar contraseña, revocar sesiones                                      |
-| Extras                     | Tema claro / oscuro / océano / sistema, impresión de plantilla de solicitud, búsqueda y filtros                      |
+| Módulo                | Descripción                                                                                                                   |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Autenticación         | Login por `username` + contraseña. Registro público deshabilitado.                                                            |
+| Solicitudes de cuenta | Alta (`NEW`), actualización (`UPDATE`) y baja (`DEPROVISIONING`), con validación de campos únicos.                            |
+| Firmas                | Etapas `requested → revised → approved → executed`, ordenadas e inmutables.                                                   |
+| Informes mensuales    | Importación de `access.log` diarios de Squid, cobertura del período, hallazgos por categoría prohibida y emisión del `.docx`. |
+| Gestión de cuentas    | Lista con búsqueda y filtros, y tarjetas de estado: pendientes de firma, expiradas, por expirar y por tipo.                   |
+| Dashboard             | Bienvenida y accesos a gestión de cuentas e informes (solo `ADMIN`).                                                          |
+| Configuración         | Perfil, contraseña y sesiones. Un `ADMIN` además crea usuarios, restablece contraseñas y revoca sesiones ajenas.              |
 
 ## Stack
 
-| Capa       | Tecnología                                          |
-| ---------- | --------------------------------------------------- |
-| Framework  | Next.js 16 (App Router), React 19, TypeScript       |
-| Auth       | Better Auth v1.6 (plugin username + email/password) |
-| ORM / DB   | Prisma v7 con PostgreSQL (Prisma Postgres)          |
-| UI         | shadcn/ui + Tailwind CSS v4, Radix UI               |
-| Validación | Zod 4                                               |
-| Email      | Resend                                              |
-| Estado     | Zustand                                             |
+| Capa       | Tecnología                                         |
+| ---------- | -------------------------------------------------- |
+| Framework  | Next.js 16 (App Router), React 19, TypeScript      |
+| Auth       | Better Auth 1.6 (plugin username + email/password) |
+| Datos      | Prisma 7 con PostgreSQL                            |
+| UI         | Tailwind CSS 4, shadcn/ui, Radix UI                |
+| Validación | Zod 4                                              |
+| Email      | Resend                                             |
+| Tests      | Vitest                                             |
 
 ## Roles y autorización
 
-| Rol              | Qué puede hacer                                                                                                                        |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `USER` (default) | Dashboard personal, configuración de su cuenta                                                                                         |
-| `ADMIN`          | Todo lo de `USER` + crear, editar, borrar y firmar solicitudes de cuenta, ver las estadísticas de gestión y crear usuarios del sistema |
+| Rol              | Alcance                                                                                  |
+| ---------------- | ---------------------------------------------------------------------------------------- |
+| `USER` (default) | Dashboard propio y configuración de su cuenta.                                           |
+| `ADMIN`          | Todo lo anterior + solicitudes, firmas, informes mensuales y administración de usuarios. |
 
-La protección se aplica en dos capas:
+La autorización se aplica en tres capas: `proxy.ts` redirige sin sesión, los layouts de `user-accounts-management/` y `monthly-reports/` exigen `ADMIN`, y las server actions de administración vuelven a validar con `helpers/requireAdmin.ts`.
 
-- **Server actions**: `helpers/requireAdmin.ts` corta la ejecución sin sesión (`/signin`) o sin rol `ADMIN` (`/dashboard`).
-- **Rutas**: el layout de `user-accounts-management/` aplica la misma guardia; la card de gestión del dashboard solo se muestra a admins.
+## Altas y recuperación de contraseña
 
-Para promover un administrador por username:
+- **Nuevos usuarios:** un `ADMIN` los crea desde `Configuración → Crear usuario`, con rol `USER` o `ADMIN`.
+- **Contraseña olvidada:** el usuario usa el enlace del login y recibe un email con un token de 1 hora. Si el correo no llega, un `ADMIN` la restablece desde `Configuración → Restablecer contraseña`; la acción revoca las sesiones abiertas de esa cuenta.
+- **Promover un usuario existente:**
 
-```bash
-pnpm exec tsx prisma/promote-admin.ts <username>
-```
+  ```bash
+  pnpm exec tsx prisma/promote-admin.ts <username>
+  ```
 
-> **Nota:** los usuarios creados antes del plugin de username pueden no tener `username` en la DB; el script no los cubre. En ese caso promové por búsqueda directa en la base.
-
-## Alta de usuarios y administrador inicial
-
-El registro público está deshabilitado (`disableSignUp` en `lib/auth.ts`). Las cuentas se crean así:
-
-- **Administrador inicial:** `pnpm db:seed` crea `admin` / `admin` (configurable con `SEED_ADMIN_*`) **solo si la tabla `user` está vacía**. Cambiá la contraseña después del primer login.
-- **Usuarios nuevos:** un `ADMIN` los crea desde `Configuración → Crear usuario`, con rol `USER` o `ADMIN`.
-- **Promover existentes:** `pnpm exec tsx prisma/promote-admin.ts <username>`.
+  El script busca por `username`; las cuentas creadas antes del plugin de username no lo tienen y deben promoverse por búsqueda directa en la base.
 
 ## Reglas de integridad
 
-- Una solicitud con al menos una firma **no se puede editar ni eliminar** (se valida en la UI y en la server action).
+- Una solicitud con al menos una firma no se puede editar ni eliminar (se valida en la UI y en la server action).
 - Cada solicitud guarda `createdByUserId` / `updatedByUserId`.
-- Crear, editar, borrar y firmar escriben una entrada en `AuditLog` (quién, qué acción, sobre qué solicitud y cuándo).
-- El borrado de solicitudes sin firmas también queda auditado.
+- Crear, editar, borrar y firmar escriben una entrada en `AuditLog`.
 
-## Estructura del proyecto
+## Puesta en marcha
 
-```text
-app/
-├── (auth)/
-│   ├── signin/                 # Login + forgot-password + reset-password
-│   ├── verify-email-address/   # Resend de verificación (flujo inactivo)
-│   └── actions/                # signout
-├── (protected)/dashboard/
-│   ├── page.tsx                # Bienvenida + card de gestión (solo ADMIN)
-│   ├── layout.tsx              # Protección de sesión
-│   ├── components/             # Breadcrumbs, notificaciones, stats
-│   ├── settings/               # Perfil, contraseña, sesiones y alta de usuarios (ADMIN)
-│   └── user-accounts-management/
-│       ├── layout.tsx          # Guardia requireAdmin (toda la sección)
-│       ├── services/           # getAccountsCount
-│       └── users/              # Lista, crear, editar, firmar, borrar
-├── api/auth/[...all]/route.ts  # Handler de Better Auth
-└── layout.tsx / page.tsx / globals.css
-
-components/                     # Nav (desktop/mobile), field, botones, ui/ (shadcn)
-helpers/
-├── getSession.ts               # Sesión cacheada por request
-└── requireAdmin.ts             # Guardia de autorización
-lib/
-├── auth.ts                     # Config server de Better Auth (signup deshabilitado)
-├── auth-client.ts              # Config client
-├── prisma.ts                   # PrismaClient singleton (PrismaPg)
-├── audit.ts                    # Helper de AuditLog
-├── resend.ts                   # Cliente de email
-├── constants.ts                # Rutas, opciones de formularios
-└── types.d.ts                  # Tipos de estado de las server actions
-prisma/
-├── schema.prisma               # Modelos: User, Session, Account, Verification, AccountRequest, AccountRequestSignature, AuditLog
-├── migrations/                 # Migraciones de Prisma
-├── seed-admin.ts               # Admin inicial si la tabla user está vacía
-├── promote-admin.ts            # Promueve un usuario a ADMIN por username
-└── wipe-requests.ts            # Borra todas las solicitudes (solo desarrollo)
-generated/prisma/               # Cliente Prisma generado (se regenera, no se versiona)
-```
-
-Cada ruta sigue la convención `actions/` (server actions), `models/` (validación Zod), `components/` y `page.tsx`.
-
-## Inicio rápido
-
-1. Instalar dependencias:
+1. Instalar dependencias y crear el entorno:
 
    ```bash
    pnpm install
-   ```
-
-2. Crear `.env` a partir del template:
-
-   ```bash
    cp .env.example .env
    ```
 
-   Después completá los valores de [Variables de entorno](#variables-de-entorno).
+2. Completar `.env` según [Variables de entorno](#variables-de-entorno).
 
-   > El cliente Prisma se genera solo: `pnpm install` lo corre por
-   > `postinstall`, y `pnpm dev` / `pnpm build` lo seguras con `predev` y
-   > `prebuild`. Si tocás `schema.prisma` y querés regenerarlo sin tocar
-   > nada más, corré `pnpm db:generate`.
-
-3. Aplicar migraciones:
+3. Aplicar migraciones y crear el administrador inicial:
 
    ```bash
    pnpm db:migrate
+   pnpm db:seed        # admin / admin, solo si la tabla user está vacía
+   pnpm db:seed:rules  # patrones de categorías prohibidas de los informes
    ```
 
-4. Crear el administrador inicial (solo si no existe ningún usuario):
+4. Levantar el servidor con `pnpm dev` y abrir <http://localhost:3000>.
 
-   ```bash
-   pnpm db:seed
-   ```
+> Sin un PostgreSQL propio: `pnpm exec prisma dev` levanta una instancia local e imprime el `DATABASE_URL` que debe ir en `.env`.
 
-   Usa `admin` / `admin` por defecto. Cambiá la contraseña desde Configuración después del primer login, o definí `SEED_ADMIN_*` antes de correrlo.
-
-5. Levantar el servidor:
-
-   ```bash
-   pnpm dev
-   ```
-
-Abrí [http://localhost:3000](http://localhost:3000).
+El cliente Prisma se genera solo (`postinstall`, `predev`, `prebuild`) y no se versiona. Si cambias `schema.prisma`, usa `pnpm db:generate`.
 
 ## Variables de entorno
 
-| Variable                       | Obligatoria | Descripción                                                                                                                                       |
-| ------------------------------ | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `DATABASE_URL`                 | Sí          | Connection string de PostgreSQL                                                                                                                   |
-| `BETTER_AUTH_SECRET`           | Sí          | Secreto de firma de sesiones                                                                                                                      |
-| `BETTER_AUTH_URL`              | Sí          | URL base del servidor (`http://localhost:3000` en dev)                                                                                            |
-| `NEXT_PUBLIC_BETTER_AUTH_URL`  | No          | URL base para el cliente (fallback a localhost)                                                                                                   |
-| `CONNECTION_STRING_ACCELERATE` | No          | Connection string de Prisma Accelerate                                                                                                            |
-| `GITHUB_CLIENT_ID`             | No          | Client ID de GitHub OAuth (login social)                                                                                                          |
-| `GITHUB_CLIENT_SECRET`         | No          | Secret de GitHub OAuth (login social)                                                                                                             |
-| `RESEND_API_KEY`               | Recomendada | Clave de Resend para emails. Sin clave válida, la recuperación de contraseña falla (queda en el log) pero el build y el resto de la app funcionan |
-| `SEED_ADMIN_USERNAME`          | No          | Username del admin inicial (`admin` por defecto)                                                                                                  |
-| `SEED_ADMIN_PASSWORD`          | No          | Contraseña del admin inicial (`admin` por defecto; cambiala en producción)                                                                        |
-| `SEED_ADMIN_EMAIL`             | No          | Email del admin inicial (`admin@localhost` por defecto)                                                                                           |
-| `SEED_ADMIN_FULLNAME`          | No          | Nombre completo del admin inicial (`Administrador` por defecto)                                                                                   |
-| `SEED_ADMIN_POSITION`          | No          | Cargo del admin inicial (`Administrador` por defecto)                                                                                             |
+| Variable                       | Requerida     | Uso                                                                                                                                          |
+| ------------------------------ | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`                 | Sí            | Connection string de PostgreSQL.                                                                                                             |
+| `BETTER_AUTH_SECRET`           | Sí            | Secreto de firma de sesiones (`openssl rand -base64 32`).                                                                                    |
+| `BETTER_AUTH_URL`              | Sí            | URL base del servidor. Debe empezar por `https://` en producción: activa cookies `Secure`, HSTS y CSP con `upgrade-insecure-requests`.       |
+| `NEXT_PUBLIC_BETTER_AUTH_URL`  | No            | URL base para el cliente. Fallback a localhost.                                                                                              |
+| `RESEND_API_KEY`               | Recomendada   | Envío de emails de recuperación. Sin clave válida el envío falla y queda en el log; el resto de la app funciona.                             |
+| `REPORTS_TEMPLATE_PATH`        | Solo informes | Ruta del `.docx` oficial. Si queda vacía se usa `storage/templates/monthly-report.docx`; sin el archivo, la generación falla.                |
+| `REPORTS_STORAGE_DIR`          | No            | Directorio de los `.docx` emitidos. Por defecto `storage/reports`. Contiene datos de navegación de personas: permisos restringidos y backup. |
+| `CONNECTION_STRING_ACCELERATE` | No            | Connection string de Prisma Accelerate.                                                                                                      |
+| `GITHUB_CLIENT_ID`             | No            | Client ID de GitHub OAuth (login social).                                                                                                    |
+| `GITHUB_CLIENT_SECRET`         | No            | Secret de GitHub OAuth.                                                                                                                      |
+| `SEED_ADMIN_*`                 | No            | Username, contraseña, email, nombre y cargo del admin inicial. Valores por defecto: `admin` / `admin` / `admin@localhost`.                   |
 
-\* `lib/resend.ts` usa un placeholder cuando `RESEND_API_KEY` no está definida, para no romper el import ni el build. La recuperación de contraseña solo funciona con una clave real y un dominio verificado en Resend.
+## Comandos
 
-## Comandos útiles
+| Comando                                            | Descripción                                                 |
+| -------------------------------------------------- | ----------------------------------------------------------- |
+| `pnpm dev`                                         | Servidor de desarrollo.                                     |
+| `pnpm build` / `pnpm start`                        | Build y arranque de producción.                             |
+| `pnpm lint`                                        | ESLint.                                                     |
+| `pnpm test` / `pnpm test:watch`                    | Tests unitarios.                                            |
+| `pnpm db:migrate`                                  | Crear y aplicar migraciones en desarrollo.                  |
+| `pnpm db:generate`                                 | Regenerar el cliente Prisma.                                |
+| `pnpm db:seed`                                     | Crear el admin inicial si no existe ningún usuario.         |
+| `pnpm db:seed:rules`                               | Cargar los patrones de categorías prohibidas (idempotente). |
+| `pnpm exec prisma migrate deploy`                  | Aplicar migraciones pendientes en producción.               |
+| `pnpm exec prisma studio`                          | Editor visual de la base.                                   |
+| `pnpm exec tsx prisma/promote-admin.ts <username>` | Promover un usuario a `ADMIN`.                              |
+| `pnpm exec tsx prisma/wipe-requests.ts`            | Borrar solicitudes y firmas. Solo desarrollo.               |
 
-| Comando                                            | Descripción                                                           |
-| -------------------------------------------------- | --------------------------------------------------------------------- |
-| `pnpm dev`                                         | Servidor de desarrollo                                                |
-| `pnpm build`                                       | Build de producción                                                   |
-| `pnpm lint`                                        | ESLint                                                                |
-| `pnpm test`                                        | Tests unitarios (Vitest)                                              |
-| `pnpm test:watch`                                  | Tests en modo watch                                                   |
-| `pnpm db:migrate`                                  | Crear/aplicar migraciones en desarrollo                               |
-| `pnpm db:generate`                                 | Regenerar el cliente Prisma                                           |
-| `pnpm db:seed`                                     | Crear el admin inicial si no existe ningún usuario                    |
-| `pnpm exec prisma migrate deploy`                  | Aplicar migraciones pendientes (producción, no interactivo)           |
-| `pnpm exec prisma studio`                          | Prisma Studio (editor visual de la DB)                                |
-| `pnpm exec tsx prisma/promote-admin.ts <username>` | Promover administrador                                                |
-| `pnpm exec tsx prisma/wipe-requests.ts`            | Vaciar solicitudes y firmas, conservando usuarios, sesiones y cuentas |
-
-> El cliente Prisma **no está versionado**: vive en `generated/` y lo
-> regeneran `pnpm install` (`postinstall`), `pnpm dev` (`predev`) y
-> `pnpm build` (`prebuild`). Los ganchos existen porque pnpm omite
-> `postinstall` cuando `pnpm install` no cambia nada; `predev` y `prebuild`
-> corren siempre, así que el cliente nunca queda viejo.
-
-> **⚠️ Wipe:** `pnpm exec tsx prisma/wipe-requests.ts` borra **todas** las
-> solicitudes y firmas. Los datos de autenticación (`user`, `session`,
-> `account`, `verification`) no se tocan. No lo corras sobre datos reales.
+> `wipe-requests.ts` borra **todas** las solicitudes y firmas; los datos de autenticación (`user`, `session`, `account`, `verification`) no se tocan. No lo ejecutes sobre datos reales.
 
 ## Tests
 
-```bash
-pnpm test        # una pasada
-pnpm test:watch  # modo watch
+Son tests unitarios con Vitest: no levantan base de datos ni navegador. Cubren el plan de firmas, las acciones de configuración, los filtros del listado y el pipeline de informes (parser de Squid, métricas, hallazgos y emisión del `.docx`).
+
+## Estructura
+
+```text
+app/
+├── (auth)/signin/                  # Login, forgot-password y reset-password
+├── (protected)/dashboard/
+│   ├── page.tsx                    # Bienvenida y accesos (solo ADMIN)
+│   ├── settings/                   # Perfil, contraseña, sesiones y administración de usuarios
+│   ├── user-accounts-management/   # Solicitudes: lista, crear, editar, firmar, borrar
+│   └── monthly-reports/            # Historial, importación y generación de informes
+├── api/auth/[...all]/              # Handler de Better Auth
+└── api/reports/                    # Importación de logs y descarga del .docx
+
+components/                         # Navegación y componentes compartidos (shadcn/ui en ui/)
+helpers/                            # getSession, requireAdmin
+lib/
+├── auth.ts / auth-client.ts        # Better Auth (servidor y cliente)
+├── prisma.ts / audit.ts / resend.ts
+├── reports/                        # Pipeline de informes: parser, métricas, hallazgos, .docx
+└── filters.ts / constants.ts
+
+prisma/
+├── schema.prisma                   # Auth, solicitudes, firmas, auditoría e informes
+├── migrations/
+├── seed-admin.ts                   # Admin inicial
+├── seed-rules.ts                   # Patrones de categorías prohibidas
+├── promote-admin.ts
+└── wipe-requests.ts
+
+generated/prisma/                   # Cliente Prisma generado (no versionado)
 ```
 
-Son tests unitarios: no levantan base de datos ni navegador. Cubren las reglas
-de dominio que no se pueden verificar mirando la UI.
+Las rutas de solicitudes y configuración agrupan `actions/` (server actions), `models/` (Zod), `components/` y `page.tsx`.
 
-| Archivo                                                         | Qué cubre                                                     |
-| --------------------------------------------------------------- | ------------------------------------------------------------- |
-| `.../sign/[id]/models/signature-plan.model.test.ts`             | Orden de firmas, inmutabilidad e historial de correcciones    |
-| `.../sign/[id]/models/signSchema.model.test.ts`                 | Validación del formulario de firma                            |
-| `.../sign/[id]/actions/sign-action.test.ts`                     | Cableado: transacción, auditoría y respuesta al cliente       |
-| `lib/filters.test.ts`                                           | Filtros del listado (tipo, cuenta, expiración, pendientes)     |
+## Despliegue
 
-La lógica del flujo de firmas vive en `signature-plan.model.ts`, aislada de
-Next.js, Prisma y `FormData`. La server action sólo lee el formulario, resuelve
-la identidad del firmante y persiste el plan que devuelve el modelo; así las
-reglas se pueden probar sin mocks.
+La app se despliega en Vercel, o en la LAN sobre Proxmox/LXC con TLS interno. Los pasos de producción (variables, systemd, Nginx, certificados, backups y actualizaciones) están en [`DEPLOYMENT_GUIDE.md`](DEPLOYMENT_GUIDE.md).
 
-## Desarrollo local sin conexión a Prisma Postgres
+En cualquier destino, antes del primer login:
 
-Para levantar un PostgreSQL local:
-
-```bash
-# Terminal 1: Base de datos local
-pnpm exec prisma dev
-
-# Terminal 2: Servidor de desarrollo
-pnpm dev
-```
-
-Cuando uses `prisma dev`, actualizá el `DATABASE_URL` en `.env` con el connection string local que imprime el comando.
-
-## Deploy
-
-La app está configurada para Vercel. En el dashboard configurá las variables de entorno de la tabla anterior, con `BETTER_AUTH_URL` y `NEXT_PUBLIC_BETTER_AUTH_URL` apuntando a la URL de producción.
-
-> Para el despliegue interno en Proxmox/LXC con TLS propio, seguí `DEPLOYMENT_GUIDE.md`.
-
-> **Importante:** `lib/auth.ts` define `trustedOrigins` con las URLs permitidas (localhost y producción). Si cambiás de dominio, agregalo ahí y en `BETTER_AUTH_URL` antes de desplegar.
-
-Una vez en producción, creá el administrador inicial con `pnpm db:seed` contra la base de producción (solo actúa si no hay usuarios) y cambiá la contraseña desde Configuración. Para promover a un usuario existente, usá `promote-admin.ts`.
+1. Definir `BETTER_AUTH_URL` y agregar ese origen a `trustedOrigins` en `lib/auth.ts` (un cambio ahí exige rebuild).
+2. Ejecutar `pnpm db:seed` y `pnpm db:seed:rules` contra la base de producción.
+3. Cambiar la contraseña del administrador desde Configuración.

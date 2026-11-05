@@ -1,8 +1,9 @@
 "use client";
 
+import { useActionState, useEffect, useRef } from "react";
+import { toast } from "sonner";
 import Field from "@/components/field";
 import { Button } from "@/components/ui/button";
-import { useActionState } from "react";
 import { ChangePasswordState } from "@/lib/types";
 import { changePasswordAction } from "../actions/change-password-action";
 
@@ -17,11 +18,28 @@ export default function ChangePasswordForm() {
     changePasswordAction,
     initialState,
   );
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (state.success && state.message) {
+      toast.success(state.message);
+      // Ninguna de las contraseñas se queda escrita en el DOM.
+      formRef.current
+        ?.querySelectorAll<HTMLInputElement>('input[type="password"]')
+        .forEach((input) => {
+          input.value = "";
+        });
+    } else if (state.dbErrors?.message) {
+      toast.error(state.dbErrors.message);
+    }
+  }, [state]);
+
   return (
-    <div className="flex h-full flex-col gap-4">
-      <h2 className="text-xl font-semibold">Cambiar contraseña</h2>
+    <div className="flex flex-col gap-4">
+      <h3 className="text-base font-medium">Cambiar contraseña</h3>
       <form
-        className="flex flex-1 flex-col space-y-2 rounded-xl border p-6"
+        ref={formRef}
+        className="flex flex-col space-y-2 rounded-xl border p-6"
         action={action}
       >
         <Field
@@ -29,26 +47,25 @@ export default function ChangePasswordForm() {
           errors={state.validationErrors?.currentPassword}
           type="password"
           name="currentPassword"
+          autoComplete="current-password"
         />
         <Field
           label="Nueva contraseña"
           errors={state.validationErrors?.newPassword}
           type="password"
           name="newPassword"
+          autoComplete="new-password"
         />
         <Field
           label="Confirmar nueva contraseña"
           errors={state.validationErrors?.confirmNewPassword}
           type="password"
           name="confirmNewPassword"
+          autoComplete="new-password"
         />
-        <Button className="mt-auto">
+        <Button className="mt-2 self-start" type="submit" disabled={pending}>
           {pending ? "Enviando..." : "Actualizar"}
         </Button>
-        {state.success && <p className="text-success">{state.message}</p>}
-        {state.dbErrors && (
-          <p className="text-destructive">{state.dbErrors.message}</p>
-        )}
       </form>
     </div>
   );

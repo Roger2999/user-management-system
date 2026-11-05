@@ -107,6 +107,11 @@ export const AccountRequestSchema = z
     // Software
     authorizedSoftware: z.string().max(500, "Máximo 500 caracteres").optional(),
 
+    // User account
+    cuentaUsuario: z.string().max(100, "Máximo 100 caracteres").optional(),
+    actividadRealiza: z.string().max(500, "Máximo 500 caracteres").optional(),
+    administradorSistema: z.boolean().default(false),
+
     // Deprovisioning
     deprovisioningReasons: z
       .string()

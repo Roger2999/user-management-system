@@ -3,7 +3,7 @@ import { Row, Cell, CB, formatDate, DATE_PH } from "../primitives";
 
 export function DeprovisioningSection({ user }: { user: AccountRequest }) {
   return (
-    <Row h={33.9} last>
+    <Row h={25.2} last>
       <Cell w="w-[26.4%]" className="justify-center gap-1">
         <span className="font-bold">Baja de la entidad</span>
         <CB checked={user.requestType === "DEPROVISIONING"} />

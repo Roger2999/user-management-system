@@ -214,9 +214,9 @@ model AccountRequest {
   authorizedSoftware String?
 
   // User account
-  //cuentaUsuario        String?
-  //actividadRealiza     String?
-  //administradorSistema Boolean @default(false)
+  cuentaUsuario        String?
+  actividadRealiza     String?
+  administradorSistema Boolean @default(false)
 
   // Signatures
   signatures AccountRequestSignature[]
@@ -467,6 +467,7 @@ model ReportFinding {
 
   url         String
   hits        Int
+  browsingMs  Int                @default(0)
   firstSeen   DateTime
   lastSeen    DateTime
   disposition FindingDisposition @default(PENDING)

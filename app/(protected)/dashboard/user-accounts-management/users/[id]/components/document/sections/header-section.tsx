@@ -6,7 +6,7 @@ export function HeaderSection({ user }: { user: AccountRequest }) {
     <>
       <Row h={9.7}>
         <Cell w="w-[21.3%]" className="font-bold">
-          UD-PG 0074-A1.1
+          OM-PP 0001
         </Cell>
         <Cell end className="justify-center font-bold">
           SOLICITUD DE CUENTA DE USUARIO Y SERVICIOS DE RED
@@ -30,11 +30,11 @@ export function HeaderSection({ user }: { user: AccountRequest }) {
         <Cell w="w-[25.3%]" className="font-bold">
           TIPO DE GESTIÓN
         </Cell>
-        <Cell w="w-[11.6%]" className="justify-center gap-1">
+        <Cell w="w-[24.9%]" className="justify-center gap-1">
           <span className="font-bold">ALTA</span>
           <CB checked={user.requestType === "NEW"} />
         </Cell>
-        <Cell w="w-[18.6%]" className="justify-center gap-1">
+        <Cell w="w-[24.9%]" className="justify-center gap-1">
           <span className="font-bold">ACTUALIZACIÓN</span>
           <CB checked={user.requestType === "UPDATE"} />
         </Cell>

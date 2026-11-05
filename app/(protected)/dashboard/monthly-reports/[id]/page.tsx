@@ -1,5 +1,6 @@
 import { FindingDisposition, RuleCategory } from "@/generated/prisma/enums";
 import { MONTHS } from "@/lib/reports/document/period";
+import { formatDuration } from "@/lib/reports/format";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
 import {
@@ -361,6 +362,9 @@ export default async function ReportDetailPage({
                     <th className="px-4 py-3 font-medium">Sitio</th>
                     <th className="px-4 py-3 font-medium">Usuario</th>
                     <th className="px-4 py-3 text-right font-medium">Hits</th>
+                    <th className="px-4 py-3 text-right font-medium">
+                      Browsing Time
+                    </th>
                     <th className="px-4 py-3 font-medium">Visto</th>
                     <th className="px-4 py-3 font-medium">Revisión</th>
                   </tr>
@@ -388,6 +392,9 @@ export default async function ReportDetailPage({
                       </td>
                       <td className="px-4 py-3 text-right tabular-nums">
                         {format(finding.hits)}
+                      </td>
+                      <td className="px-4 py-3 text-right tabular-nums">
+                        {formatDuration(finding.browsingMs)}
                       </td>
                       <td className="px-4 py-3 text-xs">
                         {finding.firstSeen.toLocaleDateString("es-CU")} —{" "}

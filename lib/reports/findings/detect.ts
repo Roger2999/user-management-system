@@ -24,6 +24,12 @@ export type FindingCandidate = {
   site: string;
   username: string | null;
   hits: number;
+  /**
+   * Reloj del par (sitio, usuario), sumado de los días del mes. Es el mismo
+   * valor que muestra el drill-down del sitio, no el del sitio completo ni el
+   * del usuario en todos sus sitios (S12, S18).
+   */
+  browsingMs: number;
   firstSeen: Date;
   lastSeen: Date;
 };
@@ -63,6 +69,7 @@ export function detectFindings(
             site: pair.site,
             username: pair.username,
             hits: pair.hits,
+            browsingMs: pair.browsingMs,
             firstSeen: seenOn,
             lastSeen: seenOn,
           });
@@ -70,6 +77,7 @@ export function detectFindings(
         }
 
         current.hits += pair.hits;
+        current.browsingMs += pair.browsingMs;
         if (seenOn < current.firstSeen) current.firstSeen = seenOn;
         if (seenOn > current.lastSeen) current.lastSeen = seenOn;
       }

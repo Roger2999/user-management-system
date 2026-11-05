@@ -91,6 +91,9 @@ export default async function EditUserAccountPage({ params }: Props) {
     additionalPcAssetTag: opt(user.additionalPcAssetTag),
 
     authorizedSoftware: opt(user.authorizedSoftware),
+    cuentaUsuario: opt(user.cuentaUsuario),
+    actividadRealiza: opt(user.actividadRealiza),
+    administradorSistema: user.administradorSistema,
 
     deprovisioningReasons: opt(user.deprovisioningReasons),
     deprovisionedAt: toDateInput(user.deprovisionedAt),

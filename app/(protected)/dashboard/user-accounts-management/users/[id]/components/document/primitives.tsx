@@ -9,7 +9,12 @@ export const formatDate = (date: Date | null | undefined): string | null => {
 
 export function CB({ checked }: { checked: boolean }) {
   return (
-    <span className="whitespace-pre">[{checked ? "X" : "\u00A0\u00A0"}]</span>
+    <span
+      aria-hidden="true"
+      className="inline-flex h-[7.2pt] w-[7.2pt] shrink-0 self-center items-center justify-center border-[0.6pt] border-black text-[6.6pt] leading-none"
+    >
+      {checked ? "X" : ""}
+    </span>
   );
 }
 

@@ -95,6 +95,23 @@ export type ChangePasswordState = {
   } | null;
 };
 
+export type SessionActionState = {
+  success?: boolean;
+  message?: string;
+};
+
+export type ResetUserPasswordState = {
+  data?: { userId: string };
+  message?: string;
+  success?: boolean;
+  dbErrors?: DbError;
+  validationErrors?: {
+    userId?: string[];
+    newPassword?: string[];
+    confirmNewPassword?: string[];
+  } | null;
+};
+
 export type CreateUserAccountState = {
   data?: {
     id?: string;
@@ -147,6 +164,9 @@ export type CreateUserAccountState = {
     additionalPcName?: string;
     additionalPcAssetTag?: string;
     authorizedSoftware?: string;
+    cuentaUsuario?: string;
+    actividadRealiza?: string;
+    administradorSistema?: boolean;
     deprovisioningReasons?: string;
     deprovisionedAt?: string;
   };

@@ -19,8 +19,8 @@ export function AccountTypeSection({ user }: { user: AccountRequest }) {
         </Cell>
       </Row>
 
-      <Row h={18.9}>
-        <Cell end className="items-start pt-[2pt]">
+      <Row h={14.4}>
+        <Cell end>
           <span className="flex items-center gap-2">
             <span className="flex items-center gap-1">
               <span>Temporal</span>
@@ -28,7 +28,7 @@ export function AccountTypeSection({ user }: { user: AccountRequest }) {
             </span>
             <span className="flex items-center gap-[4pt]">
               <span>Fecha de expiración</span>
-              <span className="min-w-[70pt] border-b border-black text-center">
+              <span className="min-w-[70pt] text-center">
                 {formatDate(user.expiresAt) || "____/______/202___"}
               </span>
             </span>

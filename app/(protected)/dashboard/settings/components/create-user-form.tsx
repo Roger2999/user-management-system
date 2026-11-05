@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import Field from "@/components/field";
 import SelectField from "@/components/select-field";
 import { Button } from "@/components/ui/button";
@@ -25,13 +26,29 @@ export default function CreateUserForm() {
     initialState,
   );
   const [role, setRole] = useState("USER");
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (state.success && state.message) {
+      toast.success(state.message);
+      // La contraseña temporal no se queda escrita en el DOM.
+      formRef.current
+        ?.querySelectorAll<HTMLInputElement>('input[type="password"]')
+        .forEach((input) => {
+          input.value = "";
+        });
+    } else if (state.dbErrors?.message) {
+      toast.error(state.dbErrors.message);
+    }
+  }, [state]);
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold">Crear usuario</h2>
+      <h3 className="text-base font-medium">Crear usuario</h3>
       <form
+        ref={formRef}
         action={action}
-        className="flex h-full flex-col gap-2 rounded-xl border p-6"
+        className="flex flex-col gap-2 rounded-xl border p-6"
       >
         <div className="grid gap-4 sm:grid-cols-2">
           <Field
@@ -75,13 +92,9 @@ export default function CreateUserForm() {
             errors={state.validationErrors?.password}
           />
         </div>
-        <Button className="mt-4 self-start">
+        <Button className="mt-4 self-start" type="submit" disabled={pending}>
           {pending ? "Creando..." : "Crear usuario"}
         </Button>
-        {state.success && <p className="text-success">{state.message}</p>}
-        {state.dbErrors && (
-          <p className="text-destructive">{state.dbErrors.message}</p>
-        )}
       </form>
     </div>
   );

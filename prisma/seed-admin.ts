@@ -19,7 +19,7 @@ async function main() {
   }
 
   const username = process.env.SEED_ADMIN_USERNAME?.trim() || "admin";
-  const password = process.env.SEED_ADMIN_PASSWORD || "admin";
+  const password = process.env.SEED_ADMIN_PASSWORD || "admin123";
   const email = process.env.SEED_ADMIN_EMAIL?.trim() || "admin@localhost";
   const fullName =
     process.env.SEED_ADMIN_FULLNAME?.trim() || "Administrador";

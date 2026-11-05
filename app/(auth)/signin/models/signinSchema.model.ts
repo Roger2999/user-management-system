@@ -7,7 +7,7 @@ export const SigninFormSchema = z.object({
     .max(50, "No puede tener más de 50 caracteres"),
   password: z
     .string()
-    .min(8, "Mínimo de 8 caracteres")
+    .min(8, "Mínimo 8 caracteres")
     .max(128, "No puede tener más de 128 caracteres"),
 });
 

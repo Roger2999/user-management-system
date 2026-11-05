@@ -7,7 +7,7 @@ export function ScheduleSection({ user }: { user: AccountRequest }) {
     <>
       <Banner>DÍAS Y HORAS DE USO DE LA CUENTA:</Banner>
 
-      <Row h={16.5}>
+      <Row h={14.4}>
         <Cell end className="gap-[10pt]">
           <span className="flex items-center gap-1">
             <span>Lunes a Viernes</span>
@@ -34,7 +34,7 @@ export function ScheduleSection({ user }: { user: AccountRequest }) {
       </Row>
 
       <Row h={25.1}>
-        <Cell w="w-[42.4%]" className="flex-col items-start">
+        <Cell w="w-[42.4%]" className="flex-col items-start justify-center">
           <span className="flex w-full items-center gap-1">
             <span>No laborables: Sábado de</span>
             <span className="min-w-10 border-b border-black text-center">

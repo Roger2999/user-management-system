@@ -32,8 +32,9 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
   internacional = el resto.
 - **S5** — Detección de las categorías prohibidas del informe: pornográfico o
   adultos, C/R o subversivos, proxys anónimos, minería de criptomonedas. Cada
-  coincidencia produce evidencia (URL, usuario, primera y última vez) y una
-  disposición: `PENDING | CONFIRMED | FALSE_POSITIVE | ACTION_TAKEN`.
+  coincidencia produce evidencia (URL, usuario, primera y última vez, hits y
+  `Browsing Time` del par (sitio, usuario)) y una disposición:
+  `PENDING | CONFIRMED | FALSE_POSITIVE | ACTION_TAKEN`.
 - **S6** — El sistema emite el documento completo de 7 secciones. Las secciones
   2-7 se emiten presentes y vacías: encabezado, numeración y tablas con sus
   cabeceras, celdas sin contenido.
@@ -285,6 +286,12 @@ Rama: `feat/monthly-report-traces` · Estrategia: work-unit commits · Runner: `
 - **T37** — Cierre: suite completa, `tsc`, `eslint`, limpieza de los datos de
   prueba y reimportación con el modelo corregido. Route: inline. Spec: S27.
   Status: hecho (ver L40); la red social queda declarada como aproximación.
+- **T38** — `Browsing Time` del par en los hallazgos: `ReportFinding.browsingMs`,
+  suma en `detectFindings`, persistencia en `saveMonthlyReport`, columna en la
+  tabla de Hallazgos de la UI y migración
+  `20261029120000_add_finding_browsing_time`. Route: inline. Spec: S5, S12, S18.
+  Status: implementado; migración **por aplicar** y prueba de base pendiente
+  (base inalcanzable, P1001).
 
 Route declaration: todas las tareas de esta sesión son `inline` — no hay unidades
 independientes en paralelo ni presión de contexto que justifiquen un writer.
@@ -1737,3 +1744,29 @@ falta. S7 queda como está (solo cobertura y descartes) y no se modifica ninguna
 sección del informe. Consecuencia aceptada: la caída de ~4× en hits y `Browsing
 Time` frente a los meses generados con WebSpy no se justifica dentro del
 documento. No hubo cambios de código.
+
+### L43 — Browsing Time del par en la tabla de Hallazgos (verbatim)
+
+> ok, que opinas que sea mas conveniente para habregar en hallazgos en cuenta a browsing time
+
+> si dale
+
+Decisión: cada hallazgo es un par (regla, sitio, usuario), así que su
+`Browsing Time` es el **reloj del par** —el mismo que muestra el drill-down del
+sitio—, no el del sitio completo ni el del usuario en todos sus sitios. Es el
+único valor que describe la fila y el único que ya existe por día en
+`DailySiteUserStat.browsingMs`.
+
+Implementación: columna `ReportFinding.browsingMs` (migración aditiva), suma de
+los días en `detectFindings`, persistencia junto a hits y fechas, y columna
+`Browsing Time` entre `Hits` y `Visto` en la pantalla del informe. El `.docx` no
+cambia: las tablas de hallazgos de la plantilla se emiten vacías por S6.
+
+Límites: los informes ya generados muestran `00:00:00` hasta regenerarlos, porque
+el hallazgo guardado no conserva el detalle diario; y el reloj hereda el corte de
+medianoche y el carácter aproximado del resto del informe. En un hallazgo sin
+cuenta, el reloj es el del flujo anónimo del sitio, no el de una persona.
+
+Estado de las verificaciones: unitarias y suite completas en verde; la migración
+no se aplicó ni se corrió `REPORTS_DB_TEST=1` porque `db.prisma.io` no era
+alcanzable (P1001) en esta sesión.
