@@ -16,7 +16,7 @@ import {
 const SEGMENT_LABELS: Record<string, string> = {
   dashboard: "Dashboard",
   settings: "Configuracion",
-  "user-accounts-management": "Gestion de cuentas",
+  "accounts": "Gestion de cuentas",
   users: "Usuarios",
   create: "Crear solicitud",
   edit: "Editar solicitud",

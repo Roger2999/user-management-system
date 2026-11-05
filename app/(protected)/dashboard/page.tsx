@@ -1,6 +1,6 @@
 import { getSession } from "@/lib/getSession";
 import { UsersIcon } from "lucide-react";
-import { DashboardCard } from "./components/DashboardCard";
+import { DashboardCard } from "./components/dashboard-card";
 
 export default async function Dashboard() {
   const session = await getSession();
@@ -25,7 +25,7 @@ export default async function Dashboard() {
             title: "Gestionar cuentas de usuario",
             description:
               "Registra, firma, actualiza y da de baja cuentas de usuario",
-            href: "/dashboard/user-accounts-management/",
+            href: "/dashboard/accounts/",
           }}
         />
         <DashboardCard

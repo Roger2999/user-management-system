@@ -61,6 +61,22 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // La sección de cuentas se llamaba `user-accounts-management`; el prefijo
+  // repetía el dominio y alargaba las rutas. Los enlaces antiguos se conservan.
+  async redirects() {
+    return [
+      {
+        source: "/dashboard/user-accounts-management",
+        destination: "/dashboard/accounts",
+        permanent: true,
+      },
+      {
+        source: "/dashboard/user-accounts-management/:path*",
+        destination: "/dashboard/accounts/:path*",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

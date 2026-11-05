@@ -1,0 +1,30 @@
+"use client";
+
+import { useRef } from "react";
+import UserAccountDocument, { UserWithSignatures } from "./user-account-document";
+import { PrintButton } from "./print-button";
+
+interface Props {
+  user: UserWithSignatures;
+}
+
+export default function DocumentPreview({ user }: Props) {
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  return (
+    <div className="bg-muted/40 min-h-screen p-4 print:bg-white print:p-0">
+      <div className="mx-auto mb-4 flex max-w-3xl justify-end print:hidden">
+        <PrintButton contentRef={contentRef} />
+      </div>
+      <div
+        ref={contentRef}
+        data-print-target
+        className="mx-auto w-[216mm] max-w-full bg-white p-[8mm] print:w-auto print:shadow-none"
+      >
+        <div className="overflow-x-auto print:overflow-visible">
+          <UserAccountDocument user={user} />
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -33,7 +33,7 @@ Aplicación interna de autenticación, solicitudes de cuentas de usuario con fir
 | `USER` (default) | Dashboard propio y configuración de su cuenta.                                           |
 | `ADMIN`          | Todo lo anterior + solicitudes, firmas, informes mensuales y administración de usuarios. |
 
-La autorización se aplica en tres capas: `proxy.ts` redirige sin sesión, los layouts de `user-accounts-management/` y `monthly-reports/` exigen `ADMIN`, y las server actions de administración vuelven a validar con `lib/requireAdmin.ts`.
+La autorización se aplica en tres capas: `proxy.ts` redirige sin sesión, los layouts de `accounts/` y `monthly-reports/` exigen `ADMIN`, y las server actions de administración vuelven a validar con `lib/requireAdmin.ts`.
 
 ## Altas y recuperación de contraseña
 
@@ -130,7 +130,7 @@ app/
 ├── (protected)/dashboard/
 │   ├── page.tsx                    # Bienvenida y accesos (solo ADMIN)
 │   ├── settings/                   # Perfil, contraseña, sesiones y administración de usuarios
-│   ├── user-accounts-management/   # Solicitudes: lista, crear, editar, firmar, borrar
+│   ├── accounts/                   # Solicitudes: lista, crear, editar, firmar, borrar
 │   └── monthly-reports/            # Historial, importación y generación de informes
 ├── api/auth/[...all]/              # Handler de Better Auth
 └── api/reports/                    # Importación de logs y descarga del .docx
@@ -165,7 +165,7 @@ Acceso a datos: las lecturas van por `services/` o por el server component que l
 
 ## Despliegue
 
-La app se despliega en Vercel, o en la LAN sobre Proxmox/LXC con TLS interno. Los pasos de producción (variables, systemd, Nginx, certificados, backups y actualizaciones) están en [`DEPLOYMENT_GUIDE.md`](DEPLOYMENT_GUIDE.md).
+La app se despliega en Vercel, o en la LAN sobre Proxmox/LXC con TLS interno. Los pasos de producción (variables, systemd, Nginx, certificados, backups y actualizaciones) están en [`DEPLOYMENT_GUIDE.md`](docs/DEPLOYMENT_GUIDE.md).
 
 En cualquier destino, antes del primer login:
 
