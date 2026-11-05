@@ -1,4 +1,4 @@
-import type { AccountRequest } from "@/generated/prisma/client";
+import type { AccountRequest } from "@/lib/db";
 import { Row, Cell, CB } from "../primitives";
 import { DataField } from "../data-fields";
 

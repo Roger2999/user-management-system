@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { SignFormState } from "@/lib/types";
+import { SignFormState } from "@/app/(protected)/dashboard/user-accounts-management/users/sign/[id]/models/sign-form-state";
 import { useActionState, useEffect, useState } from "react";
 import { signAction } from "../actions/sign-action";
 import { toast } from "sonner";

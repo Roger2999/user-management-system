@@ -33,7 +33,7 @@ Aplicación interna de autenticación, solicitudes de cuentas de usuario con fir
 | `USER` (default) | Dashboard propio y configuración de su cuenta.                                           |
 | `ADMIN`          | Todo lo anterior + solicitudes, firmas, informes mensuales y administración de usuarios. |
 
-La autorización se aplica en tres capas: `proxy.ts` redirige sin sesión, los layouts de `user-accounts-management/` y `monthly-reports/` exigen `ADMIN`, y las server actions de administración vuelven a validar con `helpers/requireAdmin.ts`.
+La autorización se aplica en tres capas: `proxy.ts` redirige sin sesión, los layouts de `user-accounts-management/` y `monthly-reports/` exigen `ADMIN`, y las server actions de administración vuelven a validar con `lib/requireAdmin.ts`.
 
 ## Altas y recuperación de contraseña
 
@@ -136,11 +136,16 @@ app/
 └── api/reports/                    # Importación de logs y descarga del .docx
 
 components/                         # Navegación y componentes compartidos (shadcn/ui en ui/)
-helpers/                            # getSession, requireAdmin
-lib/
-├── auth.ts / auth-client.ts        # Better Auth (servidor y cliente)
-├── prisma.ts / audit.ts / resend.ts
+modules/                            # Dominios con lógica propia y sus tests
 ├── reports/                        # Pipeline de informes: parser, métricas, hallazgos, .docx
+└── ad/                             # Sincronización con Active Directory (LDAPS)
+
+lib/                                # Infraestructura transversal, sin lógica de rutas
+├── auth.ts / auth-client.ts        # Better Auth (servidor y cliente)
+├── db.ts                           # Tipos y enums generados de Prisma (barrel)
+├── prisma.ts / audit.ts / resend.ts
+├── getSession.ts / requireAdmin.ts # Sesión y guardas de autorización
+├── errors.ts                       # DbError compartido por los form states
 └── filters.ts / constants.ts
 
 prisma/
@@ -154,7 +159,9 @@ prisma/
 generated/prisma/                   # Cliente Prisma generado (no versionado)
 ```
 
-Las rutas de solicitudes y configuración agrupan `actions/` (server actions), `models/` (Zod), `components/` y `page.tsx`.
+Las rutas de solicitudes y configuración agrupan `actions/` (server actions), `models/` (Zod y tipos de su formulario), `components/` y `page.tsx`. Los tipos de estado de formulario viven en la feature que los usa, nunca en `lib/`; `lib/errors.ts` solo expone el `DbError` común.
+
+Acceso a datos: las lecturas van por `services/` o por el server component que las necesita, y las escrituras pasan por una server action. Prisma no se importa desde componentes de cliente, y todo lo generado por Prisma se importa desde `@/lib/db`, no desde la ruta del generador.
 
 ## Despliegue
 

@@ -1,4 +1,4 @@
-import type { AccountRequest } from "@/generated/prisma/client";
+import type { AccountRequest } from "@/lib/db";
 import { Row, Cell, CB, formatDate, DATE_PH } from "../primitives";
 
 export function DeprovisioningSection({ user }: { user: AccountRequest }) {

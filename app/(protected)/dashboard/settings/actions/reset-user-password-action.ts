@@ -5,10 +5,10 @@ import z from "zod";
 import { hashPassword } from "better-auth/crypto";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
-import { getSession } from "@/helpers/getSession";
-import { requireAdmin } from "@/helpers/requireAdmin";
+import { getSession } from "@/lib/getSession";
+import { requireAdmin } from "@/lib/requireAdmin";
 import { AUDIT_ENTITY, recordAudit } from "@/lib/audit";
-import type { ResetUserPasswordState } from "@/lib/types";
+import type { ResetUserPasswordState } from "@/app/(protected)/dashboard/settings/models/settings-form-states";
 import { ResetUserPasswordSchema } from "../models/resetUserPasswordSchema.model";
 
 /**

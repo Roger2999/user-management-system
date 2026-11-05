@@ -1,10 +1,10 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { requireAdmin } from "@/helpers/requireAdmin";
-import { loadAdConfig } from "@/lib/ad/config";
-import { syncAdDirectory } from "@/lib/ad/sync";
-import type { SyncAdDirectoryState } from "@/lib/types";
+import { requireAdmin } from "@/lib/requireAdmin";
+import { loadAdConfig } from "@/modules/ad/config";
+import { syncAdDirectory } from "@/modules/ad/sync";
+import type { SyncAdDirectoryState } from "@/app/(protected)/dashboard/settings/models/settings-form-states";
 
 /**
  * Sincronización manual del directorio de cuentas con el Active Directory (S5).

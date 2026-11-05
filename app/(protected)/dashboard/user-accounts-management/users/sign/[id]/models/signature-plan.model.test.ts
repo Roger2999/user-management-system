@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AccountRequestStage } from "@/generated/prisma/enums";
+import { AccountRequestStage } from "@/lib/db";
 import {
   emptySignValues,
   planSignatures,

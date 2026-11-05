@@ -7,7 +7,7 @@ import CheckboxField from "@/components/checkbox-field";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createUserAccountAction } from "../create/actions/create-user-account-action";
-import type { CreateUserAccountState } from "@/lib/types";
+import type { CreateUserAccountState } from "@/app/(protected)/dashboard/user-accounts-management/users/models/account-request-form-state";
 import {
   ACCOUNT_OPTIONS,
   PERSONAL_OPTIONS,

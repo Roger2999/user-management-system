@@ -1,5 +1,4 @@
-import type { AccountRequestSignature } from "@/generated/prisma/client";
-import { AccountRequestStage } from "@/generated/prisma/enums";
+import { AccountRequestStage, type AccountRequestSignature } from "@/lib/db";
 import { SignatureBlock } from "../signature-block";
 import type { UserWithSignatures } from "../../UserAccountDocument";
 

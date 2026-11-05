@@ -2,7 +2,7 @@ import "dotenv/config";
 import { randomUUID } from "node:crypto";
 import { hashPassword } from "better-auth/crypto";
 import prisma from "@/lib/prisma";
-import { UserRole } from "@/generated/prisma/enums";
+import { UserRole } from "@/lib/db";
 
 /**
  * Crea el administrador inicial solo si la tabla `user` esta vacia.

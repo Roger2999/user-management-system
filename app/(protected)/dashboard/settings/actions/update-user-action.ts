@@ -4,7 +4,7 @@ import z from "zod";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { APIError } from "better-auth";
-import { UpdateUserState } from "@/lib/types";
+import { UpdateUserState } from "@/app/(protected)/dashboard/settings/models/settings-form-states";
 import { UpdateUserSchema } from "../models/updateUserSchema.model";
 import { revalidatePath } from "next/cache";
 

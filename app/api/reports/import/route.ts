@@ -1,9 +1,9 @@
 import { Readable } from "node:stream";
 import { NextResponse } from "next/server";
-import { getSession } from "@/helpers/getSession";
+import { getSession } from "@/lib/getSession";
 import prisma from "@/lib/prisma";
-import { importSquidLogFile } from "@/lib/reports/persistence/import";
-import { monthlyPeriod } from "@/lib/reports/time";
+import { importSquidLogFile } from "@/modules/reports/persistence/import";
+import { monthlyPeriod } from "@/modules/reports/time";
 
 /**
  * Importa un archivo diario de Squid.

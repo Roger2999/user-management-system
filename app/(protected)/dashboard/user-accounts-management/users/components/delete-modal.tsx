@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { deleteUserAccountAction } from "../actions/delete-user-account-action";
-import type { DeleteUserAccountState } from "@/lib/types";
+import type { DeleteUserAccountState } from "@/app/(protected)/dashboard/user-accounts-management/users/models/account-request-form-state";
 
 const initialState: DeleteUserAccountState = {
   success: false,

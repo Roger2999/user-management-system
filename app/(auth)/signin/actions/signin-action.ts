@@ -1,6 +1,6 @@
 "use server";
 
-import { SigninFormState } from "@/lib/types";
+import { SigninFormState } from "@/app/(auth)/signin/models/signin-form-state";
 import { SigninFormSchema } from "../models/signinSchema.model";
 import z from "zod";
 import { auth } from "@/lib/auth";

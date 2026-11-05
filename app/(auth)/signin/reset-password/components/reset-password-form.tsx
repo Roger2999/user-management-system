@@ -2,7 +2,7 @@
 
 import Field from "@/components/field";
 import { Button } from "@/components/ui/button";
-import { ResetPasswordState } from "@/lib/types";
+import { ResetPasswordState } from "@/app/(auth)/signin/reset-password/models/reset-password-state";
 import { useActionState } from "react";
 import { resetPasswordAction } from "../actions/reset-password-action";
 import { useSearchParams } from "next/navigation";

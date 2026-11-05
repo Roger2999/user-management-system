@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import EditUserAccountForm from "../../components/user-account-form";
 import { updateAccountRequestAction } from "./actions/update-account-request-action";
-import type { CreateUserAccountState } from "@/lib/types";
+import type { CreateUserAccountState } from "@/app/(protected)/dashboard/user-accounts-management/users/models/account-request-form-state";
 
 interface Props {
   params: Promise<{ id: string }>;

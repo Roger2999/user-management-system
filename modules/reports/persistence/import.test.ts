@@ -1,6 +1,6 @@
 import { Readable } from "node:stream";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import type { PrismaClient } from "@/generated/prisma/client";
+import type { PrismaClient } from "@/lib/db";
 import { ingestSquidLog } from "../ingest";
 import type { DailyMetrics } from "../metrics/aggregate";
 import { monthlyPeriod } from "../time";

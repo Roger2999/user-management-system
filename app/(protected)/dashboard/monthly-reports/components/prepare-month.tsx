@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { coverageSummary } from "@/lib/reports/coverage-text";
-import { MONTHS } from "@/lib/reports/document/period";
-import type { PeriodFileRow } from "@/lib/reports/persistence/load";
-import { DEFAULT_TIME_ZONE, type PeriodCoverage } from "@/lib/reports/time";
+import { coverageSummary } from "@/modules/reports/coverage-text";
+import { MONTHS } from "@/modules/reports/document/period";
+import type { PeriodFileRow } from "@/modules/reports/persistence/load";
+import { DEFAULT_TIME_ZONE, type PeriodCoverage } from "@/modules/reports/time";
 import { reportPeriodStateAction } from "../actions";
 import GenerateForm from "./generate-form";
 import ImportForm from "./import-form";

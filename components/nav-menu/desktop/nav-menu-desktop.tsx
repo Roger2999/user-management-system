@@ -3,7 +3,7 @@ import LinkButton from "@/components/link-button";
 import SignButton from "@/components/sign-button";
 import SignoutButton from "@/components/signout-button";
 import { ThemeModeToggle } from "@/components/theme-mode-toggle";
-import { getSession } from "@/helpers/getSession";
+import { getSession } from "@/lib/getSession";
 import { PUBLIC_ROUTES, PRIVATE_ROUTES } from "@/lib/constants";
 import Link from "next/link";
 import Image from "next/image";

@@ -1,4 +1,4 @@
-import { getSession } from "@/helpers/getSession";
+import { getSession } from "@/lib/getSession";
 import NavMenuMobile from "./nav-menu-mobile";
 
 export default async function NavMenuMobileWrapper() {

@@ -62,8 +62,8 @@ const h = vi.hoisted(() => {
 });
 
 vi.mock("@/lib/prisma", () => ({ default: h.prismaMock }));
-vi.mock("@/helpers/requireAdmin", () => ({ requireAdmin: async () => {} }));
-vi.mock("@/helpers/getSession", () => ({
+vi.mock("@/lib/requireAdmin", () => ({ requireAdmin: async () => {} }));
+vi.mock("@/lib/getSession", () => ({
   getSession: async () => ({ user: h.sessionUser }),
 }));
 vi.mock("next/cache", () => ({ revalidatePath: () => {} }));

@@ -1,4 +1,4 @@
-import { getSession } from "@/helpers/getSession";
+import { getSession } from "@/lib/getSession";
 import { redirect } from "next/navigation";
 import BackButton from "./components/back-button";
 import Breadcrumbs from "./components/breadcrumbs";

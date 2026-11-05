@@ -1,6 +1,6 @@
 "use server";
 
-import { ResendVerificationState } from "@/lib/types";
+import { ResendVerificationState } from "@/app/(auth)/verify-email-address/models/resend-verification-state";
 import { ResendVerificationSchema } from "../models/resendVerificationSchema.model";
 import z from "zod";
 import { auth } from "@/lib/auth";

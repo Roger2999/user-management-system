@@ -1,5 +1,5 @@
 import type { AdSyncConfig } from "./config";
-import type { PrismaClient } from "@/generated/prisma/client";
+import type { PrismaClient } from "@/lib/db";
 import { searchAdUsers } from "./client";
 import type { AdDomainUser, AdSyncResult } from "./types";
 

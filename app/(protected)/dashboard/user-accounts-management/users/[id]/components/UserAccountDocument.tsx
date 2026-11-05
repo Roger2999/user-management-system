@@ -1,7 +1,7 @@
 import type {
   AccountRequest,
   AccountRequestSignature,
-} from "@/generated/prisma/client";
+} from "@/lib/db";
 import { HeaderSection } from "./document/sections/header-section";
 import { GestionSection } from "./document/sections/gestion-section";
 import { ServicesSection } from "./document/sections/services-section";

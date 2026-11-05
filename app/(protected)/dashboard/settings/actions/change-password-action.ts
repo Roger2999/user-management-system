@@ -5,7 +5,7 @@ import { APIError } from "better-auth";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { ChangePasswordState } from "@/lib/types";
+import { ChangePasswordState } from "@/app/(protected)/dashboard/settings/models/settings-form-states";
 import { ChangePasswordSchema } from "../models/changePasswordSchema.model";
 
 export const changePasswordAction = async (

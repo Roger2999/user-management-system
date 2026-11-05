@@ -1,6 +1,6 @@
 import "dotenv/config";
 import prisma from "@/lib/prisma";
-import { UserRole } from "@/generated/prisma/enums";
+import { UserRole } from "@/lib/db";
 
 async function main() {
   const username = process.argv[2];

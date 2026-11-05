@@ -1,4 +1,4 @@
-import { AccountRequestStage } from "@/generated/prisma/enums";
+import { AccountRequestStage } from "@/lib/db";
 import { SIGN_STAGES } from "./signSchema.model";
 
 /**

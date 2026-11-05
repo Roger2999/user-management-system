@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { filterLogFiles, relativeName } from "@/lib/reports/import-selection";
+import { filterLogFiles, relativeName } from "@/modules/reports/import-selection";
 
 type Skipped = { unserved: number; internal: number; telemetry: number };
 

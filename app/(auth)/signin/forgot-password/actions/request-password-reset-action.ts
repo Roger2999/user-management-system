@@ -4,7 +4,7 @@ import z from "zod";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { APIError } from "better-auth";
-import { RequestPasswordResetState } from "@/lib/types";
+import { RequestPasswordResetState } from "@/app/(auth)/signin/forgot-password/models/forgot-password-state";
 import { ForgotPasswordSchema } from "../models/forgot-password.model";
 
 export const requestPasswordResetAction = async (

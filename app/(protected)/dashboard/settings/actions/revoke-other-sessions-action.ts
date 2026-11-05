@@ -3,7 +3,7 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
-import type { SessionActionState } from "@/lib/types";
+import type { SessionActionState } from "@/app/(protected)/dashboard/settings/models/settings-form-states";
 
 /**
  * Cierra todas las sesiones del usuario actual salvo la que está ejecutando la

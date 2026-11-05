@@ -1,5 +1,4 @@
-import type { Prisma } from "@/generated/prisma/client";
-import { AuditAction } from "@/generated/prisma/enums";
+import { AuditAction, type Prisma } from "@/lib/db";
 
 /** Entidades auditables. */
 export const AUDIT_ENTITY = {

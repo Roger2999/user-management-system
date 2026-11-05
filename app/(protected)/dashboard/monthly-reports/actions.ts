@@ -2,23 +2,23 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { requireAdmin } from "@/helpers/requireAdmin";
+import { requireAdmin } from "@/lib/requireAdmin";
 import { optionalTextField, textField } from "@/lib/form-data";
 import prisma from "@/lib/prisma";
 import {
   generateMonthlyReport,
   ReportGenerationError,
-} from "@/lib/reports/generate";
+} from "@/modules/reports/generate";
 import {
   listImportedDays,
   listPeriodFiles,
-} from "@/lib/reports/persistence/load";
+} from "@/modules/reports/persistence/load";
 import {
   checkCoverage,
   monthlyPeriod,
   type PeriodCoverage,
-} from "@/lib/reports/time";
-import { FindingDisposition } from "@/generated/prisma/enums";
+} from "@/modules/reports/time";
+import { FindingDisposition } from "@/lib/db";
 
 export type GenerateReportState = { error?: string };
 

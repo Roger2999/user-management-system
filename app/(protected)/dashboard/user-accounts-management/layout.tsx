@@ -1,4 +1,4 @@
-import { requireAdmin } from "@/helpers/requireAdmin";
+import { requireAdmin } from "@/lib/requireAdmin";
 import NotificationData from "../components/notification-data";
 
 export default async function UserAccountsManagementLayout({

@@ -1,4 +1,4 @@
-import { MONTHS } from "@/lib/reports/document/period";
+import { MONTHS } from "@/modules/reports/document/period";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
 

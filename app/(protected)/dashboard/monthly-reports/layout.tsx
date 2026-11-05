@@ -1,4 +1,4 @@
-import { requireAdmin } from "@/helpers/requireAdmin";
+import { requireAdmin } from "@/lib/requireAdmin";
 import Sidebar from "./components/sidebar/sidebar";
 
 export default async function MonthlyReportManagementLayout({

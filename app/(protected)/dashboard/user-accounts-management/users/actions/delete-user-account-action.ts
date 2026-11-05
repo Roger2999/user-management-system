@@ -3,11 +3,11 @@
 import z from "zod";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { requireAdmin } from "@/helpers/requireAdmin";
-import { getSession } from "@/helpers/getSession";
+import { requireAdmin } from "@/lib/requireAdmin";
+import { getSession } from "@/lib/getSession";
 import { AUDIT_ENTITY, recordAudit } from "@/lib/audit";
-import { AuditAction } from "@/generated/prisma/enums";
-import { DeleteUserAccountState } from "@/lib/types";
+import { AuditAction } from "@/lib/db";
+import { DeleteUserAccountState } from "@/app/(protected)/dashboard/user-accounts-management/users/models/account-request-form-state";
 
 const DeleteUserAccountSchema = z.object({
   id: z.string().min(1, "ID inválido").max(100, "Máximo 100 caracteres"),

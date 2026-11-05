@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import type { PeriodCoverage } from "@/lib/reports/time";
+import type { PeriodCoverage } from "@/modules/reports/time";
 import { generateReportAction, type GenerateReportState } from "../actions";
 
 const INITIAL: GenerateReportState = {};

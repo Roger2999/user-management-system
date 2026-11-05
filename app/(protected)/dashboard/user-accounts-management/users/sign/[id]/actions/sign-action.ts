@@ -1,9 +1,9 @@
 "use server";
 
-import { SignFormState } from "@/lib/types";
+import { SignFormState } from "@/app/(protected)/dashboard/user-accounts-management/users/sign/[id]/models/sign-form-state";
 import prisma from "@/lib/prisma";
-import { requireAdmin } from "@/helpers/requireAdmin";
-import { getSession } from "@/helpers/getSession";
+import { requireAdmin } from "@/lib/requireAdmin";
+import { getSession } from "@/lib/getSession";
 import { AUDIT_ENTITY, recordAudit } from "@/lib/audit";
 import { SignFormSchema } from "../models/signSchema.model";
 import {
@@ -16,8 +16,7 @@ import {
   type StageKey,
 } from "../models/signature-plan.model";
 import { revalidatePath } from "next/cache";
-import { AuditAction } from "@/generated/prisma/enums";
-import type { Prisma } from "@/generated/prisma/client";
+import { AuditAction, type Prisma } from "@/lib/db";
 import z from "zod";
 
 export const signAction = async (

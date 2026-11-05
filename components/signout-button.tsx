@@ -2,7 +2,7 @@
 import { useActionState } from "react";
 import { Button } from "./ui/button";
 import { signoutAction } from "@/app/(auth)/actions/signout-action";
-import { SignoutFormState } from "@/lib/types";
+import { SignoutFormState } from "@/app/(auth)/models/signout-form-state";
 import { cn } from "@/lib/utils";
 
 export default function SignoutButton() {

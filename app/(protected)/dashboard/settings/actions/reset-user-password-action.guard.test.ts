@@ -96,7 +96,7 @@ const h = vi.hoisted(() => {
 });
 
 vi.mock("@/lib/prisma", () => ({ default: h.prisma }));
-vi.mock("@/helpers/getSession", () => ({
+vi.mock("@/lib/getSession", () => ({
   getSession: async () => h.state.session,
 }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));

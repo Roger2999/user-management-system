@@ -1,6 +1,6 @@
-import { FindingDisposition, RuleCategory } from "@/generated/prisma/enums";
-import { MONTHS } from "@/lib/reports/document/period";
-import { formatDuration } from "@/lib/reports/format";
+import { FindingDisposition, RuleCategory } from "@/lib/db";
+import { MONTHS } from "@/modules/reports/document/period";
+import { formatDuration } from "@/modules/reports/format";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
 import {

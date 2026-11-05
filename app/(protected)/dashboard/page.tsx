@@ -1,4 +1,4 @@
-import { getSession } from "@/helpers/getSession";
+import { getSession } from "@/lib/getSession";
 import { UsersIcon } from "lucide-react";
 import { DashboardCard } from "./components/DashboardCard";
 

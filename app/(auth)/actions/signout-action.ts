@@ -3,7 +3,7 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { APIError } from "better-auth";
-import { SignoutFormState } from "@/lib/types";
+import { SignoutFormState } from "@/app/(auth)/models/signout-form-state";
 
 export const signoutAction = async (
   prevState: SignoutFormState,

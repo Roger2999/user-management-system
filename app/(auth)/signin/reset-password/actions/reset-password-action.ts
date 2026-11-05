@@ -1,6 +1,6 @@
 "use server";
 
-import { ResetPasswordState } from "@/lib/types";
+import { ResetPasswordState } from "@/app/(auth)/signin/reset-password/models/reset-password-state";
 import z from "zod";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";

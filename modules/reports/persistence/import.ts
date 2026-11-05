@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { Transform } from "node:stream";
-import { Prisma, type PrismaClient } from "@/generated/prisma/client";
+import { Prisma } from "@/lib/prisma";
+import type { PrismaClient } from "@/lib/db";
 import {
   ingestSquidLog,
   type IngestSquidLogOptions,

@@ -1,6 +1,6 @@
 import "dotenv/config";
 import prisma from "@/lib/prisma";
-import { DEFAULT_CATEGORY_RULES } from "@/lib/reports/rules/defaults";
+import { DEFAULT_CATEGORY_RULES } from "@/modules/reports/rules/defaults";
 
 /**
  * Carga los patrones de prueba de las categorías prohibidas (S5).

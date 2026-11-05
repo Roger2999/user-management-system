@@ -4,8 +4,8 @@ import { randomUUID } from "node:crypto";
 import z from "zod";
 import { hashPassword } from "better-auth/crypto";
 import prisma from "@/lib/prisma";
-import { CreateSystemUserState } from "@/lib/types";
-import { requireAdmin } from "@/helpers/requireAdmin";
+import { CreateSystemUserState } from "@/app/(protected)/dashboard/settings/models/settings-form-states";
+import { requireAdmin } from "@/lib/requireAdmin";
 import { CreateUserSchema } from "../models/createUserSchema.model";
 
 export async function createUserAction(

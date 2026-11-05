@@ -1,9 +1,8 @@
 import prisma from "@/lib/prisma";
 import SignForm, { SignValues } from "./components/sign-form";
 import { notFound } from "next/navigation";
-import { getSession } from "@/helpers/getSession";
-import { AccountRequestStage } from "@/generated/prisma/enums";
-import type { AccountRequestSignature } from "@/generated/prisma/client";
+import { getSession } from "@/lib/getSession";
+import { AccountRequestStage, type AccountRequestSignature } from "@/lib/db";
 interface Props {
   params: Promise<{ id: string }>;
 }

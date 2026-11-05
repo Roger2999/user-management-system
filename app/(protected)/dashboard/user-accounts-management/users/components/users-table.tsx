@@ -1,6 +1,8 @@
-import { Prisma } from "@/generated/prisma/client";
-import type { AccountRequestSignature } from "@/generated/prisma/client";
-import { AccountRequestStage } from "@/generated/prisma/enums";
+import {
+  AccountRequestStage,
+  type AccountRequestSignature,
+  type Prisma,
+} from "@/lib/db";
 import prisma from "@/lib/prisma";
 import Link from "next/link";
 

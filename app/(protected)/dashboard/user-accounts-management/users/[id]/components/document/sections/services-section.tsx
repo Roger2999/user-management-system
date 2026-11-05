@@ -1,4 +1,4 @@
-import type { AccountRequest } from "@/generated/prisma/client";
+import type { AccountRequest } from "@/lib/db";
 import { CB } from "../primitives";
 import { Banner, OptionRow } from "../data-fields";
 import { ServiceTitle, ContentRow } from "../content-components";

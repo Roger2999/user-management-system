@@ -205,7 +205,7 @@ chmod 750 /opt/user-management-system/storage
 Sin ese archivo, generar un informe responde `No se encontró la plantilla oficial. Configura REPORTS_TEMPLATE_PATH.`
 
 - La plantilla v2 es la del documento oficial **"Informe Mensual de Ciberseguridad"**; la anterior quedó archivada como `monthly-report-v1.docx` en la máquina de trabajo.
-- `TEMPLATE_VERSION` en `lib/reports/storage.ts` va a la par: v2 desde el presente release.
+- `TEMPLATE_VERSION` en `modules/reports/storage.ts` va a la par: v2 desde el presente release.
 - No se requiere reinicio del servicio: la plantilla se lee en cada generación.
 
 ### 4.5 Origen permitido

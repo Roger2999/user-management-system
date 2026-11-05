@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useActionState } from "react";
 import { toast } from "sonner";
 import { resendVerificationAction } from "../actions/resend-verification-action";
-import { ResendVerificationState } from "@/lib/types";
+import { ResendVerificationState } from "@/app/(auth)/verify-email-address/models/resend-verification-state";
 
 interface Props {
   email: string;

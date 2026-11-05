@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { getSession } from "@/helpers/getSession";
+import { getSession } from "@/lib/getSession";
 import prisma from "@/lib/prisma";
-import { readReportDocument } from "@/lib/reports/storage";
+import { readReportDocument } from "@/modules/reports/storage";
 
 /** Descarga del `.docx` emitido. Solo administradores y solo el archivo guardado. */
 

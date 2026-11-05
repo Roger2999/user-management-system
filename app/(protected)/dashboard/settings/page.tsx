@@ -1,4 +1,4 @@
-import { getSession } from "@/helpers/getSession";
+import { getSession } from "@/lib/getSession";
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
@@ -11,7 +11,7 @@ import AccountSummary from "./components/account-summary";
 import SectionHeading from "./components/section-heading";
 import SessionsList from "./components/sessions-list";
 import AdDirectorySyncCard from "./components/ad-directory-sync-card";
-import { loadAdConfig } from "@/lib/ad/config";
+import { loadAdConfig } from "@/modules/ad/config";
 
 export default async function SettingsPage() {
   const sessionData = await getSession();

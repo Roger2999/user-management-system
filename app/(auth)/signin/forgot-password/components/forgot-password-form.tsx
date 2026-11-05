@@ -1,6 +1,6 @@
 "use client";
 import Field from "@/components/field";
-import { RequestPasswordResetState } from "@/lib/types";
+import { RequestPasswordResetState } from "@/app/(auth)/signin/forgot-password/models/forgot-password-state";
 import { useActionState } from "react";
 import { requestPasswordResetAction } from "../actions/request-password-reset-action";
 import { Button } from "@/components/ui/button";

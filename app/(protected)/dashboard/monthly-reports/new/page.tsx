@@ -1,9 +1,9 @@
 import {
   listImportedDays,
   listPeriodFiles,
-} from "@/lib/reports/persistence/load";
+} from "@/modules/reports/persistence/load";
 import prisma from "@/lib/prisma";
-import { checkCoverage, monthlyPeriod, toLocalDay } from "@/lib/reports/time";
+import { checkCoverage, monthlyPeriod, toLocalDay } from "@/modules/reports/time";
 import PrepareMonth from "../components/prepare-month";
 
 export default async function NewReportPage() {

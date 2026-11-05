@@ -50,7 +50,7 @@ const h = vi.hoisted(() => {
 
 vi.mock("@/lib/prisma", () => ({ default: h.prismaMock }));
 
-vi.mock("@/helpers/requireAdmin", () => ({
+vi.mock("@/lib/requireAdmin", () => ({
   requireAdmin: async () => {
     if (h.state.guardError) throw h.state.guardError;
   },

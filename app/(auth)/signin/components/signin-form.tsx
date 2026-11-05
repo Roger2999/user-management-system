@@ -4,7 +4,7 @@ import Field from "@/components/field";
 import { Button } from "@/components/ui/button";
 import { useActionState } from "react";
 import { signinAction } from "../actions/signin-action";
-import { SigninFormState } from "@/lib/types";
+import { SigninFormState } from "@/app/(auth)/signin/models/signin-form-state";
 import Link from "next/link";
 
 export default function SigninForm() {

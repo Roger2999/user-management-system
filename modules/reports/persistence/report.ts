@@ -1,4 +1,4 @@
-import { Prisma, type PrismaClient } from "@/generated/prisma/client";
+import { Prisma, type PrismaClient } from "@/lib/db";
 import { detectFindings } from "../findings/detect";
 import {
   isIncidentCategory,
