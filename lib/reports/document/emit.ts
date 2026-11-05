@@ -1,192 +1,74 @@
-import {
-  SITE_USER_TABLE_HEADERS,
-  type SiteTableRow,
-  type SiteUserTableRow,
-  type TracesSection,
-  type UserTableRow,
-} from "../assembly/section-traces";
-import {
-  copyTableGrid,
-  insertClonedTable,
-  readTableHeader,
-  removeTableWithHeading,
-  replaceTableBodyRows,
-  replaceTableHeaderRow,
-  setSocialHeading,
-  setTableHeading,
-} from "./table-xml";
+import type { TracesSection } from "../assembly/section-traces";
+import { replaceTableBodyRows } from "./table-xml";
 
 /**
- * Emisión de la sección 1 sobre el documento oficial.
+ * Emisión de las trazas sobre la plantilla oficial v2.
  *
- * Los índices no son un detalle de implementación: son la estructura del
- * documento vigente, contada sobre `word/document.xml`. Están acá, explícitos y
- * con nombre, para que un cambio de plantilla falle en un lugar reconocible y no
- * escriba filas en la tabla equivocada.
+ * Los índices son la estructura del documento, contada sobre `word/document.xml`.
+ * Están acá, explícitos y con nombre, para que un cambio de plantilla falle en un
+ * lugar reconocible y no escriba filas en la tabla equivocada.
  *
  * | Tabla | Contenido |
  * |---|---|
- * | 4 | sitios internacionales |
- * | 5–14 | diez drill-downs de usuarios, cada uno con el nombre del sitio en el párrafo anterior |
- * | 15 | los 10 usuarios que más descargaron |
- * | 16 | sitios nacionales |
+ * | 6 | sitios web más visitados |
+ * | 7 | usuarios con más tiempo de navegación |
+ * | 8 | usuarios con más descargas |
  */
 export const DEFAULT_TRACES_TABLES = {
-  internationalSites: 4,
-  firstDrilldown: 5,
-  drilldownSlots: 10,
-  topUsers: 15,
-  nationalSites: 16,
+  topSites: 6,
+  topUsers: 7,
+  topDownloads: 8,
 } as const;
 
 export type TracesTableMap = {
-  internationalSites: number;
-  firstDrilldown: number;
-  drilldownSlots: number;
+  topSites: number;
   topUsers: number;
-  nationalSites: number;
+  topDownloads: number;
 };
 
-/** Instrucción de la plantilla que precede a la tabla de redes sociales. */
-export const SOCIAL_INSTRUCTION_PREFIX = "**Filtrar por “Browsing Time”.";
-
-function siteRow(row: SiteTableRow): string[] {
-  return [
-    row.site,
-    row.hits,
-    row.incoming,
-    row.outgoing,
-    row.downloadTime,
-    row.browsingTime,
-    row.percentOfHits,
-  ];
-}
-
-function siteUserRow(row: SiteUserTableRow): string[] {
-  return [
-    row.username,
-    row.hits,
-    row.incoming,
-    row.downloadTime,
-    row.browsingTime,
-    row.percentOfBrowsingTime,
-  ];
-}
-
-function userRow(row: UserTableRow): string[] {
-  return [
-    row.username,
-    row.hits,
-    row.incoming,
-    row.outgoing,
-    row.downloadTime,
-    row.browsingTime,
-    row.percentOfBrowsingTime,
-  ];
-}
-
 /**
- * Reemplaza las tablas de la sección 1 y deja el resto del documento intacto.
+ * Reemplaza las filas de las tres tablas de trazas.
  *
- * Si la selección tiene menos drill-downs que ranuras, las sobrantes se eliminan
- * con su título. Si tiene más, falla: la plantilla tiene diez ranuras y clonar
- * tablas enteras no está implementado, así que inventar una sería peor que
- * decirlo.
+ * La plantilla trae cinco filas de datos con el `No.` escrito a mano. El
+ * reemplazo las pisa, así que el índice se pasa siempre como primer valor: si se
+ * dejara el de la plantilla, el top 5 saldría numerado igual pero cualquier
+ * recorte (`limit`) mentiría.
  */
 export function emitTracesSection(
   documentXml: string,
   traces: TracesSection,
   map: TracesTableMap = DEFAULT_TRACES_TABLES,
 ): string {
-  const drilldowns = traces.siteDrilldowns;
-
-  if (drilldowns.length > map.drilldownSlots) {
-    throw new RangeError(
-      `la plantilla tiene ${map.drilldownSlots} drill-downs y la selección tiene ${drilldowns.length}`,
-    );
-  }
-
   let xml = documentXml;
 
-  const lastSlot = map.firstDrilldown + map.drilldownSlots - 1;
-  if (map.topUsers <= lastSlot || map.nationalSites <= lastSlot) {
-    throw new RangeError(
-      "el mapa de tablas debe ubicar el top de usuarios y la tabla nacional después de los drill-downs",
-    );
-  }
-
-  // De atrás hacia adelante: quitar la última no mueve los índices anteriores.
-  for (let slot = map.drilldownSlots - 1; slot >= drilldowns.length; slot -= 1) {
-    xml = removeTableWithHeading(xml, map.firstDrilldown + slot);
-  }
-
-  // Las tablas que están después del bloque de drill-downs se corren tantas
-  // posiciones como tablas se quitaron.
-  const shift = map.drilldownSlots - drilldowns.length;
-
-  drilldowns.forEach((drilldown, position) => {
-    const tableIndex = map.firstDrilldown + position;
-
-    // Solo las tablas cuya cabecera hay que corregir adoptan el ancho de la
-    // primera: las demás ya tienen el layout correcto y copiarlo les angosta
-    // columnas que estaban bien (bing partía `912` en dos líneas).
-    const header = readTableHeader(xml, tableIndex);
-    const headerChanges =
-      header.join("\u0000") !== SITE_USER_TABLE_HEADERS.join("\u0000");
-
-    if (headerChanges && tableIndex !== map.firstDrilldown) {
-      xml = copyTableGrid(xml, {
-        tableIndex,
-        referenceTableIndex: map.firstDrilldown,
-      });
-    }
-
-    // El título de la tabla es el nombre del sitio: si cambia la selección, el
-    // título viejo no puede quedar.
-    xml = setTableHeading(xml, { tableIndex, text: drilldown.site });
-    xml = replaceTableHeaderRow(xml, {
-      tableIndex,
-      values: SITE_USER_TABLE_HEADERS,
-    });
-    xml = replaceTableBodyRows(xml, {
-      tableIndex,
-      rows: drilldown.rows.map(siteUserRow),
-    });
+  xml = replaceTableBodyRows(xml, {
+    tableIndex: map.topSites,
+    rows: traces.topSites.map((row, position) => [
+      String(position + 1),
+      row.site,
+      row.browsingTime,
+      row.users,
+    ]),
   });
 
   xml = replaceTableBodyRows(xml, {
-    tableIndex: map.internationalSites,
-    rows: traces.internationalSites.map(siteRow),
+    tableIndex: map.topUsers,
+    rows: traces.topUsers.map((row, position) => [
+      String(position + 1),
+      row.username,
+      row.fullName,
+      row.browsingTime,
+    ]),
   });
 
   xml = replaceTableBodyRows(xml, {
-    tableIndex: map.nationalSites - shift,
-    rows: traces.nationalSites.map(siteRow),
-  });
-
-  xml = replaceTableBodyRows(xml, {
-    tableIndex: map.topUsers - shift,
-    rows: traces.topUsers.map(userRow),
-  });
-
-  if (traces.social === null) {
-    // Sin datos sociales no se hereda el "Facebook" de la plantilla.
-    xml = setSocialHeading(xml, null);
-    return xml;
-  }
-
-  if (drilldowns.length === 0) {
-    throw new RangeError(
-      "la tabla de redes sociales necesita un drill-down como molde",
-    );
-  }
-
-  xml = setSocialHeading(xml, traces.social.network);
-  xml = insertClonedTable(xml, {
-    referenceTableIndex: map.firstDrilldown,
-    afterParagraphPrefix: SOCIAL_INSTRUCTION_PREFIX,
-    header: SITE_USER_TABLE_HEADERS,
-    rows: traces.social.rows.map(siteUserRow),
+    tableIndex: map.topDownloads,
+    rows: traces.topDownloads.map((row, position) => [
+      String(position + 1),
+      row.username,
+      row.fullName,
+      row.downloaded,
+    ]),
   });
 
   return xml;

@@ -1,43 +1,45 @@
 /**
  * Composición del documento mensual.
  *
- * Junta las tres operaciones sobre la plantilla oficial, en el único orden que
- * importa: primero se emite la sección 1 (reemplaza tablas y puede quitar
- * drill-downs sobrantes, corriendo los índices), después se vacían las secciones
- * 2-7 y al final se fechan los campos del período.
+ * La plantilla v2 es un formulario: el generador solo reemplaza las tablas 6-8
+ * y fecha el documento. No hay vaciado genérico porque las secciones manuales
+ * ya vienen en blanco y una regla automática destruiría los `Si ____ / No ____`.
+ *
+ * Orden: tablas y campos del período.
  *
  * El documento no se reconstruye: se parte del `.docx` oficial y se reescribe
  * `word/document.xml`. Es la única forma de que el PDF salga indistinguible.
  */
 
-import type { TracesSection } from "./assembly/section-traces";
+import type {
+  TracesSection,
+  UserProfiles,
+} from "./assembly/section-traces";
 import type { DailyMetrics } from "./metrics/aggregate";
-import { buildDeclarationText, emitDeclaration } from "./document/declarations";
+import type {
+  IncidentCategory,
+  IncidentRow,
+} from "./findings/incidents";
 import { buildMonthlyReport, type MonthlyReport } from "./model/monthly";
 import { DEFAULT_TIME_ZONE } from "./time";
-import {
-  DEFAULT_BLANK_SECTIONS,
-  blankSections,
-  type BlankSectionsSpec,
-} from "./document/blank-sections";
 import { readDocumentXml, replaceDocumentXml } from "./document/docx";
-import { DEFAULT_TRACES_TABLES, emitTracesSection } from "./document/emit";
+import { emitTracesSection } from "./document/emit";
+import { emitIncidents } from "./document/incidents";
 import { fillPeriodFields } from "./document/period";
 
 export type ReportDocumentInput = {
   /** Bytes del `.docx` oficial, sin modificar. */
   template: Uint8Array;
   traces: TracesSection;
+  /** Hallazgos ya revisados que van a la tabla 4. Sin campo no se toca la tabla. */
+  incidents?: readonly IncidentRow[];
+  /** Categorías con hallazgos, para marcar `Si __X__` en las preguntas. */
+  incidentCategories?: ReadonlySet<IncidentCategory>;
   /** Período informado. */
   period: { year: number; month: number };
   /** Instante de emisión; la fecha del documento se calcula en la zona local. */
   generatedAt: number;
   timeZone?: string;
-  /**
-   * Nota de cobertura y `Browsing Time` (S7, S12). Se inserta al cierre de la
-   * sección 1. Sin texto no se agrega párrafo.
-   */
-  declaration?: string;
 };
 
 /** Devuelve el `.docx` del informe listo para abrir en Word. */
@@ -46,39 +48,23 @@ export function buildReportDocument(input: ReportDocumentInput): Uint8Array {
 
   const withTraces = emitTracesSection(xml, input.traces);
 
-  // Si la selección trae menos de diez sitios, `emitTracesSection` elimina las
-  // ranuras sobrantes y las tablas posteriores se corren. El mapa del vaciado
-  // tiene que correrse igual, o buscaría las tablas 18-22 en otro lugar.
-  const shift =
-    DEFAULT_TRACES_TABLES.drilldownSlots - input.traces.siteDrilldowns.length;
-  // La tabla de redes sociales se inserta antes de la nacional y corre todas las
-  // tablas posteriores una posición. El mapa del vaciado tiene que verlo.
-  const socialShift = input.traces.social === null ? 0 : 1;
+  const withIncidents =
+    input.incidents === undefined
+      ? withTraces
+      : emitIncidents(
+          withTraces,
+          input.incidents,
+          input.incidentCategories ?? new Set(),
+        );
 
-  const blankSpec: BlankSectionsSpec = {
-    ...DEFAULT_BLANK_SECTIONS,
-    tables: DEFAULT_BLANK_SECTIONS.tables.map((table) => ({
-      ...table,
-      tableIndex: table.tableIndex - shift + socialShift,
-    })),
-  };
-
-  const blanked = blankSections(withTraces, blankSpec);
-  const dated = fillPeriodFields(blanked, {
+  const dated = fillPeriodFields(withIncidents, {
     month: input.period.month,
     year: input.period.year,
     generatedAt: input.generatedAt,
     timeZone: input.timeZone ?? DEFAULT_TIME_ZONE,
   });
 
-  // La nota se inserta después de fechar: no es un campo del período y no debe
-  // pasar por el reemplazo de meses de la prosa.
-  const declared =
-    input.declaration === undefined
-      ? dated
-      : emitDeclaration(dated, input.declaration);
-
-  return replaceDocumentXml(input.template, declared);
+  return replaceDocumentXml(input.template, dated);
 }
 
 export type MonthlyDocumentInput = {
@@ -89,7 +75,12 @@ export type MonthlyDocumentInput = {
   period: { year: number; month: number };
   generatedAt: number;
   timeZone?: string;
-  nationalExclusions?: readonly string[];
+  /** Perfiles por `username` en minúsculas; los resuelve la capa de generación. */
+  profiles?: UserProfiles;
+  /** Hallazgos ya revisados que van a la tabla 4. */
+  incidents?: readonly IncidentRow[];
+  /** Categorías con hallazgos, para marcar `Si __X__` en las preguntas. */
+  incidentCategories?: ReadonlySet<IncidentCategory>;
   limit?: number;
   browsingTimeCalibrated?: boolean;
 };
@@ -108,7 +99,7 @@ export function buildMonthlyDocument(
     year: input.period.year,
     month: input.period.month,
     daily: input.days,
-    nationalExclusions: input.nationalExclusions,
+    profiles: input.profiles,
     limit: input.limit,
     browsingTimeCalibrated: input.browsingTimeCalibrated,
   });
@@ -116,10 +107,11 @@ export function buildMonthlyDocument(
   const document = buildReportDocument({
     template: input.template,
     traces: report.traces,
+    incidents: input.incidents,
+    incidentCategories: input.incidentCategories,
     period: input.period,
     generatedAt: input.generatedAt,
     timeZone: input.timeZone,
-    declaration: buildDeclarationText(report),
   });
 
   return { report, document };

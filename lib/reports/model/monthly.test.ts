@@ -386,24 +386,25 @@ describe("buildMonthlyReport", () => {
     expect(report.coverage.unidentifiedHits).toBe(10);
   });
 
-  it("calcula las dos tablas y ata el drill-down a la tabla internacional", () => {
+  it("arma las tres tablas de trazas y resuelve el nombre desde los perfiles", () => {
     const report = buildMonthlyReport({
       year: 2026,
       month: 5,
       daily,
+      profiles: {
+        brian: { fullName: "Brian Pérez", position: "Analista" },
+      },
     });
 
-    expect(report.traces.internationalSites.map((row) => row.site)).toEqual([
-      "www.youtube.com",
+    expect(report.traces.topSites).toEqual([
+      { site: "www.youtube.com", browsingTime: "1.00", users: "1" },
     ]);
-    expect(report.traces.siteDrilldowns.map((drilldown) => drilldown.site)).toEqual([
-      "www.youtube.com",
+    expect(report.traces.topUsers).toEqual([
+      { username: "brian", fullName: "Brian Pérez", browsingTime: "1.00" },
     ]);
-    expect(report.traces.siteDrilldowns[0].rows[0]).toMatchObject({
-      username: "brian",
-      hits: "100",
-      browsingTime: "01:00:00",
-    });
+    expect(report.traces.topDownloads).toEqual([
+      { username: "brian", fullName: "Brian Pérez", downloaded: "1.00 MB" },
+    ]);
   });
 
   it("declara el Browsing Time como aproximación hasta que se calibre", () => {

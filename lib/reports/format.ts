@@ -25,6 +25,7 @@ const MEGABYTE_FORMAT = new Intl.NumberFormat("en-US", {
 });
 
 const BYTES_PER_MEGABYTE = 1024 * 1024;
+const BYTES_PER_GIGABYTE = 1024 * 1024 * 1024;
 
 /** `129351` → `"129,351"`. */
 export function formatInteger(value: number): string {
@@ -36,6 +37,40 @@ export function formatInteger(value: number): string {
 export function formatMegabytes(bytes: number): string {
   if (!Number.isFinite(bytes)) return MEGABYTE_FORMAT.format(0);
   return MEGABYTE_FORMAT.format(bytes / BYTES_PER_MEGABYTE);
+}
+
+/**
+ * `1048576` → `"1.00"`; desde 1 GiB cambia a `"1.00 GB"`.
+ *
+ * La plantilla v2 pide el tamaño "en megas o gigas", así que el corte es 1 GiB:
+ * por debajo se muestra en MB, desde ahí en GB.
+ */
+export function formatSize(bytes: number): string {
+  if (!Number.isFinite(bytes) || bytes < 0) {
+    return `${MEGABYTE_FORMAT.format(0)} MB`;
+  }
+
+  if (bytes >= BYTES_PER_GIGABYTE) {
+    return `${MEGABYTE_FORMAT.format(bytes / BYTES_PER_GIGABYTE)} GB`;
+  }
+
+  return `${MEGABYTE_FORMAT.format(bytes / BYTES_PER_MEGABYTE)} MB`;
+}
+
+/**
+ * Milisegundos a `H.MM`, el formato `hh.mm` de la plantilla v2.
+ *
+ * Las horas no llevan relleno (el informe acumula un mes: `266.34` es válido) y
+ * los minutos siempre llevan dos dígitos. Los segundos se truncan.
+ */
+export function formatHoursMinutes(ms: number): string {
+  if (!Number.isFinite(ms) || ms < 0) return "0.00";
+
+  const totalMinutes = Math.floor(Math.round(ms / 1000) / 60);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  return `${hours}.${String(minutes).padStart(2, "0")}`;
 }
 
 /**

@@ -267,6 +267,7 @@ enum RuleCategory {
   SUBVERSIVE
   ANON_PROXY
   MINING
+  MALWARE
 }
 
 enum RuleMatchType {
