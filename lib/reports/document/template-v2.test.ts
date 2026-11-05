@@ -65,7 +65,6 @@ describe.skipIf(!hasTemplate)("plantilla oficial v2", () => {
         incidentCategories: new Set(["ADULT"]),
         period: { year: 2026, month: 10 },
         generatedAt: Date.UTC(2026, 10, 3, 14, 0, 0),
-        declaration: "Cobertura completa: 31 de 31 días importados.",
       }),
     );
 
@@ -78,7 +77,9 @@ describe.skipIf(!hasTemplate)("plantilla oficial v2", () => {
     expect(result).toContain("266.34");
     expect(result).toContain("Ana Pérez");
     expect(result).toContain("1.50 GB");
-    expect(result).toContain("Cobertura completa: 31 de 31 días importados.");
+    expect(result).not.toContain("Cobertura");
+    expect(result).not.toContain("El Browsing Time es aproximado");
+    expect(result).not.toContain("anteceden a la tabla");
 
     // Tabla 4 y pregunta de ADS marcada; el resto de preguntas queda en No.
     expect(result).toContain("www.incidencia.com");

@@ -5,8 +5,7 @@
  * y fecha el documento. No hay vaciado genérico porque las secciones manuales
  * ya vienen en blanco y una regla automática destruiría los `Si ____ / No ____`.
  *
- * Orden: tablas, campos del período y, al final, la nota de cobertura. La nota
- * se inserta después de fechar para que no pase por el reemplazo de años.
+ * Orden: tablas y campos del período.
  *
  * El documento no se reconstruye: se parte del `.docx` oficial y se reescribe
  * `word/document.xml`. Es la única forma de que el PDF salga indistinguible.
@@ -21,7 +20,6 @@ import type {
   IncidentCategory,
   IncidentRow,
 } from "./findings/incidents";
-import { buildDeclarationText, emitDeclaration } from "./document/declarations";
 import { buildMonthlyReport, type MonthlyReport } from "./model/monthly";
 import { DEFAULT_TIME_ZONE } from "./time";
 import { readDocumentXml, replaceDocumentXml } from "./document/docx";
@@ -42,11 +40,6 @@ export type ReportDocumentInput = {
   /** Instante de emisión; la fecha del documento se calcula en la zona local. */
   generatedAt: number;
   timeZone?: string;
-  /**
-   * Nota de cobertura y `Browsing Time` (S7, S12). Se inserta al cierre de la
-   * sección 1. Sin texto no se agrega párrafo.
-   */
-  declaration?: string;
 };
 
 /** Devuelve el `.docx` del informe listo para abrir en Word. */
@@ -71,14 +64,7 @@ export function buildReportDocument(input: ReportDocumentInput): Uint8Array {
     timeZone: input.timeZone ?? DEFAULT_TIME_ZONE,
   });
 
-  // La nota se inserta después de fechar: no es un campo del período y no debe
-  // pasar por el reemplazo de meses de la prosa.
-  const declared =
-    input.declaration === undefined
-      ? dated
-      : emitDeclaration(dated, input.declaration);
-
-  return replaceDocumentXml(input.template, declared);
+  return replaceDocumentXml(input.template, dated);
 }
 
 export type MonthlyDocumentInput = {
@@ -126,7 +112,6 @@ export function buildMonthlyDocument(
     period: input.period,
     generatedAt: input.generatedAt,
     timeZone: input.timeZone,
-    declaration: buildDeclarationText(report),
   });
 
   return { report, document };

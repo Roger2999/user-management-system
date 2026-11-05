@@ -1,7 +1,6 @@
 import { createHash } from "node:crypto";
 import prisma from "@/lib/prisma";
 import type { UserProfile, UserProfiles } from "./assembly/section-traces";
-import { buildDeclarationText } from "./document/declarations";
 import { buildIncidents } from "./findings/incidents";
 import { buildMonthlyReport } from "./model/monthly";
 import { loadDailyMetrics } from "./persistence/load";
@@ -138,7 +137,6 @@ export async function generateMonthlyReport(
     incidentCategories,
     period: { year, month },
     generatedAt,
-    declaration: buildDeclarationText(report),
   });
 
   const docxSha256 = createHash("sha256").update(document).digest("hex");

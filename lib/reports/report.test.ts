@@ -188,20 +188,17 @@ describe("buildReportDocument", () => {
     expect(result).toContain("No __X__");
   });
 
-  it("inserta la declaración antes del bloque manual de correo", () => {
+  it("no agrega la nota de cobertura del diseño anterior", () => {
     const result = buildReportDocument({
       template: templateBytes(),
       traces: traces(),
       period: { year: 2026, month: 6 },
       generatedAt: EMISSION,
-      declaration: "Cobertura completa: 30 de 30 días importados.",
     });
     const xml = readDocumentXml(result);
 
-    expect(xml).toContain("Cobertura completa: 30 de 30 días importados.");
-    expect(xml.indexOf("Cobertura completa:")).toBeLessThan(
-      xml.indexOf("Uso de correo por webmail en servidores nacionales:"),
-    );
+    expect(xml).not.toContain("Cobertura");
+    expect(xml).not.toContain("Browsing Time es aproximado");
   });
 
   it("genera el documento desde un stream de log", async () => {
@@ -235,15 +232,7 @@ describe("buildReportDocument", () => {
     expect(tableText(result, 6)).toContain("www.internacional.com");
     expect(tableText(result, 7)).toContain("Ana Pérez");
     expect(result).toContain("Informe Mensual de Ciberseguridad. Junio 2026 v. Final.");
-
-    const declaration = result.indexOf("Cobertura incompleta:");
-    const anchor = result.indexOf(
-      "Uso de correo por webmail en servidores nacionales:",
-    );
-
-    expect(declaration).toBeGreaterThan(0);
-    expect(declaration).toBeLessThan(anchor);
-    expect(result).toContain("Cobertura incompleta: 1 de 30 días importados");
-    expect(result).toContain("El Browsing Time es aproximado");
+    expect(result).not.toContain("Cobertura incompleta");
+    expect(result).not.toContain("El Browsing Time es aproximado");
   });
 });

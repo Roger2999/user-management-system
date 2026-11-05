@@ -63,6 +63,12 @@ Rama: `feat/monthly-report-template-v2` · Estrategia: work-unit commits · Runn
 - **S12** — Despliegue: actualizar `DEPLOYMENT_GUIDE.md` y `README.md` con la
   plantilla v2, y copiar el archivo sanitizado a producción. Un informe ya
   emitido conserva su `.docx`; regenerarlo usa la plantilla vigente.
+- **S13** — El informe generado no incluye la nota de cobertura/calibración que
+  el diseño anterior insertaba al cierre de la sección 1 (frases `Cobertura
+  completa/incompleta…`, `Se descartaron…`, `Se excluyeron de las tablas…`,
+  `El Browsing Time es aproximado…`) ni la línea de plantilla `Nota: Las
+  categorías son las que anteceden a la tabla.` El documento sale con el
+  formato oficial, sin texto agregado.
 
 **Fuera de alcance (decisión L2):** no se automatizan los bloques de cuentas
 (webmail, correo, resumen de ordenadores/usuarios, Directorio Activo). Tampoco
@@ -77,6 +83,7 @@ antivirus, USB, vulnerabilidades, SIEM, respaldos ni firmas.
 - **T5** — Tests de T2-T4 y documento dorado. Route: inline. Spec: S11. Status: hecho (`e22e41b`, `3095efe`; PDF piloto de octubre verificado con LibreOffice).
 - **T6** — Tabla 4, categoría `MALWARE`, checkboxes y orden de generación. Route: inline. Spec: S9, S10. Status: hecho (`ffcded9`).
 - **T7** — Piloto octubre, suite/`tsc`/`eslint` y despliegue. Route: inline. Spec: S11, S12. Status: hecho (piloto PDF de ambas unidades; `5fa9de3` documenta la copia de la plantilla al servidor; el `scp` del asset queda como paso del despliegue).
+- **T8** — Retiro de la nota de cobertura y de la línea `Nota: Las categorías son las que anteceden a la tabla.`. Route: inline. Spec: S13. Status: hecho (piloto PDF sin residuos).
 
 ## Log
 
@@ -158,3 +165,28 @@ y las cinco preguntas de incidencias.
 - `5fa9de3`: DEPLOYMENT_GUIDE (sección 7.5.1, copia de la plantilla por `scp`)
   y README (módulo del informe mensual). El despliegue real es decisión del
   usuario: aplicar la migración en producción y copiar `monthly-report.docx` v2.
+
+### L8 — Retiro de notas ajenas al formato oficial
+
+- Pedido del usuario (literal): «en el informe generado y descargado veo 2
+  cosas: 1.Cobertura incompleta: 16 de 31 días importados; faltan 15. Se
+  descartaron 19,638,604 respuestas no servidas y 61,943 accesos a destinos
+  internos. Se excluyeron de las tablas de sitios 85,973 accesos de telemetría,
+  que sí cuentan en los totales. El Browsing Time es aproximado: los relojes del
+  proxy todavía no se calibraron contra WebSpy. 2.Nota: Las categorías son las
+  que anteceden a la tabla. No debe plasmarse en el informe».
+- Decisión del usuario: quitar la nota de cobertura por completo, no solo la
+  oración de calibración.
+- Cambios: se elimina `lib/reports/document/declarations.ts` y su test; se
+  retiran `declaration` de `ReportDocumentInput`, el cableado en
+  `buildReportDocument`/`buildMonthlyDocument` y `buildDeclarationText` en
+  `generate.ts`; el párrafo `Nota: Las categorías son las que anteceden a la
+  tabla.` se quita del `document.xml` de la plantilla sanitizada. El modelo
+  mensual (`report.declarations`, persistido en la fila) no se toca.
+- Verificación: 235 tests pasan, 9 saltados; `tsc` limpio; piloto octubre en
+  PDF sin `Cobertura`, `WebSpy`, `Nota:` ni `anteceden`, con las tablas y la
+  tabla 4 intactas.
+- Incidente de entorno resuelto: el checkout estaba en `feat/ad-directory-sync`
+  (código v1) y `storage/templates/monthly-report.docx` había sido reemplazado
+  por el original con el ejemplar de octubre; se restauró la rama y se
+  reconstruyó la plantilla sanitizada.
