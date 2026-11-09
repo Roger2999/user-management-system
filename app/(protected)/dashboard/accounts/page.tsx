@@ -14,7 +14,7 @@ export default async function UserAccountsManagementPage() {
   const total = counts["all"] ?? 0;
 
   return (
-    <div className="mb-8 flex flex-col gap-8">
+    <div className="flex flex-col gap-8">
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-3xl font-semibold">
@@ -31,7 +31,7 @@ export default async function UserAccountsManagementPage() {
         </LinkButton>
       </header>
 
-      <article className="space-y-10">
+      <article className="space-y-4">
         {dashboardSections.map((section) => (
           <section key={section.title} className="w-full space-y-4">
             <h2 className="text-lg font-semibold">{section.title}</h2>
