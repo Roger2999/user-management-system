@@ -39,9 +39,9 @@ Rama `refactor/settings-split` · Estrategia: work-unit commits · Runner
 
 ## Tasks
 
-- T1 (S1-S8) — Rutas, páginas, layout y skeletons. `inline`.
-- T2 (S9, S6, S10) — Modelos por ruta, revalidaciones y tests. `inline`.
-- T3 (S11) — Documentación. `inline`.
+- T1 (S1-S8) — Rutas, páginas, layout y skeletons. `inline`. Hecho en `765d120`.
+- T2 (S9, S6, S10) — Modelos por ruta, revalidaciones y tests. `inline`. Hecho en `765d120` y `56bfa04`.
+- T3 (S11) — Documentación. `inline`. Hecho en `69cb673` y `f536fd8`.
 
 ## Log
 
@@ -59,3 +59,31 @@ dame el plan de como lo harias?"
 `await import("./archivo")`, así que viajan con su acción; los únicos imports
 externos al módulo son `lib/constants.ts` (`href`) y los labels de
 `breadcrumbs.tsx`. No hay consumidores externos de componentes ni modelos.
+
+**L5** — Implementación (commits `765d120`, `69cb673`, `f536fd8`). Línea base
+`42f8bd4`: 38 archivos y 287 tests en verde. Después del corte: 39 archivos y
+299 tests en verde, `tsc --noEmit` limpio, `next build` registra
+`/dashboard/settings`, `/dashboard/settings/account` y
+`/dashboard/settings/administration`. `eslint` deja un único warning
+preexistente (`_prevState` en `sync-ad-directory-action.ts`).
+
+**L6** — Revisión nativa (lentes `review-risk`, `review-readability`):
+aprobada, autoridad quemada en `review-4ff3cd1702fb383f`. El lente de riesgo no
+encontró hallazgos: confirmó que `requireAdmin()` precede a
+`prisma.user.findMany` y que las acciones conservan su guarda. El lente de
+legibilidad dejó tres sugerencias informativas, no bloqueantes: (R2-001) las
+rutas nuevas son literales repetidos en nav, redirect, revalidaciones y tests;
+(R2-002) el cast de `displayUsername` en `account/page.tsx` es deuda previa;
+(R2-003) la regla de sesión se expresa en tres lugares. R2-003 no cuesta un
+round-trip: `getSession` está envuelto en `cache()`. Quedan como trabajo
+posterior, no reabren este candidato.
+
+**L7** — Verificador independiente: sin bloqueantes, S1–S11 cumplidos. Sus 12
+probes se commitearon como `settings-routes.test.ts` (`56bfa04`); prueba de
+mutación: al quitar `requireAdmin()` de `administration/page.tsx`, dos casos
+fallan. El commit de tests midió riesgo medio con `review due: under_budget`;
+el boundary revisado se queda en `f536fd8` y el slice de tests queda pendiente
+hasta que un commit posterior alcance el presupuesto.
+
+**L8** — Pendiente fuera de alcance: `lib/audit.ts` y `lib/auth.ts` siguen con
+cambios sin commitear, ajenos a este refactor.
