@@ -18,7 +18,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   settings: "Configuración",
   account: "Mi cuenta",
   administration: "Administración",
-  "accounts": "Gestion de cuentas",
+  accounts: "Gestion de cuentas",
   users: "Usuarios",
   create: "Crear solicitud",
   edit: "Editar solicitud",
