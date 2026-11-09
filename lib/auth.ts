@@ -5,20 +5,12 @@ import { nextCookies } from "better-auth/next-js";
 import { username } from "better-auth/plugins";
 import { resend } from "./resend";
 
-// La cookie de sesion solo debe marcarse como "Secure" cuando la app se
-// sirve realmente por HTTPS. Si se fuerza en produccion sin un terminador TLS
-// delante, el navegador descarta la cookie y la sesion nunca persiste.
 const secureCookies =
   process.env.BETTER_AUTH_URL?.startsWith("https://") ?? false;
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: "postgresql" }),
   session: {
-    // Las sesiones viven 7 dias (expiresIn por defecto). "freshAge" define
-    // cuanto tiempo una sesion cuenta como recien iniciada: better-auth lo
-    // exige para listar sesiones y para actualizar el perfil. Con el valor
-    // por defecto (24 h) esas acciones fallaban con 403/400 en sesiones que
-    // seguian vigentes, rompiendo la pagina de Configuracion.
     freshAge: 60 * 60 * 24 * 7,
   },
   rateLimit: {

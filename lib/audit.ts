@@ -11,10 +11,6 @@ export type AuditActor = {
   name?: string | null;
 } | null;
 
-/**
- * Escribe una entrada de auditoria. Acepta tanto el cliente normal como un
- * cliente de transaccion, para poder registrar dentro de la misma operacion.
- */
 export function recordAudit(
   db: Prisma.TransactionClient,
   data: {
