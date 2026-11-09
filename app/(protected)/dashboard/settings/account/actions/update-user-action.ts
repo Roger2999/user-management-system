@@ -4,7 +4,7 @@ import z from "zod";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { APIError } from "better-auth";
-import { UpdateUserState } from "@/app/(protected)/dashboard/settings/models/settings-form-states";
+import { UpdateUserState } from "../models/account-form-states";
 import { UpdateUserSchema } from "../models/updateUserSchema.model";
 import { revalidatePath } from "next/cache";
 
@@ -43,7 +43,7 @@ export const UpdateUserAction = async (
       headers: await headers(),
     });
     revalidatePath("/dashboard");
-    revalidatePath("/dashboard/settings");
+    revalidatePath("/dashboard/settings/account");
     return {
       success: true,
       data: { username, displayName, position },

@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import { requireAdmin } from "@/lib/requireAdmin";
 import { loadAdConfig } from "@/modules/ad/config";
 import { syncAdDirectory } from "@/modules/ad/sync";
-import type { SyncAdDirectoryState } from "@/app/(protected)/dashboard/settings/models/settings-form-states";
+import type { SyncAdDirectoryState } from "../models/administration-form-states";
 
 /**
  * Sincronización manual del directorio de cuentas con el Active Directory (S5).

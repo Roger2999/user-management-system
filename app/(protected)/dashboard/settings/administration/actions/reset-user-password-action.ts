@@ -8,7 +8,7 @@ import prisma from "@/lib/prisma";
 import { getSession } from "@/lib/getSession";
 import { requireAdmin } from "@/lib/requireAdmin";
 import { AUDIT_ENTITY, recordAudit } from "@/lib/audit";
-import type { ResetUserPasswordState } from "@/app/(protected)/dashboard/settings/models/settings-form-states";
+import type { ResetUserPasswordState } from "../models/administration-form-states";
 import { ResetUserPasswordSchema } from "../models/resetUserPasswordSchema.model";
 
 /**
@@ -124,7 +124,7 @@ export async function resetUserPasswordAction(
   }
 
   try {
-    revalidatePath("/dashboard/settings");
+    revalidatePath("/dashboard/settings/administration");
   } catch (error) {
     // El reset ya se confirmó: un fallo de revalidación no debe reportarse
     // como fallo del cambio de contraseña.

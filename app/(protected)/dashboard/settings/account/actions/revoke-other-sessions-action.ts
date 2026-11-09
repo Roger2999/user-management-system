@@ -3,7 +3,7 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
-import type { SessionActionState } from "@/app/(protected)/dashboard/settings/models/settings-form-states";
+import type { SessionActionState } from "../models/account-form-states";
 
 /**
  * Cierra todas las sesiones del usuario actual salvo la que está ejecutando la
@@ -24,6 +24,6 @@ export const revokeOtherSessionsAction =
       };
     }
 
-    revalidatePath("/dashboard/settings");
+    revalidatePath("/dashboard/settings/account");
     return { success: true, message: "Se cerraron las demás sesiones" };
   };

@@ -77,7 +77,7 @@ describe("revokeSessionAction", () => {
 
     expect(state).toEqual({ success: true, message: "Sesión cerrada" });
     expect(h.state.revokedTokens).toEqual(["session-token-1"]);
-    expect(h.state.revalidated).toEqual(["/dashboard/settings"]);
+    expect(h.state.revalidated).toEqual(["/dashboard/settings/account"]);
   });
 
   it("informa el fallo sin propagar la excepción", async () => {
@@ -102,7 +102,7 @@ describe("revokeOtherSessionsAction", () => {
       message: "Se cerraron las demás sesiones",
     });
     expect(h.state.revokeOtherCalls).toBe(1);
-    expect(h.state.revalidated).toEqual(["/dashboard/settings"]);
+    expect(h.state.revalidated).toEqual(["/dashboard/settings/account"]);
   });
 
   it("informa el fallo sin revalidar", async () => {

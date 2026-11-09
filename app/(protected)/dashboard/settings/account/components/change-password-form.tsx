@@ -4,7 +4,7 @@ import { useActionState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import Field from "@/components/field";
 import { Button } from "@/components/ui/button";
-import { ChangePasswordState } from "@/app/(protected)/dashboard/settings/models/settings-form-states";
+import { ChangePasswordState } from "../models/account-form-states";
 import { changePasswordAction } from "../actions/change-password-action";
 
 export default function ChangePasswordForm() {

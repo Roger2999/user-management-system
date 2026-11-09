@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import Field from "@/components/field";
 import SelectField from "@/components/select-field";
 import { Button } from "@/components/ui/button";
-import type { ResetUserPasswordState } from "@/app/(protected)/dashboard/settings/models/settings-form-states";
+import type { ResetUserPasswordState } from "../models/administration-form-states";
 import { resetUserPasswordAction } from "../actions/reset-user-password-action";
 
 type Props = {
