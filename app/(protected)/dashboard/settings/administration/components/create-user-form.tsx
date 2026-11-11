@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import Field from "@/components/field";
 import SelectField from "@/components/select-field";
 import { Button } from "@/components/ui/button";
-import { CreateSystemUserState } from "@/app/(protected)/dashboard/settings/models/settings-form-states";
+import { CreateSystemUserState } from "../models/administration-form-states";
 import { createUserAction } from "../actions/create-user-action";
 
 const ROLE_OPTIONS = [

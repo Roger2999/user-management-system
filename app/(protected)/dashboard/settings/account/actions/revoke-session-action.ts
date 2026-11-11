@@ -3,7 +3,7 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
-import type { SessionActionState } from "@/app/(protected)/dashboard/settings/models/settings-form-states";
+import type { SessionActionState } from "../models/account-form-states";
 
 /**
  * Cierra una sesión concreta del usuario actual. better-auth verifica que el
@@ -30,6 +30,6 @@ export const revokeSessionAction = async (
     };
   }
 
-  revalidatePath("/dashboard/settings");
+  revalidatePath("/dashboard/settings/account");
   return { success: true, message: "Sesión cerrada" };
 };

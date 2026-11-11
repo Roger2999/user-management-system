@@ -1,14 +1,9 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import FormCardSkeleton from "./components/form-card-skeleton";
+import FormCardSkeleton from "../components/form-card-skeleton";
 
 export default function Loading() {
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col items-center gap-10 px-5">
-      <div className="w-full space-y-2">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-4 w-80 max-w-full" />
-      </div>
-
+    <div className="flex w-full flex-col gap-8">
       <div className="flex w-full items-center gap-4 rounded-xl border p-6">
         <Skeleton className="size-12 shrink-0 rounded-full" />
         <div className="flex-1 space-y-2">

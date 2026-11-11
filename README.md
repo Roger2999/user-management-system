@@ -12,7 +12,7 @@ Aplicación interna de autenticación, solicitudes de cuentas de usuario con fir
 | Informes mensuales    | Importación de `access.log` diarios de Squid, cobertura del período, hallazgos por categoría prohibida y emisión del `.docx`. |
 | Gestión de cuentas    | Lista con búsqueda y filtros, y tarjetas de estado: pendientes de firma, expiradas, por expirar y por tipo.                   |
 | Dashboard             | Bienvenida y accesos a gestión de cuentas e informes (solo `ADMIN`).                                                          |
-| Configuración         | Perfil, contraseña y sesiones. Un `ADMIN` además crea usuarios, restablece contraseñas y revoca sesiones ajenas.              |
+| Configuración         | Dos secciones: **Mi cuenta** (perfil, contraseña y sesiones) y **Administración** (alta de usuarios, restablecimiento de contraseñas y sync de AD), esta última solo para `ADMIN`. |
 
 ## Stack
 
@@ -33,12 +33,12 @@ Aplicación interna de autenticación, solicitudes de cuentas de usuario con fir
 | `USER` (default) | Dashboard propio y configuración de su cuenta.                                           |
 | `ADMIN`          | Todo lo anterior + solicitudes, firmas, informes mensuales y administración de usuarios. |
 
-La autorización se aplica en tres capas: `proxy.ts` redirige sin sesión, los layouts de `accounts/` y `monthly-reports/` exigen `ADMIN`, y las server actions de administración vuelven a validar con `lib/requireAdmin.ts`.
+La autorización se aplica en tres capas: `proxy.ts` redirige sin sesión, los layouts de `accounts/`, `monthly-reports/` y `settings/administration` exigen `ADMIN`, y las server actions de administración vuelven a validar con `lib/requireAdmin.ts`.
 
 ## Altas y recuperación de contraseña
 
-- **Nuevos usuarios:** un `ADMIN` los crea desde `Configuración → Crear usuario`, con rol `USER` o `ADMIN`.
-- **Contraseña olvidada:** el usuario usa el enlace del login y recibe un email con un token de 1 hora. Si el correo no llega, un `ADMIN` la restablece desde `Configuración → Restablecer contraseña`; la acción revoca las sesiones abiertas de esa cuenta.
+- **Nuevos usuarios:** un `ADMIN` los crea desde `Configuración → Administración → Crear usuario`, con rol `USER` o `ADMIN`.
+- **Contraseña olvidada:** el usuario usa el enlace del login y recibe un email con un token de 1 hora. Si el correo no llega, un `ADMIN` la restablece desde `Configuración → Administración → Restablecer contraseña`; la acción revoca las sesiones abiertas de esa cuenta.
 - **Promover un usuario existente:**
 
   ```bash
@@ -129,7 +129,9 @@ app/
 ├── (auth)/signin/                  # Login, forgot-password y reset-password
 ├── (protected)/dashboard/
 │   ├── page.tsx                    # Bienvenida y accesos (solo ADMIN)
-│   ├── settings/                   # Perfil, contraseña, sesiones y administración de usuarios
+│   ├── settings/                   # Configuración: mi cuenta y administración
+│   │   ├── account/                # Perfil, contraseña y sesiones
+│   │   └── administration/         # Alta de usuarios, reset de contraseñas y sync de AD
 │   ├── accounts/                   # Solicitudes: lista, crear, editar, firmar, borrar
 │   └── monthly-reports/            # Historial, importación y generación de informes
 ├── api/auth/[...all]/              # Handler de Better Auth

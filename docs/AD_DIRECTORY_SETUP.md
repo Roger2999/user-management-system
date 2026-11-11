@@ -87,7 +87,7 @@ systemctl restart ums-app
 
 ## 6. Verificación de la sincronización
 
-15. Entra a la app como usuario ADMIN → **Configuración**.
+15. Entra a la app como usuario ADMIN → **Configuración → Administración**.
 16. Baja a la tarjeta **Directorio de cuentas**:
     - Si algún `AD_*` falta, verás el motivo y el botón deshabilitado: eso es
       que el `.env` que le llegó al proceso no traía esa variable. Revisa el
@@ -105,8 +105,8 @@ sudo -u ums psql "$DATABASE_URL" -c \
 
 ## 7. Ciclo mensual (igual todos los meses)
 
-19. **Sincronizar primero**: desde Configuración → Directorio de cuentas →
-    *Sincronizar desde AD*.
+19. **Sincronizar primero**: desde Configuración → Administración →
+    Directorio de cuentas → *Sincronizar desde AD*.
 20. Después importar los logs de Squid del mes y generar el informe.
 21. El orden importa: el nombre y el cargo se leyen en el momento de generar.
     Si el informe se generó antes del sync, regenerarlo (el `.docx` queda
@@ -119,5 +119,5 @@ sudo -u ums psql "$DATABASE_URL" -c \
 | «No se pudo sincronizar…» | el contenedor no alcanza `DC:636` o falla el TLS (pasos 7–9) |
 | Falla de credenciales en el mensaje | contraseña o DN mal escritas (pasos 1, 10) |
 | Creó cuentas, pero con nombre vacío | esos usuarios del AD no tienen `displayName` ni `givenName`+`sn` (completar en el AD; se corrige con otro sync) |
-| Botón deshabilitado en Configuración | alguna `AD_*` no llegó al entorno del servidor (pasos 10, 16) |
+| Botón deshabilitado en Configuración → Administración | alguna `AD_*` no llegó al entorno del servidor (pasos 10, 16) |
 | Certificado rechazado | certificado autofirmado sin CA (paso 8) |

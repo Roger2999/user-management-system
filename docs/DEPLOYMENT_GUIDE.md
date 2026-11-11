@@ -171,8 +171,8 @@ chmod 600 /opt/user-management-system/.env
 > cargo de la cuenta de proxy en el informe mensual. En el DC se crea una
 > única cuenta de servicio (`svc-ums-sync`) con permiso de **lectura** sobre
 > la OU de usuarios, y en la app se dispara la sincronización desde
-> **Configuración > Directorio de cuentas > Sincronizar desde AD** (solo
-> administrador). Si el DC usa certificados autofirmados sin CA interna,
+> **Configuración > Administración > Directorio de cuentas > Sincronizar desde
+> AD** (solo administrador). Si el DC usa certificados autofirmados sin CA interna,
 > defíní `AD_TLS_INSECURE="true"`; en un dominio con CA funcional dejalo
 > vacío. Sin AD configurado, el botón queda deshabilitado y el resto de la
 > app funciona igual.

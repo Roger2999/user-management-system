@@ -97,7 +97,7 @@ describe("changePasswordAction", () => {
     expect(h.state.calls).toEqual([
       { currentPassword: "clave-actual-1", newPassword: "clave-nueva-1" },
     ]);
-    expect(h.state.revalidated).toEqual(["/dashboard/settings"]);
+    expect(h.state.revalidated).toEqual(["/dashboard/settings/account"]);
   });
 
   it("informa el fallo de better-auth sin propagar la excepción", async () => {

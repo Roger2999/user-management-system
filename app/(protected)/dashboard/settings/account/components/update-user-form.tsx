@@ -4,7 +4,7 @@ import { useActionState, useEffect } from "react";
 import { toast } from "sonner";
 import Field from "@/components/field";
 import { Button } from "@/components/ui/button";
-import { UpdateUserState } from "@/app/(protected)/dashboard/settings/models/settings-form-states";
+import { UpdateUserState } from "../models/account-form-states";
 import { UpdateUserAction } from "../actions/update-user-action";
 
 type Props = {

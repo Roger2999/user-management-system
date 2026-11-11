@@ -5,7 +5,7 @@ import { APIError } from "better-auth";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { ChangePasswordState } from "@/app/(protected)/dashboard/settings/models/settings-form-states";
+import { ChangePasswordState } from "../models/account-form-states";
 import { ChangePasswordSchema } from "../models/changePasswordSchema.model";
 
 export const changePasswordAction = async (
@@ -31,7 +31,7 @@ export const changePasswordAction = async (
       body: { currentPassword, newPassword },
       headers: await headers(),
     });
-    revalidatePath("/dashboard/settings");
+    revalidatePath("/dashboard/settings/account");
     return {
       success: true,
       message: "Contraseña actualizada con éxito",

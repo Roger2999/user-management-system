@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
-import type { SyncAdDirectoryState } from "@/app/(protected)/dashboard/settings/models/settings-form-states";
+import type { SyncAdDirectoryState } from "../models/administration-form-states";
 import { syncAdDirectoryAction } from "../actions/sync-ad-directory-action";
 
 type AdDirectorySyncCardProps = {
