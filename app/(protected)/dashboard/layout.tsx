@@ -2,6 +2,7 @@ import { getSession } from "@/lib/getSession";
 import { redirect } from "next/navigation";
 import BackButton from "./components/back-button";
 import Breadcrumbs from "./components/breadcrumbs";
+import NotificationData from "./components/notification-data";
 
 export default async function DashboardLayout({
   children,
@@ -12,16 +13,22 @@ export default async function DashboardLayout({
   if (!session) {
     redirect("/signin");
   }
+  const isAdmin = session.user.role === "ADMIN";
 
   return (
     <div className="min-h-layout-dashboard flex w-full flex-1 flex-col gap-6">
       <div className="flex w-full items-center justify-between px-5 pt-5 print:hidden">
         <BackButton />
+        {isAdmin && (
+          <div className="ml-auto">
+            <NotificationData />
+          </div>
+        )}
       </div>
       <div className="print:hidden">
         <Breadcrumbs />
       </div>
-      <div className="flex flex-1 flex-col">{children}</div>
+      {children}
     </div>
   );
 }
