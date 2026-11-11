@@ -87,3 +87,22 @@ hasta que un commit posterior alcance el presupuesto.
 
 **L8** — Pendiente fuera de alcance: `lib/audit.ts` y `lib/auth.ts` siguen con
 cambios sin commitear, ajenos a este refactor.
+
+**L9** — Reparto en slices de entrega, medido sobre `42f8bd4`: la rama acumulada
+mezclaba el refactor con cinco commits ajenos (+14/−15 y un chore de −12). Se
+separa en dos PRs y se deja `90aa7c6` fuera como chore suelto.
+
+- **Slice 1 — split de settings** (rama `refactor/settings-split-pr`, desde
+  `9556c91`): `765d120`, `69cb673`, `f536fd8`, `56bfa04`, `9556c91` y el
+  cherry-pick `4a89264` de `aefa597` (los labels de breadcrumbs pertenecen al
+  mapa que introduce el corte). 40 archivos, +589/−181; 20 de esos archivos son
+  movimientos con `git mv`, así que con `git diff -M` la superficie real de
+  revisión ronda las 430 líneas.
+- **Slice 2 — campana de notificaciones** (rama
+  `fix/dashboard-notification-bell`, desde `main`): `3ee61a1`, `4b18762` y
+  `ce990af`, cherry-picked como `ceedd14`, `afcebba` y `87fb2c8`. 3 archivos,
+  +11/−12. No depende del slice 1: no comparten hunks.
+- **Verificación de cada slice:** `npx vitest run` (38 archivos / 287 tests en
+  verde, 2 archivos y 9 tests saltados: línea base de `42f8bd4`) y
+  `npx tsc --noEmit` limpio. Ojo con `tsc`: el caché `.next` heredado de la rama
+  de settings produce errores `TS2307` falsos hasta que se borra `.next`.
